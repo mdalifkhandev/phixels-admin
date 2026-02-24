@@ -1,0 +1,1435 @@
+{
+  "info": {
+    "name": "Phixels.io Backend API",
+    "description": "Complete API collection for Phixels.io backend services with proper request/response examples",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "phixels-backend-api",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "User Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "signup"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"user\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/auth/signup",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "signup"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Set-Cookie",
+                  "value": "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Secure; SameSite=Strict; Max-Age=100"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 201,\n  \"message\": \"User Created successfully. Please check your email for verification code.\",\n  \"data\": {\n    \"result\": {\n      \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d0\",\n      \"name\": \"John Doe\",\n      \"email\": \"john.doe@example.com\",\n      \"role\": \"user\",\n      \"isVerified\": false,\n      \"isDeleted\": false,\n      \"createdAt\": \"2024-01-20T10:30:00.000Z\",\n      \"updatedAt\": \"2024-01-20T10:30:00.000Z\",\n      \"__v\": 0\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "User Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Set-Cookie",
+                  "value": "token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...; HttpOnly; Secure; SameSite=Strict; Max-Age=172800"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"User Loged In Sussessfully\",\n  \"data\": {\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"user\": {\n      \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d0\",\n      \"name\": \"John Doe\",\n      \"email\": \"john.doe@example.com\",\n      \"role\": \"user\",\n      \"isVerified\": true,\n      \"isDeleted\": false\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "verify"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Email verified successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "User Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Set-Cookie",
+                  "value": "token=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"User logged out successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Blogs",
+      "item": [
+        {
+          "name": "Create Blog",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Getting Started with React",
+                  "type": "text"
+                },
+                {
+                  "key": "writer",
+                  "value": "John Smith",
+                  "type": "text"
+                },
+                {
+                  "key": "readingTime",
+                  "value": "5 min",
+                  "type": "text"
+                },
+                {
+                  "key": "details",
+                  "value": "React is a JavaScript library for building user interfaces. In this blog post, we'll explore the basics of React and how to get started with it.",
+                  "type": "text"
+                },
+                {
+                  "key": "tags",
+                  "value": "[\"react\", \"javascript\", \"frontend\"]",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/blogs/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs", "create"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 201,\n  \"message\": \"Blog created successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d1\",\n    \"title\": \"Getting Started with React\",\n    \"writer\": \"John Smith\",\n    \"readingTime\": \"5 min\",\n    \"details\": \"React is a JavaScript library for building user interfaces...\",\n    \"tags\": [\"react\", \"javascript\", \"frontend\"],\n    \"image\": \"uploads/blog-image-123456.jpg\",\n    \"createdAt\": \"2024-01-20T10:30:00.000Z\",\n    \"updatedAt\": \"2024-01-20T10:30:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Blogs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/blogs",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Blogs retrieved successfully\",\n  \"data\": [\n    {\n      \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d1\",\n      \"title\": \"Getting Started with React\",\n      \"writer\": \"John Smith\",\n      \"readingTime\": \"5 min\",\n      \"details\": \"React is a JavaScript library...\",\n      \"tags\": [\"react\", \"javascript\", \"frontend\"],\n      \"image\": \"uploads/blog-image-123456.jpg\",\n      \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Single Blog",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/blogs/64f8a1b2c3d4e5f6a7b8c9d1",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs", "64f8a1b2c3d4e5f6a7b8c9d1"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Blog retrieved successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d1\",\n    \"title\": \"Getting Started with React\",\n    \"writer\": \"John Smith\",\n    \"readingTime\": \"5 min\",\n    \"details\": \"React is a JavaScript library...\",\n    \"tags\": [\"react\", \"javascript\", \"frontend\"],\n    \"image\": \"uploads/blog-image-123456.jpg\",\n    \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Blog",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Getting Started with React - Updated",
+                  "type": "text"
+                },
+                {
+                  "key": "details",
+                  "value": "React is a JavaScript library for building user interfaces. This is an updated version with more content.",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/blogs/64f8a1b2c3d4e5f6a7b8c9d1",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs", "64f8a1b2c3d4e5f6a7b8c9d1"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Blog updated successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d1\",\n    \"title\": \"Getting Started with React - Updated\",\n    \"writer\": \"John Smith\",\n    \"readingTime\": \"5 min\",\n    \"details\": \"React is a JavaScript library... This is an updated version...\",\n    \"tags\": [\"react\", \"javascript\", \"frontend\"],\n    \"image\": \"uploads/blog-image-updated-123456.jpg\",\n    \"updatedAt\": \"2024-01-20T11:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Blog",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/blogs/64f8a1b2c3d4e5f6a7b8c9d1",
+              "host": ["{{baseUrl}}"],
+              "path": ["blogs", "64f8a1b2c3d4e5f6a7b8c9d1"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Blog deleted successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Portfolio",
+      "item": [
+        {
+          "name": "Create Portfolio",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"E-commerce Platform\",\n  \"client\": \"Tech Solutions Inc.\",\n  \"category\": \"Web Development\",\n  \"details\": \"A full-featured e-commerce platform with payment integration, inventory management, and responsive design.\",\n  \"technology\": [\"React\", \"Node.js\", \"MongoDB\", \"Stripe\"],\n  \"activeUsers\": \"10000\",\n  \"image\": \"https://example.com/ecommerce-screenshot.jpg\",\n  \"liveLink\": \"https://demo-ecommerce.example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/portfolio",
+              "host": ["{{baseUrl}}"],
+              "path": ["portfolio"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 201,\n  \"message\": \"Portfolio created successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d2\",\n    \"title\": \"E-commerce Platform\",\n    \"client\": \"Tech Solutions Inc.\",\n    \"category\": \"Web Development\",\n    \"details\": \"A full-featured e-commerce platform...\",\n    \"technology\": [\"React\", \"Node.js\", \"MongoDB\", \"Stripe\"],\n    \"activeUsers\": \"10000\",\n    \"image\": \"https://example.com/ecommerce-screenshot.jpg\",\n    \"liveLink\": \"https://demo-ecommerce.example.com\",\n    \"createdAt\": \"2024-01-20T10:30:00.000Z\",\n    \"updatedAt\": \"2024-01-20T10:30:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Portfolios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/portfolio",
+              "host": ["{{baseUrl}}"],
+              "path": ["portfolio"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Portfolios retrieved successfully\",\n  \"data\": [\n    {\n      \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d2\",\n      \"title\": \"E-commerce Platform\",\n      \"client\": \"Tech Solutions Inc.\",\n      \"category\": \"Web Development\",\n      \"technology\": [\"React\", \"Node.js\", \"MongoDB\", \"Stripe\"],\n      \"activeUsers\": \"10000\",\n      \"image\": \"https://example.com/ecommerce-screenshot.jpg\",\n      \"liveLink\": \"https://demo-ecommerce.example.com\",\n      \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Single Portfolio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/portfolio/64f8a1b2c3d4e5f6a7b8c9d2",
+              "host": ["{{baseUrl}}"],
+              "path": ["portfolio", "64f8a1b2c3d4e5f6a7b8c9d2"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Portfolio retrieved successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d2\",\n    \"title\": \"E-commerce Platform\",\n    \"client\": \"Tech Solutions Inc.\",\n    \"category\": \"Web Development\",\n    \"details\": \"A full-featured e-commerce platform...\",\n    \"technology\": [\"React\", \"Node.js\", \"MongoDB\", \"Stripe\"],\n    \"activeUsers\": \"10000\",\n    \"image\": \"https://example.com/ecommerce-screenshot.jpg\",\n    \"liveLink\": \"https://demo-ecommerce.example.com\",\n    \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Portfolio",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"E-commerce Platform - Updated\",\n  \"activeUsers\": \"15000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/portfolio/64f8a1b2c3d4e5f6a7b8c9d2",
+              "host": ["{{baseUrl}}"],
+              "path": ["portfolio", "64f8a1b2c3d4e5f6a7b8c9d2"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Portfolio updated successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d2\",\n    \"title\": \"E-commerce Platform - Updated\",\n    \"client\": \"Tech Solutions Inc.\",\n    \"category\": \"Web Development\",\n    \"details\": \"A full-featured e-commerce platform...\",\n    \"technology\": [\"React\", \"Node.js\", \"MongoDB\", \"Stripe\"],\n    \"activeUsers\": \"15000\",\n    \"image\": \"https://example.com/ecommerce-screenshot.jpg\",\n    \"liveLink\": \"https://demo-ecommerce.example.com\",\n    \"updatedAt\": \"2024-01-20T11:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Portfolio",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/portfolio/64f8a1b2c3d4e5f6a7b8c9d2",
+              "host": ["{{baseUrl}}"],
+              "path": ["portfolio", "64f8a1b2c3d4e5f6a7b8c9d2"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Portfolio deleted successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Project Management Tool\",\n  \"description\": \"A comprehensive project management solution for teams\",\n  \"features\": [\"Task Management\", \"Team Collaboration\", \"Time Tracking\", \"Reporting\"],\n  \"pricing\": 99.99,\n  \"demoLink\": \"https://demo.example.com\",\n  \"images\": [\"https://example.com/product1.jpg\", \"https://example.com/product2.jpg\"],\n  \"category\": \"Software\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Product created successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d3\",\n    \"name\": \"Project Management Tool\",\n    \"description\": \"A comprehensive project management solution for teams\",\n    \"features\": [\"Task Management\", \"Team Collaboration\", \"Time Tracking\", \"Reporting\"],\n    \"pricing\": 99.99,\n    \"demoLink\": \"https://demo.example.com\",\n    \"images\": [\"https://example.com/product1.jpg\", \"https://example.com/product2.jpg\"],\n    \"category\": \"Software\",\n    \"isDeleted\": false,\n    \"createdAt\": \"2024-01-20T10:30:00.000Z\",\n    \"updatedAt\": \"2024-01-20T10:30:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products",
+              "host": ["{{baseUrl}}"],
+              "path": ["products"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Products retrieved successfully\",\n  \"data\": [\n    {\n      \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d3\",\n      \"name\": \"Project Management Tool\",\n      \"description\": \"A comprehensive project management solution for teams\",\n      \"features\": [\"Task Management\", \"Team Collaboration\", \"Time Tracking\", \"Reporting\"],\n      \"pricing\": 99.99,\n      \"demoLink\": \"https://demo.example.com\",\n      \"images\": [\"https://example.com/product1.jpg\", \"https://example.com/product2.jpg\"],\n      \"category\": \"Software\",\n      \"isDeleted\": false,\n      \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Single Product",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/products/64f8a1b2c3d4e5f6a7b8c9d3",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "64f8a1b2c3d4e5f6a7b8c9d3"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Product retrieved successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d3\",\n    \"name\": \"Project Management Tool\",\n    \"description\": \"A comprehensive project management solution for teams\",\n    \"features\": [\"Task Management\", \"Team Collaboration\", \"Time Tracking\", \"Reporting\"],\n    \"pricing\": 99.99,\n    \"demoLink\": \"https://demo.example.com\",\n    \"images\": [\"https://example.com/product1.jpg\", \"https://example.com/product2.jpg\"],\n    \"category\": \"Software\",\n    \"isDeleted\": false,\n    \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Project Management Tool - Updated\",\n  \"pricing\": 149.99\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/products/64f8a1b2c3d4e5f6a7b8c9d3",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "64f8a1b2c3d4e5f6a7b8c9d3"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Product updated successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d3\",\n    \"name\": \"Project Management Tool - Updated\",\n    \"description\": \"A comprehensive project management solution for teams\",\n    \"features\": [\"Task Management\", \"Team Collaboration\", \"Time Tracking\", \"Reporting\"],\n    \"pricing\": 149.99,\n    \"demoLink\": \"https://demo.example.com\",\n    \"images\": [\"https://example.com/product1.jpg\", \"https://example.com/product2.jpg\"],\n    \"category\": \"Software\",\n    \"isDeleted\": false,\n    \"updatedAt\": \"2024-01-20T11:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/products/64f8a1b2c3d4e5f6a7b8c9d3",
+              "host": ["{{baseUrl}}"],
+              "path": ["products", "64f8a1b2c3d4e5f6a7b8c9d3"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Product deleted successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "Create Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Web Development\",\n  \"description\": \"Custom web development services using modern technologies\",\n  \"icon\": \"web-dev-icon\",\n  \"features\": [\"Responsive Design\", \"SEO Optimization\", \"Performance Optimization\"],\n  \"images\": [\"https://example.com/web-dev-1.jpg\", \"https://example.com/web-dev-2.jpg\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/services",
+              "host": ["{{baseUrl}}"],
+              "path": ["services"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Service created successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d4\",\n    \"title\": \"Web Development\",\n    \"description\": \"Custom web development services using modern technologies\",\n    \"icon\": \"web-dev-icon\",\n    \"features\": [\"Responsive Design\", \"SEO Optimization\", \"Performance Optimization\"],\n    \"images\": [\"https://example.com/web-dev-1.jpg\", \"https://example.com/web-dev-2.jpg\"],\n    \"isDeleted\": false,\n    \"createdAt\": \"2024-01-20T10:30:00.000Z\",\n    \"updatedAt\": \"2024-01-20T10:30:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Services",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/services",
+              "host": ["{{baseUrl}}"],
+              "path": ["services"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Services retrieved successfully\",\n  \"data\": [\n    {\n      \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d4\",\n      \"title\": \"Web Development\",\n      \"description\": \"Custom web development services using modern technologies\",\n      \"icon\": \"web-dev-icon\",\n      \"features\": [\"Responsive Design\", \"SEO Optimization\", \"Performance Optimization\"],\n      \"images\": [\"https://example.com/web-dev-1.jpg\", \"https://example.com/web-dev-2.jpg\"],\n      \"isDeleted\": false,\n      \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Single Service",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/services/64f8a1b2c3d4e5f6a7b8c9d4",
+              "host": ["{{baseUrl}}"],
+              "path": ["services", "64f8a1b2c3d4e5f6a7b8c9d4"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Service retrieved successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d4\",\n    \"title\": \"Web Development\",\n    \"description\": \"Custom web development services using modern technologies\",\n    \"icon\": \"web-dev-icon\",\n    \"features\": [\"Responsive Design\", \"SEO Optimization\", \"Performance Optimization\"],\n    \"images\": [\"https://example.com/web-dev-1.jpg\", \"https://example.com/web-dev-2.jpg\"],\n    \"isDeleted\": false,\n    \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Service",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Web Development - Premium\",\n  \"description\": \"Premium custom web development services with cutting-edge technologies\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/services/64f8a1b2c3d4e5f6a7b8c9d4",
+              "host": ["{{baseUrl}}"],
+              "path": ["services", "64f8a1b2c3d4e5f6a7b8c9d4"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Service updated successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d4\",\n    \"title\": \"Web Development - Premium\",\n    \"description\": \"Premium custom web development services with cutting-edge technologies\",\n    \"icon\": \"web-dev-icon\",\n    \"features\": [\"Responsive Design\", \"SEO Optimization\", \"Performance Optimization\"],\n    \"images\": [\"https://example.com/web-dev-1.jpg\", \"https://example.com/web-dev-2.jpg\"],\n    \"isDeleted\": false,\n    \"updatedAt\": \"2024-01-20T11:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Service",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/services/64f8a1b2c3d4e5f6a7b8c9d4",
+              "host": ["{{baseUrl}}"],
+              "path": ["services", "64f8a1b2c3d4e5f6a7b8c9d4"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Service deleted successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mail",
+      "item": [
+        {
+          "name": "Send Mail",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "email",
+                  "value": "client@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "subject",
+                  "value": "Project Inquiry",
+                  "type": "text"
+                },
+                {
+                  "key": "text",
+                  "value": "I would like to discuss a potential project with your team.",
+                  "type": "text"
+                },
+                {
+                  "key": "details",
+                  "value": "We need a web application for our business.",
+                  "type": "text"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/mail/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["mail", "send"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Email sent successfully\",\n  \"data\": {\n    \"messageId\": \"msg_123456\",\n    \"status\": \"sent\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Mail Logs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/mail/logs",
+              "host": ["{{baseUrl}}"],
+              "path": ["mail", "logs"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Mail logs retrieved successfully\",\n  \"data\": [\n    {\n      \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d7\",\n      \"email\": \"client@example.com\",\n      \"subject\": \"Project Inquiry\",\n      \"status\": \"sent\",\n      \"sentAt\": \"2024-01-20T10:30:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Careers",
+      "item": [
+        {
+          "name": "Get All Careers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/careers",
+              "host": ["{{baseUrl}}"],
+              "path": ["careers"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Careers retrieved successfully\",\n  \"data\": [\n    {\n      \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d5\",\n      \"jobTitle\": \"Senior Frontend Developer\",\n      \"jobType\": \"Full-time\",\n      \"location\": \"Dhaka, Bangladesh\",\n      \"description\": \"We are looking for an experienced frontend developer...\",\n      \"requirements\": [\"5+ years of experience with React\", \"Strong knowledge of TypeScript\"],\n      \"responsibilities\": [\"Develop and maintain web applications\"],\n      \"salaryRange\": \"$60,000 - $80,000\",\n      \"deadline\": \"2024-12-31\",\n      \"applicationEmail\": \"careers@phixels.io\",\n      \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Single Career",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/careers/64f8a1b2c3d4e5f6a7b8c9d5",
+              "host": ["{{baseUrl}}"],
+              "path": ["careers", "64f8a1b2c3d4e5f6a7b8c9d5"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Career retrieved successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d5\",\n    \"jobTitle\": \"Senior Frontend Developer\",\n    \"jobType\": \"Full-time\",\n    \"location\": \"Dhaka, Bangladesh\",\n    \"description\": \"We are looking for an experienced frontend developer...\",\n    \"requirements\": [\"5+ years of experience with React\", \"Strong knowledge of TypeScript\"],\n    \"responsibilities\": [\"Develop and maintain web applications\"],\n    \"salaryRange\": \"$60,000 - $80,000\",\n    \"deadline\": \"2024-12-31\",\n    \"applicationEmail\": \"careers@phixels.io\",\n    \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Career (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobTitle\": \"Senior Frontend Developer\",\n  \"jobType\": \"Full-time\",\n  \"location\": \"Dhaka, Bangladesh\",\n  \"description\": \"We are looking for an experienced frontend developer to join our team.\",\n  \"requirements\": [\n    \"5+ years of experience with React\",\n    \"Strong knowledge of TypeScript\",\n    \"Experience with modern CSS frameworks\"\n  ],\n  \"responsibilities\": [\n    \"Develop and maintain web applications\",\n    \"Collaborate with design team\",\n    \"Write clean and maintainable code\"\n  ],\n  \"salaryRange\": \"$60,000 - $80,000\",\n  \"deadline\": \"2024-12-31\",\n  \"applicationEmail\": \"careers@phixels.io\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/careers",
+              "host": ["{{baseUrl}}"],
+              "path": ["careers"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Career created successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d5\",\n    \"jobTitle\": \"Senior Frontend Developer\",\n    \"jobType\": \"Full-time\",\n    \"location\": \"Dhaka, Bangladesh\",\n    \"description\": \"We are looking for an experienced frontend developer...\",\n    \"requirements\": [\"5+ years of experience with React\", \"Strong knowledge of TypeScript\"],\n    \"responsibilities\": [\"Develop and maintain web applications\"],\n    \"salaryRange\": \"$60,000 - $80,000\",\n    \"deadline\": \"2024-12-31\",\n    \"applicationEmail\": \"careers@phixels.io\",\n    \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Career (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobTitle\": \"Updated Job Title\",\n  \"salaryRange\": \"$70,000 - $90,000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/careers/64f8a1b2c3d4e5f6a7b8c9d5",
+              "host": ["{{baseUrl}}"],
+              "path": ["careers", "64f8a1b2c3d4e5f6a7b8c9d5"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Career updated successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d5\",\n    \"jobTitle\": \"Updated Job Title\",\n    \"jobType\": \"Full-time\",\n    \"location\": \"Dhaka, Bangladesh\",\n    \"description\": \"We are looking for an experienced frontend developer...\",\n    \"requirements\": [\"5+ years of experience with React\", \"Strong knowledge of TypeScript\"],\n    \"responsibilities\": [\"Develop and maintain web applications\"],\n    \"salaryRange\": \"$70,000 - $90,000\",\n    \"deadline\": \"2024-12-31\",\n    \"applicationEmail\": \"careers@phixels.io\",\n    \"updatedAt\": \"2024-01-20T11:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Career (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/careers/64f8a1b2c3d4e5f6a7b8c9d5",
+              "host": ["{{baseUrl}}"],
+              "path": ["careers", "64f8a1b2c3d4e5f6a7b8c9d5"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Career deleted successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Case Studies",
+      "item": [
+        {
+          "name": "Get All Case Studies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/case-studies",
+              "host": ["{{baseUrl}}"],
+              "path": ["case-studies"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Case Studies retrieved successfully\",\n  \"data\": [\n    {\n      \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d6\",\n      \"title\": \"E-commerce Platform Redesign\",\n      \"client\": \"TechMart Solutions\",\n      \"category\": \"Web Development\",\n      \"challenge\": \"The client needed a modern, responsive e-commerce platform...\",\n      \"solution\": \"We developed a custom React-based e-commerce solution...\",\n      \"result\": \"Increased conversion rates by 40%, improved page load speed by 60%...\",\n      \"image\": \"https://example.com/case-study-image.jpg\",\n      \"link\": \"https://example.com/case-study\",\n      \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Single Case Study",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/case-studies/64f8a1b2c3d4e5f6a7b8c9d6",
+              "host": ["{{baseUrl}}"],
+              "path": ["case-studies", "64f8a1b2c3d4e5f6a7b8c9d6"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Case Study retrieved successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d6\",\n    \"title\": \"E-commerce Platform Redesign\",\n    \"client\": \"TechMart Solutions\",\n    \"category\": \"Web Development\",\n    \"challenge\": \"The client needed a modern, responsive e-commerce platform...\",\n    \"solution\": \"We developed a custom React-based e-commerce solution...\",\n    \"result\": \"Increased conversion rates by 40%, improved page load speed by 60%...\",\n    \"image\": \"https://example.com/case-study-image.jpg\",\n    \"link\": \"https://example.com/case-study\",\n    \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Case Study (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"E-commerce Platform Redesign\",\n  \"client\": \"TechMart Solutions\",\n  \"category\": \"Web Development\",\n  \"challenge\": \"The client needed a modern, responsive e-commerce platform with improved user experience and performance.\",\n  \"solution\": \"We developed a custom React-based e-commerce solution with optimized performance, modern UI/UX design, and seamless payment integration.\",\n  \"result\": \"Increased conversion rates by 40%, improved page load speed by 60%, and enhanced user satisfaction scores.\",\n  \"image\": \"https://example.com/case-study-image.jpg\",\n  \"link\": \"https://example.com/case-study\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/case-studies",
+              "host": ["{{baseUrl}}"],
+              "path": ["case-studies"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Case Study created successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d6\",\n    \"title\": \"E-commerce Platform Redesign\",\n    \"client\": \"TechMart Solutions\",\n    \"category\": \"Web Development\",\n    \"challenge\": \"The client needed a modern, responsive e-commerce platform...\",\n    \"solution\": \"We developed a custom React-based e-commerce solution...\",\n    \"result\": \"Increased conversion rates by 40%, improved page load speed by 60%...\",\n    \"image\": \"https://example.com/case-study-image.jpg\",\n    \"link\": \"https://example.com/case-study\",\n    \"createdAt\": \"2024-01-20T10:30:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Case Study (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Case Study Title\",\n  \"result\": \"Updated results with new metrics\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/case-studies/64f8a1b2c3d4e5f6a7b8c9d6",
+              "host": ["{{baseUrl}}"],
+              "path": ["case-studies", "64f8a1b2c3d4e5f6a7b8c9d6"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Case Study updated successfully\",\n  \"data\": {\n    \"_id\": \"64f8a1b2c3d4e5f6a7b8c9d6\",\n    \"title\": \"Updated Case Study Title\",\n    \"client\": \"TechMart Solutions\",\n    \"category\": \"Web Development\",\n    \"challenge\": \"The client needed a modern, responsive e-commerce platform...\",\n    \"solution\": \"We developed a custom React-based e-commerce solution...\",\n    \"result\": \"Updated results with new metrics\",\n    \"image\": \"https://example.com/case-study-image.jpg\",\n    \"link\": \"https://example.com/case-study\",\n    \"updatedAt\": \"2024-01-20T11:00:00.000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Case Study (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/case-studies/64f8a1b2c3d4e5f6a7b8c9d6",
+              "host": ["{{baseUrl}}"],
+              "path": ["case-studies", "64f8a1b2c3d4e5f6a7b8c9d6"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"statusCode\": 200,\n  \"message\": \"Case Study deleted successfully\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Track Events",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"eventType\": \"page_view\",\n  \"sessionId\": \"uuid\",\n  \"pagePath\": \"/\",\n  \"referrer\": \"\",\n  \"utmSource\": \"\",\n  \"utmMedium\": \"\",\n  \"utmCampaign\": \"\",\n  \"deviceType\": \"desktop\",\n  \"channel\": \"whatsapp\",\n  \"metadata\": {},\n  \"eventAt\": \"2026-02-03T12:00:00.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/analytics/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "events"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Analytics events recorded\",\n  \"data\": {\n    \"inserted\": 1\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Overview",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/overview?range=all",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "overview"],
+              "query": [
+                {
+                  "key": "range",
+                  "value": "all",
+                  "description": "range=1h|1d|3d|7d|1m|3m|6m|1y|all"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Analytics overview retrieved\",\n  \"data\": {\n    \"totalVisits\": 12450,\n    \"conversions\": 520,\n    \"bounceRate\": 42.3,\n    \"avgDuration\": 204,\n    \"totalLeads\": 142,\n    \"pendingLeads\": 28,\n    \"bookedLeads\": 114,\n    \"conversionRate\": 80.2,\n    \"realtimeUsers\": 42,\n    \"clickCounts\": {\n      \"gmail\": 32,\n      \"whatsapp\": 58,\n      \"fiverr\": 14,\n      \"linkedin\": 21,\n      \"facebook\": 9,\n      \"emailOpens\": 12\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Overview (Custom Range)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/overview?start=2026-01-01&end=2026-02-03",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "overview"],
+              "query": [
+                {
+                  "key": "start",
+                  "value": "2026-01-01"
+                },
+                {
+                  "key": "end",
+                  "value": "2026-02-03"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Analytics overview retrieved\",\n  \"data\": {\n    \"totalVisits\": 980,\n    \"conversions\": 42,\n    \"bounceRate\": 38.5,\n    \"avgDuration\": 210,\n    \"totalLeads\": 35,\n    \"pendingLeads\": 8,\n    \"bookedLeads\": 27,\n    \"conversionRate\": 77.1,\n    \"realtimeUsers\": 12,\n    \"clickCounts\": {\n      \"gmail\": 5,\n      \"whatsapp\": 11,\n      \"fiverr\": 2,\n      \"linkedin\": 4,\n      \"facebook\": 1,\n      \"emailOpens\": 3\n    }\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Realtime",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/realtime",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "realtime"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Realtime analytics retrieved\",\n  \"data\": {\n    \"activeUsers\": 8,\n    \"deviceCounts\": {\"desktop\": 4, \"mobile\": 3, \"tablet\": 1},\n    \"pageCounts\": {\"/\": 3, \"/contact\": 2},\n    \"liveEvents\": [\n      {\"event\": \"Page View: /\", \"location\": \"Dhaka, BD\", \"device\": \"mobile\", \"time\": \"Just now\", \"activity\": \"page view\"}\n    ]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Funnel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/funnel?range=all",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "funnel"],
+              "query": [
+                {
+                  "key": "range",
+                  "value": "all",
+                  "description": "range=1h|1d|3d|7d|1m|3m|6m|1y|all"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Funnel analytics retrieved\",\n  \"data\": [\n    {\"stage\": \"popup_open\", \"users\": 1000, \"rate\": 100},\n    {\"stage\": \"lead_submitted\", \"users\": 140, \"rate\": 14.0, \"dropoff\": 86.0},\n    {\"stage\": \"meeting_started\", \"users\": 90, \"rate\": 64.3, \"dropoff\": 35.7},\n    {\"stage\": \"meeting_booked\", \"users\": 75, \"rate\": 83.3, \"dropoff\": 16.7}\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Traffic Series",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/traffic?range=7d",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "traffic"],
+              "query": [
+                {
+                  "key": "range",
+                  "value": "7d"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Traffic series retrieved\",\n  \"data\": [\n    {\"name\": \"2026-02-01\", \"visitors\": 120, \"conversions\": 8},\n    {\"name\": \"2026-02-02\", \"visitors\": 140, \"conversions\": 10}\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Top Pages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/top-pages?range=7d",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "top-pages"],
+              "query": [
+                {
+                  "key": "range",
+                  "value": "7d"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Top pages retrieved\",\n  \"data\": [\n    {\"path\": \"/\", \"visits\": 320, \"avgTime\": null, \"bounce\": null, \"conversions\": 18},\n    {\"path\": \"/contact\", \"visits\": 120, \"avgTime\": null, \"bounce\": null, \"conversions\": 7}\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Top Cities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/top-cities?range=7d",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "top-cities"],
+              "query": [
+                {
+                  "key": "range",
+                  "value": "7d"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Top cities retrieved\",\n  \"data\": [\n    {\"name\": \"Dhaka\", \"country\": \"BD\", \"visitors\": 140},\n    {\"name\": \"New York\", \"country\": \"US\", \"visitors\": 90}\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Top Countries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/top-countries?range=7d",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "top-countries"],
+              "query": [
+                {
+                  "key": "range",
+                  "value": "7d"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Top countries retrieved\",\n  \"data\": [\n    {\"code\": \"BD\", \"name\": \"BD\", \"visitors\": 200, \"conversions\": 22, \"rate\": 11.0, \"trend\": \"neutral\"},\n    {\"code\": \"US\", \"name\": \"US\", \"visitors\": 120, \"conversions\": 10, \"rate\": 8.3, \"trend\": \"neutral\"}\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Devices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/devices?range=7d",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "devices"],
+              "query": [
+                {
+                  "key": "range",
+                  "value": "7d"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Device breakdown retrieved\",\n  \"data\": {\"desktop\": 340, \"mobile\": 220, \"tablet\": 40}\n}"
+            }
+          ]
+        },
+        {
+          "name": "Traffic Sources",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/traffic-sources?range=7d",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "traffic-sources"],
+              "query": [
+                {
+                  "key": "range",
+                  "value": "7d"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Traffic sources retrieved\",\n  \"data\": [\n    {\"name\": \"Direct\", \"visitors\": 420, \"share\": 35.0, \"conversions\": 12, \"conversionRate\": 2.9, \"trend\": 0},\n    {\"name\": \"Organic Search\", \"visitors\": 360, \"share\": 30.0, \"conversions\": 16, \"conversionRate\": 4.4, \"trend\": 0}\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
