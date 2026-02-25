@@ -325,6 +325,17 @@ export const productsApi = {
     const response = await apiClient.delete(`/products/${id}`);
     return getData(response);
   },
+  getPinned: async (): Promise<Product[]> => {
+    const response = await apiClient.get("/products/pinned");
+    return getData<Product[]>(response);
+  },
+  updatePin: async (
+    id: string,
+    data: { isPinned: boolean; pinOrder?: 1 | 2 | 3 | null },
+  ) => {
+    const response = await apiClient.patch(`/products/${id}/pin`, data);
+    return getData<Product>(response);
+  },
 };
 
 // Services API

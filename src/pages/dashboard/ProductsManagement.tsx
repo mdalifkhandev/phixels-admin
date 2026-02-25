@@ -25,6 +25,7 @@ export function ProductsManagement() {
     features: [] as string[],
   });
   const [featureInput, setFeatureInput] = useState('');
+  const [pinUpdatingId, setPinUpdatingId] = useState<string | null>(null);
 
   // Status Modal State
   const [statusModal, setStatusModal] = useState<{
@@ -112,6 +113,92 @@ export function ProductsManagement() {
       },
       secondaryActionLabel: 'Cancel'
     });
+  };
+
+  const getAvailablePinOrders = (product?: ProductDisplay): Array<1 | 2 | 3> => {
+    const occupied = new Set(
+      products
+        .filter((p) => p.isPinned && (!product || p.id !== product.id))
+        .map((p) => p.pinOrder)
+        .filter((order): order is 1 | 2 | 3 => order === 1 || order === 2 || order === 3),
+    );
+
+    return ([1, 2, 3] as Array<1 | 2 | 3>).filter((order) => !occupied.has(order));
+  };
+
+  const handlePin = async (product: ProductDisplay) => {
+    try {
+      const availableOrders = getAvailablePinOrders(product);
+      if (availableOrders.length === 0) {
+        setStatusModal({
+          isOpen: true,
+          type: 'error',
+          title: 'Pin Failed',
+          message: 'Maximum 3 pinned products allowed. Unpin one product first.',
+        });
+        return;
+      }
+
+      setPinUpdatingId(product.id);
+      const targetOrder = availableOrders[0];
+      await productsApi.updatePin(product.id, { isPinned: true, pinOrder: targetOrder });
+      await fetchProducts();
+      setStatusModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Product Pinned',
+        message: `"${product.name}" pinned at slot ${targetOrder}.`,
+      });
+    } catch (err: any) {
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Pin Failed',
+        message: err.message || 'Failed to pin product.',
+      });
+    } finally {
+      setPinUpdatingId(null);
+    }
+  };
+
+  const handleUnpin = async (product: ProductDisplay) => {
+    try {
+      setPinUpdatingId(product.id);
+      await productsApi.updatePin(product.id, { isPinned: false, pinOrder: null });
+      await fetchProducts();
+      setStatusModal({
+        isOpen: true,
+        type: 'success',
+        title: 'Product Unpinned',
+        message: `"${product.name}" removed from pinned products.`,
+      });
+    } catch (err: any) {
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Unpin Failed',
+        message: err.message || 'Failed to unpin product.',
+      });
+    } finally {
+      setPinUpdatingId(null);
+    }
+  };
+
+  const handlePinOrderChange = async (product: ProductDisplay, pinOrder: 1 | 2 | 3) => {
+    try {
+      setPinUpdatingId(product.id);
+      await productsApi.updatePin(product.id, { isPinned: true, pinOrder });
+      await fetchProducts();
+    } catch (err: any) {
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Pin Order Update Failed',
+        message: err.message || 'Failed to update pin order.',
+      });
+    } finally {
+      setPinUpdatingId(null);
+    }
   };
 
   const handleSave = async () => {
@@ -230,6 +317,64 @@ export function ProductsManagement() {
         <span className="text-gray-400">{value ? value.length : 0} features</span>
       ),
     },
+    {
+      key: 'isPinned',
+      label: 'Pinned',
+      render: (_value: boolean, row: ProductDisplay) => {
+        const availableOrders = getAvailablePinOrders(row);
+        const selectableOrders = row.isPinned && row.pinOrder
+          ? ([...new Set([row.pinOrder, ...availableOrders])] as Array<1 | 2 | 3>)
+              .sort((a, b) => a - b)
+          : availableOrders;
+
+        return (
+          <div className="flex items-center gap-2">
+            <span
+              className={`px-2 py-1 rounded-full text-xs font-bold ${
+                row.isPinned ? 'bg-yellow-500/20 text-yellow-400' : 'bg-white/10 text-gray-400'
+              }`}
+            >
+              {row.isPinned ? `Pinned (${row.pinOrder ?? '-'})` : 'Not pinned'}
+            </span>
+            {row.isPinned ? (
+              <>
+                <select
+                  value={row.pinOrder ?? ''}
+                  onChange={(e) =>
+                    handlePinOrderChange(row, Number(e.target.value) as 1 | 2 | 3)
+                  }
+                  disabled={pinUpdatingId === row.id}
+                  className="bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                >
+                  {selectableOrders.map((order) => (
+                    <option key={order} value={order} className="bg-black text-white">
+                      Slot {order}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => handleUnpin(row)}
+                  disabled={pinUpdatingId === row.id}
+                  className="px-2 py-1 rounded-lg bg-red-500/20 text-red-300 text-xs hover:bg-red-500/30 disabled:opacity-60"
+                >
+                  Unpin
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handlePin(row)}
+                disabled={pinUpdatingId === row.id}
+                className="px-2 py-1 rounded-lg bg-yellow-500/20 text-yellow-300 text-xs hover:bg-yellow-500/30 disabled:opacity-60"
+              >
+                Pin
+              </button>
+            )}
+          </div>
+        );
+      },
+    },
   ];
 
   if (loading) {
@@ -272,6 +417,11 @@ export function ProductsManagement() {
           value={new Set(products.map(p => p.category)).size}
           icon={Package}
           color="from-purple-500 to-pink-500" />
+        <ManagementStatsCard
+          title="Pinned Products"
+          value={products.filter((p) => p.isPinned).length}
+          icon={Package}
+          color="from-yellow-500 to-amber-500" />
       </div>
 
       {/* Data Table */}
