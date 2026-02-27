@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ChevronDown, ChevronRight, FolderTree, Wrench } from 'lucide-react';
 import { ContentModal } from '../../components/dashboard/ContentModal';
+import { ImageUploadField } from '../../components/dashboard/ImageUploadField';
 import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
 import { StatusModal } from '../../components/dashboard/StatusModal';
 import { servicesApi } from '../../services/api';
@@ -64,7 +65,9 @@ export function ServicesManagement() {
     slug: '',
     description: '',
     iconKey: 'code',
+    heroImage: '',
   });
+  const [categoryImageFile, setCategoryImageFile] = useState<File | null>(null);
 
   const [subcategoryForm, setSubcategoryForm] = useState({
     categoryId: '',
@@ -86,6 +89,8 @@ export function ServicesManagement() {
     title: '',
     message: '',
   });
+  const [draggingCategoryId, setDraggingCategoryId] = useState<string | null>(null);
+  const [draggingSubcategoryId, setDraggingSubcategoryId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAllData();
@@ -170,11 +175,17 @@ export function ServicesManagement() {
         return;
       }
 
+      let heroImage = categoryForm.heroImage;
+      if (categoryImageFile) {
+        heroImage = await servicesApi.uploadCategoryImage(categoryImageFile);
+      }
+
       const payload = {
         name: categoryForm.name,
         slug: finalSlug,
         description: categoryForm.description,
         iconKey: categoryForm.iconKey,
+        heroImage,
       };
 
       if (editingCategory) {
@@ -213,7 +224,9 @@ export function ServicesManagement() {
       slug: '',
       description: '',
       iconKey: 'code',
+      heroImage: '',
     });
+    setCategoryImageFile(null);
   };
 
   const handleEditCategory = (category: ServiceCategoryDisplay) => {
@@ -223,7 +236,9 @@ export function ServicesManagement() {
       slug: category.slug,
       description: category.description,
       iconKey: category.iconKey,
+      heroImage: category.heroImage || '',
     });
+    setCategoryImageFile(null);
     setIsCategoryModalOpen(true);
   };
 
@@ -376,6 +391,88 @@ export function ServicesManagement() {
     );
   };
 
+  const moveItem = <T,>(arr: T[], from: number, to: number) => {
+    const copy = [...arr];
+    const [item] = copy.splice(from, 1);
+    copy.splice(to, 0, item);
+    return copy;
+  };
+
+  const handleCategoryDrop = async (targetCategoryId: string) => {
+    if (!draggingCategoryId || draggingCategoryId === targetCategoryId || searchTerm.trim()) return;
+    const fromIndex = categories.findIndex((category) => category.id === draggingCategoryId);
+    const toIndex = categories.findIndex((category) => category.id === targetCategoryId);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    const reordered = moveItem(categories, fromIndex, toIndex);
+    setCategories(reordered);
+    setDraggingCategoryId(null);
+
+    try {
+      await servicesApi.reorderCategories(reordered.map((item) => item.id));
+    } catch (err: any) {
+      await fetchAllData();
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Reorder Failed',
+        message: err.message || 'Failed to reorder categories.',
+      });
+    }
+  };
+
+  const handleSubcategoryDrop = async (categoryId: string, targetSubcategoryId: string) => {
+    if (!draggingSubcategoryId || draggingSubcategoryId === targetSubcategoryId || searchTerm.trim()) {
+      return;
+    }
+
+    const categorySubs = subcategories.filter(
+      (subcategory) => getCategoryIdFromSubcategory(subcategory) === categoryId,
+    );
+    const fromIndex = categorySubs.findIndex((subcategory) => subcategory.id === draggingSubcategoryId);
+    const toIndex = categorySubs.findIndex((subcategory) => subcategory.id === targetSubcategoryId);
+    if (fromIndex === -1 || toIndex === -1) return;
+
+    const reorderedCategorySubs = moveItem(categorySubs, fromIndex, toIndex);
+    const reorderedIds = reorderedCategorySubs.map((subcategory) => subcategory.id);
+    const idToOrder = new Map(reorderedIds.map((id, index) => [id, index]));
+
+    setSubcategories((prev) => {
+      const categoryOnly = prev.filter(
+        (subcategory) => getCategoryIdFromSubcategory(subcategory) === categoryId,
+      );
+      const reorderedCategoryOnly = [...categoryOnly]
+        .map((subcategory) => ({
+          ...subcategory,
+          sortOrder: idToOrder.get(subcategory.id) ?? subcategory.sortOrder,
+        }))
+        .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+
+      let pointer = 0;
+      return prev.map((subcategory) => {
+        if (getCategoryIdFromSubcategory(subcategory) !== categoryId) {
+          return subcategory;
+        }
+        const nextSubcategory = reorderedCategoryOnly[pointer];
+        pointer += 1;
+        return nextSubcategory;
+      });
+    });
+    setDraggingSubcategoryId(null);
+
+    try {
+      await servicesApi.reorderSubcategories(categoryId, reorderedIds);
+    } catch (err: any) {
+      await fetchAllData();
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Reorder Failed',
+        message: err.message || 'Failed to reorder subcategories.',
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -461,7 +558,15 @@ export function ServicesManagement() {
               const isExpanded = query ? true : expandedCategoryIds.includes(category.id);
 
               return (
-                <div key={category.id} className="px-4 py-3">
+                <div
+                  key={category.id}
+                  className="px-4 py-3"
+                  draggable={!searchTerm.trim()}
+                  onDragStart={() => setDraggingCategoryId(category.id)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => handleCategoryDrop(category.id)}
+                  onDragEnd={() => setDraggingCategoryId(null)}
+                >
                   <div className="flex items-center justify-between gap-3">
                     <button
                       onClick={() => toggleCategory(category.id)}
@@ -508,6 +613,11 @@ export function ServicesManagement() {
                           <div
                             key={subcategory.id}
                             className="px-4 py-3 border-b border-white/5 last:border-b-0 flex items-center justify-between gap-4"
+                            draggable={!searchTerm.trim()}
+                            onDragStart={() => setDraggingSubcategoryId(subcategory.id)}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={() => handleSubcategoryDrop(category.id, subcategory.id)}
+                            onDragEnd={() => setDraggingSubcategoryId(null)}
                           >
                             <div>
                               <p className="text-white font-medium">{subcategory.name}</p>
@@ -601,6 +711,13 @@ export function ServicesManagement() {
               ))}
             </select>
           </div>
+
+          <ImageUploadField
+            label="Main Service Detail Image (optional)"
+            value={categoryForm.heroImage}
+            onChange={(url) => setCategoryForm({ ...categoryForm, heroImage: url })}
+            onFileChange={(file) => setCategoryImageFile(file)}
+          />
         </div>
       </ContentModal>
 

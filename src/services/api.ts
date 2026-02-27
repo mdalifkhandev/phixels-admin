@@ -340,6 +340,15 @@ export const productsApi = {
 
 // Services API
 export const servicesApi = {
+  uploadCategoryImage: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await apiClient.post("/services/upload-image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    const payload = getData<{ image: string }>(response);
+    return payload.image;
+  },
   create: async (data: Omit<Service, "_id">) => {
     const response = await apiClient.post("/services", data);
     return getData<Service>(response);
@@ -376,6 +385,12 @@ export const servicesApi = {
     const response = await apiClient.delete(`/services/categories/${id}`);
     return getData(response);
   },
+  reorderCategories: async (orderedIds: string[]) => {
+    const response = await apiClient.patch("/services/categories/reorder", {
+      orderedIds,
+    });
+    return getData<ServiceCategory[]>(response);
+  },
   createSubcategory: async (data: Omit<ServiceSubcategory, "_id">) => {
     const response = await apiClient.post("/services/subcategories", data);
     return getData<ServiceSubcategory>(response);
@@ -391,6 +406,13 @@ export const servicesApi = {
   deleteSubcategory: async (id: string) => {
     const response = await apiClient.delete(`/services/subcategories/${id}`);
     return getData(response);
+  },
+  reorderSubcategories: async (categoryId: string, orderedIds: string[]) => {
+    const response = await apiClient.patch("/services/subcategories/reorder", {
+      categoryId,
+      orderedIds,
+    });
+    return getData<ServiceSubcategory[]>(response);
   },
 };
 
