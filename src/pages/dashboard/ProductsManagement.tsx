@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Plus, Package } from 'lucide-react';
 import { DataTable } from '../../components/dashboard/DataTable';
 import { ContentModal } from '../../components/dashboard/ContentModal';
+import { ImageUploadField } from '../../components/dashboard/ImageUploadField';
 import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
 import { StatusModal } from '../../components/dashboard/StatusModal';
 import { productsApi } from '../../services/api';
@@ -20,10 +21,16 @@ export function ProductsManagement() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    pricing: 0,
     category: 'Template',
+    demoLink: '',
     features: [] as string[],
+    image: '',
+    reviewRating: null as number | null,
+    userCount: null as number | null,
+    downloadsEnabled: false,
+    downloadCount: null as number | null,
   });
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [featureInput, setFeatureInput] = useState('');
   const [pinUpdatingId, setPinUpdatingId] = useState<string | null>(null);
 
@@ -55,9 +62,12 @@ export function ProductsManagement() {
       const displayData = data.map(p => ({
         ...p,
         id: p._id || '',
-        pricing: p.pricing || 0,
         category: p.category || 'Template',
         features: p.features || [],
+        reviewRating: p.reviewRating ?? null,
+        userCount: p.userCount ?? null,
+        downloadsEnabled: p.downloadsEnabled ?? false,
+        downloadCount: p.downloadCount ?? null,
       }));
       setProducts(displayData);
     } catch (err: any) {
@@ -78,10 +88,16 @@ export function ProductsManagement() {
     setFormData({
       name: product.name,
       description: product.description,
-      pricing: product.pricing,
       category: product.category,
+      demoLink: product.demoLink || '',
       features: product.features,
+      image: product.images?.[0] || '',
+      reviewRating: product.reviewRating ?? null,
+      userCount: product.userCount ?? null,
+      downloadsEnabled: product.downloadsEnabled ?? false,
+      downloadCount: product.downloadCount ?? null,
     });
+    setImageFile(null);
     setIsModalOpen(true);
   };
 
@@ -204,19 +220,33 @@ export function ProductsManagement() {
   const handleSave = async () => {
     try {
       // Basic Validation
-      if (!formData.name || !formData.description || !formData.pricing || !formData.category) {
+      if (!formData.name || !formData.description || !formData.category) {
         setStatusModal({
           isOpen: true,
           type: 'error',
           title: 'Validation Error',
-          message: 'Please fill in all required fields (Name, Description, Price, Category).'
+          message: 'Please fill in all required fields (Name, Description, Category).'
         });
         return;
       }
 
+      let imageUrl = formData.image;
+      if (imageFile) {
+        imageUrl = await productsApi.uploadImage(imageFile);
+      }
+
       const payload = {
-        ...formData,
-        pricing: Number(formData.pricing)
+        name: formData.name,
+        description: formData.description,
+        category: formData.category,
+        demoLink: formData.demoLink || undefined,
+        pricing: 0,
+        features: formData.features,
+        images: imageUrl ? [imageUrl] : [],
+        reviewRating: formData.reviewRating,
+        userCount: formData.userCount,
+        downloadsEnabled: formData.downloadsEnabled,
+        downloadCount: formData.downloadsEnabled ? formData.downloadCount : null,
       };
 
       if (editingProduct) {
@@ -255,10 +285,16 @@ export function ProductsManagement() {
     setFormData({
       name: '',
       description: '',
-      pricing: 0,
       category: 'Template',
+      demoLink: '',
       features: [],
+      image: '',
+      reviewRating: null,
+      userCount: null,
+      downloadsEnabled: false,
+      downloadCount: null,
     });
+    setImageFile(null);
     setFeatureInput('');
   };
 
@@ -295,13 +331,6 @@ export function ProductsManagement() {
       ),
     },
     {
-      key: 'pricing',
-      label: 'Price',
-      render: (value: number) => (
-        <span className="text-green-400 font-bold">${value}</span>
-      ),
-    },
-    {
       key: 'category',
       label: 'Category',
       render: (value: string) => (
@@ -315,6 +344,37 @@ export function ProductsManagement() {
       label: 'Features',
       render: (value: string[]) => (
         <span className="text-gray-400">{value ? value.length : 0} features</span>
+      ),
+    },
+    {
+      key: 'reviewRating',
+      label: 'Review',
+      render: (_value: number | null, row: ProductDisplay) => (
+        <span className="text-gray-300">
+          {row.reviewRating != null ? row.reviewRating.toFixed(1) : 'N/A'}
+        </span>
+      ),
+    },
+    {
+      key: 'userCount',
+      label: 'Users',
+      render: (_value: number | null, row: ProductDisplay) => (
+        <span className="text-gray-300">
+          {row.userCount != null ? row.userCount.toLocaleString() : 'N/A'}
+        </span>
+      ),
+    },
+    {
+      key: 'downloadCount',
+      label: 'Downloads',
+      render: (_value: number | null, row: ProductDisplay) => (
+        <span className="text-gray-300">
+          {row.downloadsEnabled
+            ? row.downloadCount != null
+              ? row.downloadCount.toLocaleString()
+              : 0
+            : 'Hidden'}
+        </span>
       ),
     },
     {
@@ -470,36 +530,122 @@ export function ProductsManagement() {
               required />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label className="text-sm text-gray-400 font-medium">
+              Category *
+            </label>
+            <input
+              type="text"
+              value={formData.category}
+              onChange={(e) =>
+                setFormData({ ...formData, category: e.target.value })
+              }
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+              placeholder="Template"
+              required />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-gray-400 font-medium">Product URL (Launch Link)</label>
+            <input
+              type="url"
+              value={formData.demoLink}
+              onChange={(e) =>
+                setFormData({ ...formData, demoLink: e.target.value })
+              }
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+              placeholder="https://your-product-link.com"
+            />
+          </div>
+
+          <ImageUploadField
+            label="Product Image"
+            value={formData.image}
+            onChange={(url) => setFormData({ ...formData, image: url })}
+            onFileChange={(file) => setImageFile(file)}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm text-gray-400 font-medium">
-                Price *
-              </label>
+              <label className="text-sm text-gray-400 font-medium">Review Rating</label>
               <input
                 type="number"
-                step="0.01"
-                value={formData.pricing}
+                min={0}
+                max={5}
+                step="0.1"
+                value={formData.reviewRating ?? ''}
                 onChange={(e) =>
-                  setFormData({ ...formData, pricing: parseFloat(e.target.value) || 0 })
+                  setFormData({
+                    ...formData,
+                    reviewRating: e.target.value === '' ? null : Number(e.target.value),
+                  })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-                placeholder="49.99"
-                required />
+                placeholder="4.8"
+              />
             </div>
             <div className="space-y-2">
-              <label className="text-sm text-gray-400 font-medium">
-                Category *
-              </label>
+              <label className="text-sm text-gray-400 font-medium">Users</label>
               <input
-                type="text"
-                value={formData.category}
+                type="number"
+                min={0}
+                value={formData.userCount ?? ''}
                 onChange={(e) =>
-                  setFormData({ ...formData, category: e.target.value })
+                  setFormData({
+                    ...formData,
+                    userCount: e.target.value === '' ? null : Number(e.target.value),
+                  })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-                placeholder="Template"
-                required />
+                placeholder="10000"
+              />
             </div>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+              <label className="text-sm text-gray-300 font-medium">Show Downloads</label>
+              <button
+                type="button"
+                onClick={() =>
+                  setFormData({
+                    ...formData,
+                    downloadsEnabled: !formData.downloadsEnabled,
+                    downloadCount: !formData.downloadsEnabled
+                      ? formData.downloadCount
+                      : null,
+                  })
+                }
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  formData.downloadsEnabled ? 'bg-[color:var(--bright-red)]' : 'bg-white/20'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    formData.downloadsEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {formData.downloadsEnabled && (
+              <div className="space-y-2">
+                <label className="text-sm text-gray-400 font-medium">Downloads</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={formData.downloadCount ?? ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      downloadCount: e.target.value === '' ? null : Number(e.target.value),
+                    })
+                  }
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                  placeholder="25000"
+                />
+              </div>
+            )}
           </div>
 
           {/* Features */}

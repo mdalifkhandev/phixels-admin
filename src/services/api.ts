@@ -305,6 +305,15 @@ export const caseStudiesApi = {
 
 // Products API
 export const productsApi = {
+  uploadImage: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await apiClient.post("/products/upload-image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    const payload = getData<{ image: string }>(response);
+    return payload.image;
+  },
   create: async (data: Omit<Product, "_id">) => {
     const response = await apiClient.post("/products", data);
     return getData<Product>(response);
