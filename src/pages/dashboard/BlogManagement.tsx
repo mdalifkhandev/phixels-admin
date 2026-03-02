@@ -1,5 +1,21 @@
 import { useState, useEffect } from 'react';
-import { Plus, BookOpen, Calendar } from 'lucide-react';
+import {
+  Plus,
+  BookOpen,
+  Calendar,
+  Code,
+  Smartphone,
+  Globe,
+  Cpu,
+  Palette,
+  BarChart,
+  Shield,
+  Cloud,
+  Zap,
+  Blocks,
+  Building2,
+  Brain,
+} from 'lucide-react';
 import { DataTable } from '../../components/dashboard/DataTable';
 import { ContentModal } from '../../components/dashboard/ContentModal';
 import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
@@ -28,6 +44,21 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
+
+const blogIconMap = {
+  code: Code,
+  smartphone: Smartphone,
+  globe: Globe,
+  cpu: Cpu,
+  palette: Palette,
+  'bar-chart': BarChart,
+  shield: Shield,
+  cloud: Cloud,
+  zap: Zap,
+  blocks: Blocks,
+  building2: Building2,
+  brain: Brain,
+} as const;
 
 export function BlogManagement() {
   const [posts, setPosts] = useState<BlogDisplay[]>([]);
@@ -280,11 +311,20 @@ export function BlogManagement() {
     {
       key: 'icon',
       label: 'Icon',
-      render: (value: string) => (
-        <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center border border-white/10">
-          <span className="text-xl">{value || '📰'}</span>
-        </div>
-      ),
+      render: (value: string) => {
+        const key = (value || '').toLowerCase();
+        const IconComponent = blogIconMap[key as keyof typeof blogIconMap];
+
+        return (
+          <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center border border-white/10">
+            {IconComponent ? (
+              <IconComponent size={18} className="text-white" />
+            ) : (
+              <span className="text-sm text-gray-300">{value || '📰'}</span>
+            )}
+          </div>
+        );
+      },
     },
     {
       key: 'title',
