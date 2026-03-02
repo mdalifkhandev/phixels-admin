@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Plus, BookOpen, Calendar, Settings } from 'lucide-react';
+import { Plus, BookOpen, Calendar } from 'lucide-react';
 import { DataTable } from '../../components/dashboard/DataTable';
 import { ContentModal } from '../../components/dashboard/ContentModal';
-import { CategoryModal } from '../../components/dashboard/CategoryModal';
 import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
 import { ImageUploadField } from '../../components/dashboard/ImageUploadField';
 import { RichTextEditor } from '../../components/dashboard/RichTextEditor';
 import { StatusModal } from '../../components/dashboard/StatusModal';
 import { blogsApi, servicesApi } from '../../services/api';
-import type { Blog, CreateBlogPayload, Service } from '../../types/types';
+import type { Blog, CreateBlogPayload, ServiceCategory } from '../../types/types';
+import { stripRichText } from '../../utils/richText';
 
 interface BlogDisplay extends Blog {
   id: string;
@@ -21,51 +21,18 @@ interface BlogDisplay extends Blog {
   status: 'published' | 'draft';
 }
 
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-  count: number;
-}
-
-const initialCategories: Category[] = [
-  {
-    id: '1',
-    name: 'Mobile',
-    description: 'Mobile development',
-    color: '#3B82F6',
-    count: 0
-  },
-  {
-    id: '2',
-    name: 'AI',
-    description: 'Artificial Intelligence',
-    color: '#8B5CF6',
-    count: 0
-  },
-  {
-    id: '3',
-    name: 'Web3',
-    description: 'Blockchain & Web3',
-    color: '#F59E0B',
-    count: 0
-  },
-  {
-    id: '4',
-    name: 'Backend',
-    description: 'Server side tech',
-    color: '#10B981',
-    count: 0
-  }
-];
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
 
 export function BlogManagement() {
   const [posts, setPosts] = useState<BlogDisplay[]>([]);
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
-  const [services, setServices] = useState<Service[]>([]);
+  const [serviceCategories, setServiceCategories] = useState<ServiceCategory[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogDisplay | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -87,8 +54,7 @@ export function BlogManagement() {
 
   const [postForm, setPostForm] = useState({
     title: '',
-    category: 'Mobile',
-    date: new Date().toISOString().split('T')[0],
+    categoryName: '',
     image: '',
     imageFile: null as File | null,
     slug: '',
@@ -97,11 +63,12 @@ export function BlogManagement() {
     details: '',
     tags: [] as string[],
     status: 'draft' as 'published' | 'draft',
-    icon: '',
-    serviceId: ''
+    serviceId: '',
+    isFeatured: false
   });
 
   const [tagInput, setTagInput] = useState('');
+  const [isNewCategory, setIsNewCategory] = useState(false);
 
   useEffect(() => {
     fetchPosts();
@@ -110,8 +77,8 @@ export function BlogManagement() {
 
   const fetchServices = async () => {
     try {
-      const data = await servicesApi.getAll();
-      setServices(data);
+      const data = await servicesApi.getCategories();
+      setServiceCategories(data.filter((category) => category.isActive !== false));
     } catch (err) {
       console.error('Error fetching services:', err);
     }
@@ -124,12 +91,12 @@ export function BlogManagement() {
       const displayData = data.map(p => ({
         ...p,
         id: p._id,
-        excerpt: p.details ? (p.details.substring(0, 100) + '...') : '',
-        category: 'Uncategorized', // API might not have this yet
-        date: p.createdAt || new Date().toISOString(),
+        excerpt: p.details ? (stripRichText(p.details).substring(0, 100) + '...') : '',
+        category: p.categoryName || 'Uncategorized',
+        date: p.createdAt || p.createTime || new Date().toISOString(),
         readTime: p.readingTime || '5 min',
-        slug: p.title.toLowerCase().replace(/ /g, '-'),
-        status: 'published' as const,
+        slug: p.slug || slugify(p.title),
+        status: (p.status || 'draft') as 'published' | 'draft',
         tags: p.tags || []
       }));
       setPosts(displayData);
@@ -148,10 +115,10 @@ export function BlogManagement() {
 
   const handleEdit = (post: BlogDisplay) => {
     setEditingPost(post);
+    setIsNewCategory(false);
     setPostForm({
       title: post.title,
-      category: post.category,
-      date: post.date,
+      categoryName: post.category,
       image: post.image || '',
       imageFile: null,
       slug: post.slug,
@@ -160,8 +127,8 @@ export function BlogManagement() {
       details: post.details,
       tags: post.tags,
       status: post.status,
-      icon: post.icon || '',
-      serviceId: post.serviceId || ''
+      serviceId: post.serviceId || '',
+      isFeatured: post.isFeatured || false
     });
     setIsModalOpen(true);
   };
@@ -198,14 +165,15 @@ export function BlogManagement() {
 
   const handleSave = async () => {
     try {
+      const normalizedCategory = postForm.categoryName.trim();
 
       // Basic Validation
-      if (!postForm.title || !postForm.writer || !postForm.details) {
+      if (!postForm.title || !postForm.writer || !postForm.details || !normalizedCategory) {
         setStatusModal({
           isOpen: true,
           type: 'error',
           title: 'Validation Error',
-          message: `Please fill in all required fields: ${!postForm.title ? 'Title, ' : ''}${!postForm.writer ? 'Author, ' : ''}${!postForm.details ? 'Content' : ''}`.replace(/, $/, '')
+          message: `Please fill in all required fields: ${!postForm.title ? 'Title, ' : ''}${!postForm.writer ? 'Author, ' : ''}${!postForm.details ? 'Content, ' : ''}${!normalizedCategory ? 'Category' : ''}`.replace(/, $/, '')
         });
         return;
       }
@@ -232,8 +200,12 @@ export function BlogManagement() {
         details: postForm.details,
         tags: postForm.tags,
         image: postForm.imageFile || undefined,
-        icon: postForm.icon,
-        serviceId: postForm.serviceId
+        imageUrl: postForm.imageFile ? undefined : postForm.image,
+        categoryName: normalizedCategory,
+        slug: postForm.slug || slugify(postForm.title),
+        status: postForm.status,
+        serviceId: postForm.serviceId,
+        isFeatured: postForm.isFeatured,
       };
 
       if (editingPost) {
@@ -269,10 +241,10 @@ export function BlogManagement() {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingPost(null);
+    setIsNewCategory(false);
     setPostForm({
       title: '',
-      category: 'Mobile',
-      date: new Date().toISOString().split('T')[0],
+      categoryName: '',
       image: '',
       imageFile: null,
       slug: '',
@@ -281,8 +253,8 @@ export function BlogManagement() {
       details: '',
       tags: [],
       status: 'draft',
-      icon: '',
-      serviceId: ''
+      serviceId: '',
+      isFeatured: false
     });
     setTagInput('');
   };
@@ -341,20 +313,11 @@ export function BlogManagement() {
     {
       key: 'category',
       label: 'Category',
-      render: (value: string) => {
-        const cat = categories.find((c) => c.name === value);
-        return (
-          <span
-            className="px-2 py-1 rounded-full text-xs font-bold"
-            style={{
-              backgroundColor: cat ? `${cat.color}20` : '#3B82F620',
-              color: cat ? cat.color : '#3B82F6'
-            }}>
-
-            {value}
-          </span>);
-
-      }
+      render: (value: string) => (
+        <span className="px-2 py-1 rounded-full text-xs font-bold bg-[#3B82F620] text-[#3B82F6]">
+          {value}
+        </span>
+      )
     },
     {
       key: 'date',
@@ -369,9 +332,9 @@ export function BlogManagement() {
       key: 'serviceId',
       label: 'Related Service',
       render: (value: string) => {
-        const service = services.find(s => s._id === value);
-        return service ? (
-          <span className="text-blue-400 font-medium">{service.title}</span>
+        const serviceCategory = serviceCategories.find((category) => category._id === value);
+        return serviceCategory ? (
+          <span className="text-blue-400 font-medium">{serviceCategory.name}</span>
         ) : (
           <span className="text-gray-500">-</span>
         );
@@ -396,6 +359,24 @@ export function BlogManagement() {
     );
   }
 
+  const categoryCount = new Set(
+    posts
+      .map((post) => post.category?.trim())
+      .filter((category): category is string => Boolean(category))
+  ).size;
+
+  const existingCategories = Array.from(
+    new Set(
+      posts
+        .map((post) => post.category?.trim())
+        .filter((category): category is string => Boolean(category))
+    )
+  ).sort((a, b) => a.localeCompare(b));
+
+  const categoryOptions = postForm.categoryName && !existingCategories.includes(postForm.categoryName)
+    ? [postForm.categoryName, ...existingCategories]
+    : existingCategories;
+
   return (
     <>
       <div className="space-y-8">
@@ -407,13 +388,6 @@ export function BlogManagement() {
             <p className="text-gray-400">Create and manage blog posts</p>
           </div>
           <div className="flex gap-3">
-            <button
-              onClick={() => setIsCategoryModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all">
-
-              <Settings size={20} />
-              Categories
-            </button>
             <button
               onClick={() => setIsModalOpen(true)}
               className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all">
@@ -449,7 +423,7 @@ export function BlogManagement() {
 
           <ManagementStatsCard
             title="Categories"
-            value={categories.length}
+            value={categoryCount}
             icon={Calendar}
             color="from-purple-500 to-pink-500" />
 
@@ -462,16 +436,6 @@ export function BlogManagement() {
           onDelete={handleDelete}
           searchable />
       </div>
-
-
-
-      <CategoryModal
-        isOpen={isCategoryModalOpen}
-        onClose={() => setIsCategoryModalOpen(false)}
-        categories={categories}
-        onSave={setCategories}
-        type="Blog" />
-
 
       <ContentModal
         isOpen={isModalOpen}
@@ -491,7 +455,8 @@ export function BlogManagement() {
               onChange={(e) =>
                 setPostForm({
                   ...postForm,
-                  title: e.target.value
+                  title: e.target.value,
+                  slug: postForm.slug ? postForm.slug : slugify(e.target.value)
                 })
               }
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
@@ -502,44 +467,58 @@ export function BlogManagement() {
 
 
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm text-gray-400 font-medium">
                 Category *
               </label>
               <select
-                value={postForm.category}
-                onChange={(e) =>
-                  setPostForm({
-                    ...postForm,
-                    category: e.target.value
-                  })
-                }
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none">
+                value={isNewCategory ? '__new__' : postForm.categoryName}
+                onChange={(e) => {
+                  const { value } = e.target;
+                  if (value === '__new__') {
+                    setIsNewCategory(true);
+                    setPostForm({
+                      ...postForm,
+                      categoryName: ''
+                    });
+                    return;
+                  }
 
-                {categories.map((cat) =>
-                  <option key={cat.id} value={cat.name}>
-                    {cat.name}
-                  </option>
-                )}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-gray-400 font-medium">
-                Date *
-              </label>
-              <input
-                type="date"
-                value={postForm.date}
-                onChange={(e) =>
+                  setIsNewCategory(false);
                   setPostForm({
                     ...postForm,
-                    date: e.target.value
-                  })
-                }
+                    categoryName: value
+                  });
+                }}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-                required />
+                style={{ color: '#FFFFFF', backgroundColor: '#141414' }}
+                required
+              >
+                <option value="" disabled style={{ color: '#111111', backgroundColor: '#FFFFFF' }}>Select Category</option>
+                {categoryOptions.map((category) => (
+                  <option key={category} value={category} style={{ color: '#111111', backgroundColor: '#FFFFFF' }}>
+                    {category}
+                  </option>
+                ))}
+                <option value="__new__" style={{ color: '#111111', backgroundColor: '#FFFFFF' }}>+ Create New Category</option>
+              </select>
 
+              {isNewCategory && (
+                <input
+                  type="text"
+                  value={postForm.categoryName}
+                  onChange={(e) =>
+                    setPostForm({
+                      ...postForm,
+                      categoryName: e.target.value
+                    })
+                  }
+                  className="w-full mt-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                  placeholder="Enter new category name"
+                  required
+                />
+              )}
             </div>
             <div className="space-y-2">
               <label className="text-sm text-gray-400 font-medium">
@@ -588,7 +567,7 @@ export function BlogManagement() {
               onChange={(e) =>
                 setPostForm({
                   ...postForm,
-                  slug: e.target.value
+                  slug: slugify(e.target.value)
                 })
               }
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
@@ -637,7 +616,7 @@ export function BlogManagement() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
             <div className="space-y-2">
               <label className="text-sm text-gray-400 font-medium">
                 Related Service
@@ -650,30 +629,23 @@ export function BlogManagement() {
                     serviceId: e.target.value
                   })
                 }
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none">
-                <option value="">Select a Service</option>
-                {services.map((service) => (
-                  <option key={service._id} value={service._id}>
-                    {service.title}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                style={{ color: '#FFFFFF', backgroundColor: '#141414' }}>
+                <option value="" style={{ color: '#111111', backgroundColor: '#FFFFFF' }}>Select Main Service Category</option>
+                {serviceCategories.map((category) => (
+                  <option
+                    key={category._id}
+                    value={category._id}
+                    style={{ color: '#111111', backgroundColor: '#FFFFFF' }}
+                  >
+                    {category.name}
                   </option>
                 ))}
               </select>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm text-gray-400 font-medium">
-                Icon
-              </label>
-              <input
-                type="text"
-                value={postForm.icon}
-                onChange={(e) =>
-                  setPostForm({
-                    ...postForm,
-                    icon: e.target.value
-                  })
-                }
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
-                placeholder="e.g., 🌐, web-icon, or FaLaptop" />
+
+            <div className="text-xs text-gray-400">
+              Auto Icon: {serviceCategories.find((category) => category._id === postForm.serviceId)?.iconKey || '-'}
             </div>
           </div>
 
@@ -738,6 +710,22 @@ export function BlogManagement() {
                 <span className="text-white">Draft</span>
               </label>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={postForm.isFeatured}
+                onChange={(e) =>
+                  setPostForm({
+                    ...postForm,
+                    isFeatured: e.target.checked
+                  })
+                }
+              />
+              <span className="text-white">Featured Post</span>
+            </label>
           </div>
 
         </div>

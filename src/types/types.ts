@@ -42,8 +42,14 @@ export interface Blog {
   details: string;
   tags: string[];
   image?: string; // URL or path
+  categoryName?: string;
+  slug?: string;
+  status?: 'published' | 'draft';
   icon?: string;
   serviceId?: string;
+  isFeatured?: boolean;
+  featuredOrder?: number | null;
+  createTime?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -55,8 +61,14 @@ export interface CreateBlogPayload {
   details: string;
   tags: string[];
   image?: File;
+  imageUrl?: string;
+  categoryName?: string;
+  slug?: string;
+  status?: 'published' | 'draft';
   icon?: string;
   serviceId?: string;
+  isFeatured?: boolean;
+  featuredOrder?: number | null;
 }
 
 // Portfolio

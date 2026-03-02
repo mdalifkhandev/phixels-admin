@@ -216,8 +216,18 @@ export const blogsApi = {
     formData.append("readingTime", data.readingTime);
     formData.append("details", data.details);
     formData.append("tags", JSON.stringify(data.tags));
+    if (data.categoryName) formData.append("categoryName", data.categoryName);
+    if (data.slug) formData.append("slug", data.slug);
+    if (data.status) formData.append("status", data.status);
+    if (data.serviceId) formData.append("serviceId", data.serviceId);
+    if (data.isFeatured !== undefined) formData.append("isFeatured", String(data.isFeatured));
+    if (data.featuredOrder !== undefined && data.featuredOrder !== null) {
+      formData.append("featuredOrder", String(data.featuredOrder));
+    }
     if (data.image) {
       formData.append("image", data.image);
+    } else if (data.imageUrl) {
+      formData.append("image", data.imageUrl);
     }
 
     const response = await apiClient.post("/blogs/create", formData, {
@@ -240,8 +250,18 @@ export const blogsApi = {
     if (data.readingTime) formData.append("readingTime", data.readingTime);
     if (data.details) formData.append("details", data.details);
     if (data.tags) formData.append("tags", JSON.stringify(data.tags));
+    if (data.categoryName !== undefined) formData.append("categoryName", data.categoryName);
+    if (data.slug !== undefined) formData.append("slug", data.slug);
+    if (data.status !== undefined) formData.append("status", data.status);
+    if (data.serviceId !== undefined) formData.append("serviceId", data.serviceId);
+    if (data.isFeatured !== undefined) formData.append("isFeatured", String(data.isFeatured));
+    if (data.featuredOrder !== undefined && data.featuredOrder !== null) {
+      formData.append("featuredOrder", String(data.featuredOrder));
+    }
     if (data.image) {
       formData.append("image", data.image);
+    } else if (data.imageUrl !== undefined) {
+      formData.append("image", data.imageUrl);
     }
 
     const response = await apiClient.patch(`/blogs/${id}`, formData, {
