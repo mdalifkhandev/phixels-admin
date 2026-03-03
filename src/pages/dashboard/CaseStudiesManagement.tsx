@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
-import { Plus, FileText, Link as LinkIcon, ExternalLink } from 'lucide-react';
-import { DataTable } from '../../components/dashboard/DataTable';
-import { ContentModal } from '../../components/dashboard/ContentModal';
-import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
-import { ImageUploadField } from '../../components/dashboard/ImageUploadField';
-import { RichTextEditor } from '../../components/dashboard/RichTextEditor';
-import { StatusModal } from '../../components/dashboard/StatusModal';
-import { caseStudiesApi, servicesApi } from '../../services/api';
-import type { CaseStudy, Service } from '../../types/types';
+import { useState, useEffect } from "react";
+import { Plus, FileText, Link as LinkIcon, ExternalLink } from "lucide-react";
+import { DataTable } from "../../components/dashboard/DataTable";
+import { ContentModal } from "../../components/dashboard/ContentModal";
+import { ManagementStatsCard } from "../../components/dashboard/ManagementStatsCard";
+import { ImageUploadField } from "../../components/dashboard/ImageUploadField";
+import { RichTextEditor } from "../../components/dashboard/RichTextEditor";
+import { StatusModal } from "../../components/dashboard/StatusModal";
+import { caseStudiesApi, servicesApi } from "../../services/api";
+import type { CaseStudy, ServiceCategory } from "../../types/types";
 
 interface CaseStudyDisplay extends CaseStudy {
   id: string;
@@ -15,15 +15,17 @@ interface CaseStudyDisplay extends CaseStudy {
 
 export function CaseStudiesManagement() {
   const [studies, setStudies] = useState<CaseStudyDisplay[]>([]);
-  const [services, setServices] = useState<Service[]>([]);
+  const [services, setServices] = useState<ServiceCategory[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingStudy, setEditingStudy] = useState<CaseStudyDisplay | null>(null);
+  const [editingStudy, setEditingStudy] = useState<CaseStudyDisplay | null>(
+    null,
+  );
   const [loading, setLoading] = useState(true);
 
   // Status Modal State
   const [statusModal, setStatusModal] = useState<{
     isOpen: boolean;
-    type: 'success' | 'error';
+    type: "success" | "error";
     title: string;
     message: string;
     action?: () => void;
@@ -31,28 +33,21 @@ export function CaseStudiesManagement() {
     onSecondaryAction?: () => void;
   }>({
     isOpen: false,
-    type: 'success',
-    title: '',
-    message: ''
+    type: "success",
+    title: "",
+    message: "",
   });
 
   const [form, setForm] = useState({
-    title: '',
-    client: '',
-    category: 'Web Development',
-    challenge: '',
-    solution: '',
-    result: '',
-    image: '',
-    link: '',
-    icon: '',
-    serviceId: ''
+    title: "",
+    client: "",
+    category: "",
+    challenge: "",
+    solution: "",
+    result: "",
+    image: "",
+    link: "",
   });
-
-  const categories = [
-    'Web Development', 'Mobile App', 'UI/UX Design', 'Digital Marketing',
-    'SEO', 'Content Writing', 'Consulting'
-  ];
 
   useEffect(() => {
     fetchStudies();
@@ -61,10 +56,10 @@ export function CaseStudiesManagement() {
 
   const fetchServices = async () => {
     try {
-      const data = await servicesApi.getAll();
+      const data = await servicesApi.getCategories();
       setServices(data);
     } catch (err) {
-      console.error('Error fetching services:', err);
+      console.error("Error fetching services:", err);
     }
   };
 
@@ -75,17 +70,17 @@ export function CaseStudiesManagement() {
       const displayData = data.map((s: any) => ({
         ...s,
         id: s._id,
-        category: s.category || 'Uncategorized',
-        result: s.result || '',
+        category: s.category || "Uncategorized",
+        result: s.result || "",
       }));
       setStudies(displayData);
     } catch (err: any) {
       console.error(err);
       setStatusModal({
         isOpen: true,
-        type: 'error',
-        title: 'Error',
-        message: err.message || 'Failed to load case studies'
+        type: "error",
+        title: "Error",
+        message: err.message || "Failed to load case studies",
       });
     } finally {
       setLoading(false);
@@ -103,8 +98,6 @@ export function CaseStudiesManagement() {
       result: study.result,
       image: study.image,
       link: study.link,
-      icon: study.icon || '',
-      serviceId: study.serviceId || ''
     });
     setIsModalOpen(true);
   };
@@ -112,43 +105,44 @@ export function CaseStudiesManagement() {
   const handleDelete = async (study: CaseStudyDisplay) => {
     setStatusModal({
       isOpen: true,
-      type: 'error',
-      title: 'Delete Case Study',
+      type: "error",
+      title: "Delete Case Study",
       message: `Are you sure you want to delete "${study.title}"?`,
       action: async () => {
         try {
           await caseStudiesApi.delete(study.id);
-          setStudies(studies.filter(s => s.id !== study.id));
+          setStudies(studies.filter((s) => s.id !== study.id));
           setStatusModal({
             isOpen: true,
-            type: 'success',
-            title: 'Case Study Deleted',
-            message: `Case study "${study.title}" has been successfully deleted.`
+            type: "success",
+            title: "Case Study Deleted",
+            message: `Case study "${study.title}" has been successfully deleted.`,
           });
         } catch (err: any) {
           console.error(err);
           setStatusModal({
             isOpen: true,
-            type: 'error',
-            title: 'Delete Failed',
-            message: err.message || 'Failed to delete case study. Please try again.'
+            type: "error",
+            title: "Delete Failed",
+            message:
+              err.message || "Failed to delete case study. Please try again.",
           });
         }
       },
-      secondaryActionLabel: 'Cancel'
+      secondaryActionLabel: "Cancel",
     });
   };
 
   const handleSave = async () => {
     try {
-
       // Basic Validation
       if (!form.title || !form.client || !form.challenge || !form.solution) {
         setStatusModal({
           isOpen: true,
-          type: 'error',
-          title: 'Validation Error',
-          message: 'Please fill in all required fields (Client, Title, Challenge, Solution).'
+          type: "error",
+          title: "Validation Error",
+          message:
+            "Please fill in all required fields (Client, Title, Challenge, Solution).",
         });
         return;
       }
@@ -162,25 +156,23 @@ export function CaseStudiesManagement() {
         result: form.result,
         image: form.image,
         link: form.link,
-        icon: form.icon,
-        serviceId: form.serviceId
       };
 
       if (editingStudy) {
         await caseStudiesApi.update(editingStudy.id, payload);
         setStatusModal({
           isOpen: true,
-          type: 'success',
-          title: 'Case Study Updated',
-          message: `Case study "${form.title}" has been successfully updated.`
+          type: "success",
+          title: "Case Study Updated",
+          message: `Case study "${form.title}" has been successfully updated.`,
         });
       } else {
         await caseStudiesApi.create(payload);
         setStatusModal({
           isOpen: true,
-          type: 'success',
-          title: 'Case Study Added',
-          message: `Case study "${form.title}" has been successfully added.`
+          type: "success",
+          title: "Case Study Added",
+          message: `Case study "${form.title}" has been successfully added.`,
         });
       }
       await fetchStudies();
@@ -189,9 +181,9 @@ export function CaseStudiesManagement() {
       console.error(err);
       setStatusModal({
         isOpen: true,
-        type: 'error',
-        title: 'Operation Failed',
-        message: err.message || 'Failed to save case study. Please try again.'
+        type: "error",
+        title: "Operation Failed",
+        message: err.message || "Failed to save case study. Please try again.",
       });
     }
   };
@@ -200,40 +192,30 @@ export function CaseStudiesManagement() {
     setIsModalOpen(false);
     setEditingStudy(null);
     setForm({
-      title: '',
-      client: '',
-      category: 'Web Development',
-      challenge: '',
-      solution: '',
-      result: '',
-      image: '',
-      link: '',
-      icon: '',
-      serviceId: ''
+      title: "",
+      client: "",
+      category: "",
+      challenge: "",
+      solution: "",
+      result: "",
+      image: "",
+      link: "",
     });
   };
 
   const columns = [
     {
-      key: 'icon',
-      label: 'Icon',
-      render: (value: string) => (
-        <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center border border-white/10">
-          <span className="text-xl">{value || '📁'}</span>
-        </div>
-      ),
-    },
-    {
-      key: 'title',
-      label: 'Case Study',
-      render: (value: string, row: CaseStudyDisplay) =>
+      key: "title",
+      label: "Case Study",
+      render: (value: string, row: CaseStudyDisplay) => (
         <div className="flex items-center gap-3">
           <img
             src={row.image}
             alt={value}
             className="w-12 h-12 rounded-lg object-cover"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48?text=Case';
+              (e.target as HTMLImageElement).src =
+                "https://via.placeholder.com/48?text=Case";
             }}
           />
 
@@ -244,39 +226,41 @@ export function CaseStudiesManagement() {
             <div className="text-xs text-gray-400">{row.client}</div>
           </div>
         </div>
-
+      ),
     },
     {
-      key: 'category',
-      label: 'Category',
-      render: (value: string) =>
-        <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-bold">
-          {value || 'N/A'}
-        </span>
-
-    },
-    {
-      key: 'result',
-      label: 'Result',
-      render: (value: string) =>
-        <div className="font-bold text-[color:var(--vibrant-green)] line-clamp-2" dangerouslySetInnerHTML={{ __html: value }} />
-    },
-    {
-      key: 'serviceId',
-      label: 'Related Service',
+      key: "category",
+      label: "Category",
       render: (value: string) => {
-        const service = services.find(s => s._id === value);
-        return service ? (
-          <span className="text-blue-400 font-medium">{service.title}</span>
-        ) : (
-          <span className="text-gray-500">-</span>
+        // Find it as ID first ("Related Services" style lookup)
+        const matchedService = services.find(
+          (s) => s._id === value || s.name === value,
         );
-      }
+        const displayName = matchedService
+          ? matchedService.name
+          : value || "N/A";
+
+        return (
+          <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-bold">
+            {displayName}
+          </span>
+        );
+      },
     },
     {
-      key: 'link',
-      label: 'Link',
+      key: "result",
+      label: "Result",
       render: (value: string) => (
+        <div
+          className="font-bold text-[color:var(--vibrant-green)] line-clamp-2"
+          dangerouslySetInnerHTML={{ __html: value }}
+        />
+      ),
+    },
+    {
+      key: "link",
+      label: "Link",
+      render: (value: string) =>
         value ? (
           <a
             href={value}
@@ -286,9 +270,10 @@ export function CaseStudiesManagement() {
           >
             <ExternalLink size={14} /> Visit
           </a>
-        ) : <span className="text-gray-600 text-xs">No Link</span>
-      ),
-    }
+        ) : (
+          <span className="text-gray-600 text-xs">No Link</span>
+        ),
+    },
   ];
 
   if (loading) {
@@ -307,23 +292,20 @@ export function CaseStudiesManagement() {
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all">
-
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all"
+          >
             <Plus size={20} />
             Add Case Study
           </button>
         </div>
-
-
-
-
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <ManagementStatsCard
             title="Total Case Studies"
             value={studies.length}
             icon={FileText}
-            color="from-green-500 to-emerald-500" />
+            color="from-green-500 to-emerald-500"
+          />
         </div>
 
         <DataTable
@@ -331,18 +313,17 @@ export function CaseStudiesManagement() {
           data={studies}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          searchable />
+          searchable
+        />
       </div>
-
-
 
       <ContentModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={editingStudy ? 'Edit Case Study' : 'Add New Case Study'}
+        title={editingStudy ? "Edit Case Study" : "Add New Case Study"}
         onSave={handleSave}
-        saveLabel={editingStudy ? 'Update' : 'Create'}>
-
+        saveLabel={editingStudy ? "Update" : "Create"}
+      >
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -355,13 +336,13 @@ export function CaseStudiesManagement() {
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    client: e.target.value
+                    client: e.target.value,
                   })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                 placeholder="Global Logistics Co"
-                required />
-
+                required
+              />
             </div>
             <div className="space-y-2">
               <label className="text-sm text-gray-400 font-medium">
@@ -372,16 +353,26 @@ export function CaseStudiesManagement() {
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    category: e.target.value
+                    category: e.target.value,
                   })
                 }
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none">
-
-                {categories.map((cat) =>
-                  <option key={cat} value={cat}>
-                    {cat}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+              >
+                <option
+                  value=""
+                  style={{ color: "#111111", backgroundColor: "#FFFFFF" }}
+                >
+                  Select a Category
+                </option>
+                {services.map((cat) => (
+                  <option
+                    key={cat._id}
+                    value={cat._id}
+                    style={{ color: "#111111", backgroundColor: "#FFFFFF" }}
+                  >
+                    {cat.name}
                   </option>
-                )}
+                ))}
               </select>
             </div>
           </div>
@@ -396,13 +387,13 @@ export function CaseStudiesManagement() {
               onChange={(e) =>
                 setForm({
                   ...form,
-                  title: e.target.value
+                  title: e.target.value,
                 })
               }
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
               placeholder="Optimizing Last-Mile Delivery with AI"
-              required />
-
+              required
+            />
           </div>
 
           <ImageUploadField
@@ -410,64 +401,28 @@ export function CaseStudiesManagement() {
             onChange={(url) =>
               setForm({
                 ...form,
-                image: url
+                image: url,
               })
             }
-            label="Project Thumbnail *" />
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm text-gray-400 font-medium">
-                Related Service
-              </label>
-              <select
-                value={form.serviceId}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    serviceId: e.target.value
-                  })
-                }
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none">
-                <option value="">Select a Service</option>
-                {services.map((service) => (
-                  <option key={service._id} value={service._id}>
-                    {service.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm text-gray-400 font-medium">
-                Icon
-              </label>
-              <input
-                type="text"
-                value={form.icon}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    icon: e.target.value
-                  })
-                }
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
-                placeholder="e.g., 🌐, web-icon, or FaLaptop" />
-            </div>
-          </div>
+            label="Project Thumbnail *"
+          />
 
           <div className="space-y-2">
             <label className="text-sm text-gray-400 font-medium">
               Project Link
             </label>
             <div className="relative">
-              <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <LinkIcon
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                size={18}
+              />
               <input
                 type="url"
                 value={form.link}
                 onChange={(e) =>
                   setForm({
                     ...form,
-                    link: e.target.value
+                    link: e.target.value,
                   })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
@@ -476,40 +431,41 @@ export function CaseStudiesManagement() {
             </div>
           </div>
 
-
           <RichTextEditor
             value={form.challenge}
             onChange={(val) =>
               setForm({
                 ...form,
-                challenge: val
+                challenge: val,
               })
             }
             label="The Challenge"
-            placeholder="What was the problem?..." />
+            placeholder="What was the problem?..."
+          />
 
           <RichTextEditor
             value={form.solution}
             onChange={(val) =>
               setForm({
                 ...form,
-                solution: val
+                solution: val,
               })
             }
             label="The Solution"
-            placeholder="How did we solve it?..." />
+            placeholder="How did we solve it?..."
+          />
 
           <RichTextEditor
             value={form.result}
             onChange={(val) =>
               setForm({
                 ...form,
-                result: val
+                result: val,
               })
             }
             label="The Results"
-            placeholder="What were the outcomes?..." />
-
+            placeholder="What were the outcomes?..."
+          />
         </div>
       </ContentModal>
 
@@ -519,7 +475,7 @@ export function CaseStudiesManagement() {
         type={statusModal.type}
         title={statusModal.title}
         message={statusModal.message}
-        actionLabel={statusModal.secondaryActionLabel ? 'Confirm' : undefined}
+        actionLabel={statusModal.secondaryActionLabel ? "Confirm" : undefined}
         onAction={statusModal.action}
         secondaryActionLabel={statusModal.secondaryActionLabel}
       />

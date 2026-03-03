@@ -97,8 +97,6 @@ export interface CaseStudy {
   result: string;
   image: string;
   link: string;
-  icon?: string;
-  serviceId?: string;
   createdAt?: string;
   updatedAt?: string;
 }
