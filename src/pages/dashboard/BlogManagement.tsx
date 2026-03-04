@@ -142,6 +142,8 @@ export function BlogManagement() {
         status: (p.status || "draft") as "published" | "draft",
         tags: p.tags || [],
       }));
+      // Assuming the backend sends them sorted by position, we can just use the order or we can explicitly sort here if needed.
+      // The backend has `.sort({ position: 1, createdAt: -1 })` so we just use the data array order.
       setPosts(displayData);
     } catch (err: any) {
       console.error(err);
@@ -206,6 +208,28 @@ export function BlogManagement() {
       },
       secondaryActionLabel: "Cancel",
     });
+  };
+
+  const handleReorder = async (reorderedPosts: BlogDisplay[]) => {
+    // Optimistically update the UI
+    setPosts(reorderedPosts);
+
+    try {
+      const payload = reorderedPosts.map((post, index) => ({
+        id: post.id,
+        position: index,
+      }));
+      await blogsApi.reorder(payload);
+    } catch (err: any) {
+      console.error("Error saving new order:", err);
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Reorder Failed",
+        message: "Failed to save the new order. Refreshing the list.",
+      });
+      fetchPosts(); // Refetch to restore order
+    }
   };
 
   const handleSave = async () => {
@@ -507,6 +531,7 @@ export function BlogManagement() {
           data={posts}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onReorder={handleReorder}
           searchable
         />
       </div>

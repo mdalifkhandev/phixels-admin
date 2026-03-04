@@ -318,6 +318,10 @@ export const blogsApi = {
     const response = await apiClient.delete(`/blogs/${id}`);
     return getData(response);
   },
+  reorder: async (blogs: { id: string; position: number }[]) => {
+    const response = await apiClient.patch('/blogs/reorder', { blogs });
+    return getData(response);
+  },
 };
 
 // Portfolio API

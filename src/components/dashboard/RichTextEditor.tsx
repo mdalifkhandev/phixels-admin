@@ -163,7 +163,7 @@ function Toolbar({ editor }: { editor: Editor }) {
             src: url,
             alt: file.name,
             style: buildImageStyle({ width: uploadLayout }),
-          })
+          } as any)
           .insertContent(" ")
           .run();
       }
@@ -376,7 +376,10 @@ export function RichTextEditor({
   label,
   placeholder,
 }: RichTextEditorProps) {
-  const [selectedImageAttrs, setSelectedImageAttrs] = useState<Record<string, any> | null>(null);
+  const [selectedImageAttrs, setSelectedImageAttrs] = useState<Record<
+    string,
+    any
+  > | null>(null);
 
   const editor = useEditor({
     extensions: [
@@ -408,9 +411,13 @@ export function RichTextEditor({
             directNode?.type.name === "image"
               ? domPos
               : prevNode?.type.name === "image"
-              ? Math.max(0, domPos - 1)
-              : domPos;
-          dispatch(state.tr.setSelection(NodeSelection.create(state.doc, selectionPos)));
+                ? Math.max(0, domPos - 1)
+                : domPos;
+          dispatch(
+            state.tr.setSelection(
+              NodeSelection.create(state.doc, selectionPos),
+            ),
+          );
           return true;
         }
         return false;
@@ -517,7 +524,9 @@ export function RichTextEditor({
         </div>
         {editor && selectedImageStyle && (
           <div className="px-4 py-3 bg-[#0d0d0d] border-t border-white/10">
-            <div className="text-xs text-gray-400 mb-2">Selected Image Controls</div>
+            <div className="text-xs text-gray-400 mb-2">
+              Selected Image Controls
+            </div>
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
