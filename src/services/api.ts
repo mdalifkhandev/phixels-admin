@@ -414,6 +414,10 @@ export const productsApi = {
     const response = await apiClient.patch(`/products/${id}/pin`, data);
     return getData<Product>(response);
   },
+  reorder: async (orderedIds: string[]) => {
+    const response = await apiClient.patch('/products/reorder', { orderedIds });
+    return getData(response);
+  },
 };
 
 // Services API
