@@ -245,6 +245,15 @@ export const reviewsApi = {
 
 // Blogs API
 export const blogsApi = {
+  uploadImage: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('image', file);
+    const response = await apiClient.post('/blogs/upload-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    const payload = getData<{ image: string }>(response);
+    return payload.image;
+  },
   create: async (data: CreateBlogPayload) => {
     const formData = new FormData();
     formData.append("title", data.title);
