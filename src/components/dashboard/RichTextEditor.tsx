@@ -5,7 +5,8 @@ import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Placeholder from "@tiptap/extension-placeholder";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { NodeSelection } from "@tiptap/pm/state";
 import {
   Bold,
   Italic,
@@ -17,6 +18,8 @@ import {
   Code,
   Link as LinkIcon,
   Image as ImageIcon,
+  Columns2,
+  Columns3,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -36,6 +39,24 @@ interface RichTextEditorProps {
   label: string;
   placeholder?: string;
 }
+
+const EditableImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      style: {
+        default: "",
+        parseHTML: (element) => element.getAttribute("style") || "",
+        renderHTML: (attributes) => {
+          if (!attributes.style) {
+            return {};
+          }
+          return { style: attributes.style };
+        },
+      },
+    };
+  },
+});
 
 // ─── Toolbar Button ────────────────────────────────────────────────────────
 function ToolBtn({
@@ -76,10 +97,44 @@ function Sep() {
   return <div className="w-px h-5 bg-white/10 mx-1" />;
 }
 
+type ImageLayoutWidth = 100 | 50 | 33;
+
+const buildImageStyle = (opts?: {
+  width?: number;
+  height?: number;
+  fit?: "cover" | "contain";
+}) => {
+  const width = Math.min(100, Math.max(10, opts?.width ?? 100));
+  const height = Math.min(1000, Math.max(100, opts?.height ?? 260));
+  const fit = opts?.fit === "contain" ? "contain" : "cover";
+  return [
+    "display:inline-block",
+    "vertical-align:top",
+    `width:${width}%`,
+    `height:${height}px`,
+    `object-fit:${fit}`,
+    "margin:6px 6px 6px 0",
+    "border-radius:12px",
+  ].join(";");
+};
+
+const parseImageStyle = (style?: string) => {
+  const safe = style || "";
+  const widthMatch = safe.match(/width:\s*(\d+)%/i);
+  const heightMatch = safe.match(/height:\s*(\d+)px/i);
+  const fitMatch = safe.match(/object-fit:\s*(cover|contain)/i);
+
+  return {
+    width: widthMatch ? Number(widthMatch[1]) : 100,
+    height: heightMatch ? Number(heightMatch[1]) : 260,
+    fit: (fitMatch?.[1] as "cover" | "contain" | undefined) || "cover",
+  };
+};
+
 // ─── Toolbar ──────────────────────────────────────────────────────────────
 function Toolbar({ editor }: { editor: Editor }) {
   const imageInputRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = [false, (_: boolean) => {}];
+  const [uploadLayout, setUploadLayout] = useState<ImageLayoutWidth>(100);
   const uploadingRef = useRef(false);
 
   const setLink = () => {
@@ -94,12 +149,24 @@ function Toolbar({ editor }: { editor: Editor }) {
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || uploadingRef.current) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0 || uploadingRef.current) return;
     uploadingRef.current = true;
     try {
-      const url = await blogsApi.uploadImage(file);
-      editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+      editor.chain().focus().run();
+      for (const file of files) {
+        const url = await blogsApi.uploadImage(file);
+        editor
+          .chain()
+          .focus()
+          .setImage({
+            src: url,
+            alt: file.name,
+            style: buildImageStyle({ width: uploadLayout }),
+          })
+          .insertContent(" ")
+          .run();
+      }
     } catch (err) {
       alert("Image upload failed. Please try again.");
     } finally {
@@ -107,9 +174,6 @@ function Toolbar({ editor }: { editor: Editor }) {
       if (imageInputRef.current) imageInputRef.current.value = "";
     }
   };
-
-  void uploading;
-  void setUploading; // suppress lint warnings on the quick shim
 
   return (
     <div className="flex flex-wrap items-center gap-0.5 p-2 bg-[#0d0d0d] border border-white/10 rounded-t-xl">
@@ -267,15 +331,37 @@ function Toolbar({ editor }: { editor: Editor }) {
         <LinkIcon size={14} />
       </ToolBtn>
       <ToolBtn
-        onClick={() => imageInputRef.current?.click()}
+        onClick={() => {
+          setUploadLayout(100);
+          imageInputRef.current?.click();
+        }}
         title="Upload Image"
       >
         <ImageIcon size={14} />
+      </ToolBtn>
+      <ToolBtn
+        onClick={() => {
+          setUploadLayout(50);
+          imageInputRef.current?.click();
+        }}
+        title="Upload 2 Column Images"
+      >
+        <Columns2 size={14} />
+      </ToolBtn>
+      <ToolBtn
+        onClick={() => {
+          setUploadLayout(33);
+          imageInputRef.current?.click();
+        }}
+        title="Upload 3 Column Images"
+      >
+        <Columns3 size={14} />
       </ToolBtn>
       <input
         ref={imageInputRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
         onChange={handleImageUpload}
       />
@@ -290,11 +376,13 @@ export function RichTextEditor({
   label,
   placeholder,
 }: RichTextEditorProps) {
+  const [selectedImageAttrs, setSelectedImageAttrs] = useState<Record<string, any> | null>(null);
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Underline,
-      Image.configure({ inline: false, allowBase64: false }),
+      EditableImage.configure({ inline: true, allowBase64: false }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: { class: "text-blue-400 underline cursor-pointer" },
@@ -309,6 +397,24 @@ export function RichTextEditor({
       onChange(editor.getHTML());
     },
     editorProps: {
+      handleClick(view, _pos, event) {
+        const target = event.target as HTMLElement | null;
+        if (target?.tagName === "IMG") {
+          const { state, dispatch } = view;
+          const domPos = view.posAtDOM(target, 0);
+          const directNode = state.doc.nodeAt(domPos);
+          const prevNode = state.doc.nodeAt(Math.max(0, domPos - 1));
+          const selectionPos =
+            directNode?.type.name === "image"
+              ? domPos
+              : prevNode?.type.name === "image"
+              ? Math.max(0, domPos - 1)
+              : domPos;
+          dispatch(state.tr.setSelection(NodeSelection.create(state.doc, selectionPos)));
+          return true;
+        }
+        return false;
+      },
       attributes: {
         class: [
           "min-h-[400px] max-h-[700px] overflow-y-auto",
@@ -336,7 +442,7 @@ export function RichTextEditor({
           // Horizontal rule
           "[&_hr]:border-white/10 [&_hr]:my-6",
           // Images
-          "[&_img]:rounded-xl [&_img]:max-w-full [&_img]:my-4 [&_img]:mx-auto [&_img]:block [&_img]:shadow-lg",
+          "[&_img]:rounded-xl [&_img]:max-w-full [&_img]:my-2 [&_img]:align-top [&_img]:shadow-lg",
           // Links
           "[&_a]:text-blue-400 [&_a]:underline [&_a]:cursor-pointer",
           // Strong & em
@@ -356,6 +462,51 @@ export function RichTextEditor({
     }
   }, [value, editor]);
 
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateSelectedImageState = () => {
+      if (editor.isActive("image")) {
+        setSelectedImageAttrs(editor.getAttributes("image"));
+      } else {
+        setSelectedImageAttrs(null);
+      }
+    };
+
+    updateSelectedImageState();
+    editor.on("selectionUpdate", updateSelectedImageState);
+    editor.on("update", updateSelectedImageState);
+
+    return () => {
+      editor.off("selectionUpdate", updateSelectedImageState);
+      editor.off("update", updateSelectedImageState);
+    };
+  }, [editor]);
+
+  const selectedImageStyle = useMemo(() => {
+    if (!selectedImageAttrs) return null;
+    return parseImageStyle(selectedImageAttrs.style);
+  }, [selectedImageAttrs]);
+
+  const updateSelectedImageStyle = (next: {
+    width?: number;
+    height?: number;
+    fit?: "cover" | "contain";
+  }) => {
+    if (!editor || !selectedImageStyle) return;
+    editor
+      .chain()
+      .focus()
+      .updateAttributes("image", {
+        style: buildImageStyle({
+          width: next.width ?? selectedImageStyle.width,
+          height: next.height ?? selectedImageStyle.height,
+          fit: next.fit ?? selectedImageStyle.fit,
+        }),
+      })
+      .run();
+  };
+
   return (
     <div className="space-y-2">
       <label className="text-sm text-gray-400 font-medium">{label}</label>
@@ -364,6 +515,69 @@ export function RichTextEditor({
         <div className="bg-[#0a0a0a]">
           <EditorContent editor={editor} />
         </div>
+        {editor && selectedImageStyle && (
+          <div className="px-4 py-3 bg-[#0d0d0d] border-t border-white/10">
+            <div className="text-xs text-gray-400 mb-2">Selected Image Controls</div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => updateSelectedImageStyle({ width: 33 })}
+                className="px-3 py-1.5 text-xs rounded bg-white/5 text-white hover:bg-white/10"
+              >
+                3 Column
+              </button>
+              <button
+                type="button"
+                onClick={() => updateSelectedImageStyle({ width: 50 })}
+                className="px-3 py-1.5 text-xs rounded bg-white/5 text-white hover:bg-white/10"
+              >
+                2 Column
+              </button>
+              <button
+                type="button"
+                onClick={() => updateSelectedImageStyle({ width: 100 })}
+                className="px-3 py-1.5 text-xs rounded bg-white/5 text-white hover:bg-white/10"
+              >
+                Full Width
+              </button>
+              <button
+                type="button"
+                onClick={() => updateSelectedImageStyle({ height: 180 })}
+                className="px-3 py-1.5 text-xs rounded bg-white/5 text-white hover:bg-white/10"
+              >
+                Small
+              </button>
+              <button
+                type="button"
+                onClick={() => updateSelectedImageStyle({ height: 260 })}
+                className="px-3 py-1.5 text-xs rounded bg-white/5 text-white hover:bg-white/10"
+              >
+                Medium
+              </button>
+              <button
+                type="button"
+                onClick={() => updateSelectedImageStyle({ height: 340 })}
+                className="px-3 py-1.5 text-xs rounded bg-white/5 text-white hover:bg-white/10"
+              >
+                Large
+              </button>
+              <button
+                type="button"
+                onClick={() => updateSelectedImageStyle({ fit: "cover" })}
+                className="px-3 py-1.5 text-xs rounded bg-white/5 text-white hover:bg-white/10"
+              >
+                Crop
+              </button>
+              <button
+                type="button"
+                onClick={() => updateSelectedImageStyle({ fit: "contain" })}
+                className="px-3 py-1.5 text-xs rounded bg-white/5 text-white hover:bg-white/10"
+              >
+                Fit
+              </button>
+            </div>
+          </div>
+        )}
         {editor && (
           <div className="px-4 py-1.5 bg-[#0d0d0d] border-t border-white/5 flex items-center justify-between">
             <span className="text-xs text-gray-600">
