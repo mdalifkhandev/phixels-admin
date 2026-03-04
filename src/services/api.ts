@@ -5,6 +5,7 @@ import type {
   Career,
   PortfolioItem,
   Blog,
+  Author,
   CaseStudy,
   MailLog,
   MailPayload,
@@ -111,6 +112,41 @@ export const authApi = {
   },
   logout: async () => {
     const response = await apiClient.post("/auth/logout");
+    return getData(response);
+  },
+};
+
+// Authors API
+export const authorsApi = {
+  uploadImage: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await apiClient.post("/authors/upload-image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    const payload = getData<{ image: string }>(response);
+    return payload.image;
+  },
+  create: async (data: Omit<Author, "_id">, imageFile?: File) => {
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("role", data.role);
+      formData.append("image", imageFile);
+      const response = await apiClient.post("/authors", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return getData<Author>(response);
+    }
+    const response = await apiClient.post("/authors", data);
+    return getData<Author>(response);
+  },
+  getAll: async (): Promise<Author[]> => {
+    const response = await apiClient.get("/authors");
+    return getData<Author[]>(response);
+  },
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/authors/${id}`);
     return getData(response);
   },
 };

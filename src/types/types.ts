@@ -16,6 +16,13 @@ export interface AuthResponse {
   };
 }
 
+export interface Author {
+  _id: string;
+  name: string;
+  profileImage: string;
+  role: string;
+}
+
 // Mail
 export interface MailPayload {
   to: string;
@@ -47,6 +54,7 @@ export interface Blog {
   status?: 'published' | 'draft';
   icon?: string;
   serviceId?: string;
+  authorId?: string;
   isFeatured?: boolean;
   featuredOrder?: number | null;
   createTime?: string;
@@ -67,6 +75,7 @@ export interface CreateBlogPayload {
   status?: 'published' | 'draft';
   icon?: string;
   serviceId?: string;
+  authorId?: string;
   isFeatured?: boolean;
   featuredOrder?: number | null;
 }

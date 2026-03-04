@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Plus,
   BookOpen,
@@ -15,16 +15,21 @@ import {
   Blocks,
   Building2,
   Brain,
-} from 'lucide-react';
-import { DataTable } from '../../components/dashboard/DataTable';
-import { ContentModal } from '../../components/dashboard/ContentModal';
-import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
-import { ImageUploadField } from '../../components/dashboard/ImageUploadField';
-import { RichTextEditor } from '../../components/dashboard/RichTextEditor';
-import { StatusModal } from '../../components/dashboard/StatusModal';
-import { blogsApi, servicesApi } from '../../services/api';
-import type { Blog, CreateBlogPayload, ServiceCategory } from '../../types/types';
-import { stripRichText } from '../../utils/richText';
+} from "lucide-react";
+import { DataTable } from "../../components/dashboard/DataTable";
+import { ContentModal } from "../../components/dashboard/ContentModal";
+import { ManagementStatsCard } from "../../components/dashboard/ManagementStatsCard";
+import { ImageUploadField } from "../../components/dashboard/ImageUploadField";
+import { RichTextEditor } from "../../components/dashboard/RichTextEditor";
+import { StatusModal } from "../../components/dashboard/StatusModal";
+import { AuthorDropdown } from "../../components/dashboard/AuthorDropdown";
+import { blogsApi, servicesApi } from "../../services/api";
+import type {
+  Blog,
+  CreateBlogPayload,
+  ServiceCategory,
+} from "../../types/types";
+import { stripRichText } from "../../utils/richText";
 
 interface BlogDisplay extends Blog {
   id: string;
@@ -34,16 +39,16 @@ interface BlogDisplay extends Blog {
   readTime: string;
   slug: string;
   tags: string[];
-  status: 'published' | 'draft';
+  status: "published" | "draft";
 }
 
 const slugify = (value: string) =>
   value
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
 
 const blogIconMap = {
   code: Code,
@@ -51,7 +56,7 @@ const blogIconMap = {
   globe: Globe,
   cpu: Cpu,
   palette: Palette,
-  'bar-chart': BarChart,
+  "bar-chart": BarChart,
   shield: Shield,
   cloud: Cloud,
   zap: Zap,
@@ -62,7 +67,9 @@ const blogIconMap = {
 
 export function BlogManagement() {
   const [posts, setPosts] = useState<BlogDisplay[]>([]);
-  const [serviceCategories, setServiceCategories] = useState<ServiceCategory[]>([]);
+  const [serviceCategories, setServiceCategories] = useState<ServiceCategory[]>(
+    [],
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogDisplay | null>(null);
   const [loading, setLoading] = useState(true);
@@ -70,7 +77,7 @@ export function BlogManagement() {
   // Status Modal State
   const [statusModal, setStatusModal] = useState<{
     isOpen: boolean;
-    type: 'success' | 'error';
+    type: "success" | "error";
     title: string;
     message: string;
     action?: () => void;
@@ -78,27 +85,28 @@ export function BlogManagement() {
     onSecondaryAction?: () => void;
   }>({
     isOpen: false,
-    type: 'success',
-    title: '',
-    message: ''
+    type: "success",
+    title: "",
+    message: "",
   });
 
   const [postForm, setPostForm] = useState({
-    title: '',
-    categoryName: '',
-    image: '',
+    title: "",
+    categoryName: "",
+    image: "",
     imageFile: null as File | null,
-    slug: '',
-    writer: 'Admin',
-    readingTime: '5 min',
-    details: '',
+    slug: "",
+    writer: "Admin",
+    authorId: "",
+    readingTime: "5 min",
+    details: "",
     tags: [] as string[],
-    status: 'draft' as 'published' | 'draft',
-    serviceId: '',
-    isFeatured: false
+    status: "draft" as "published" | "draft",
+    serviceId: "",
+    isFeatured: false,
   });
 
-  const [tagInput, setTagInput] = useState('');
+  const [tagInput, setTagInput] = useState("");
   const [isNewCategory, setIsNewCategory] = useState(false);
 
   useEffect(() => {
@@ -109,9 +117,11 @@ export function BlogManagement() {
   const fetchServices = async () => {
     try {
       const data = await servicesApi.getCategories();
-      setServiceCategories(data.filter((category) => category.isActive !== false));
+      setServiceCategories(
+        data.filter((category) => category.isActive !== false),
+      );
     } catch (err) {
-      console.error('Error fetching services:', err);
+      console.error("Error fetching services:", err);
     }
   };
 
@@ -119,25 +129,27 @@ export function BlogManagement() {
     try {
       setLoading(true);
       const data = await blogsApi.getAll();
-      const displayData = data.map(p => ({
+      const displayData = data.map((p) => ({
         ...p,
         id: p._id,
-        excerpt: p.details ? (stripRichText(p.details).substring(0, 100) + '...') : '',
-        category: p.categoryName || 'Uncategorized',
+        excerpt: p.details
+          ? stripRichText(p.details).substring(0, 100) + "..."
+          : "",
+        category: p.categoryName || "Uncategorized",
         date: p.createdAt || p.createTime || new Date().toISOString(),
-        readTime: p.readingTime || '5 min',
+        readTime: p.readingTime || "5 min",
         slug: p.slug || slugify(p.title),
-        status: (p.status || 'draft') as 'published' | 'draft',
-        tags: p.tags || []
+        status: (p.status || "draft") as "published" | "draft",
+        tags: p.tags || [],
       }));
       setPosts(displayData);
     } catch (err: any) {
       console.error(err);
       setStatusModal({
         isOpen: true,
-        type: 'error',
-        title: 'Error',
-        message: err.message || 'Failed to fetch blogs'
+        type: "error",
+        title: "Error",
+        message: err.message || "Failed to fetch blogs",
       });
     } finally {
       setLoading(false);
@@ -150,16 +162,17 @@ export function BlogManagement() {
     setPostForm({
       title: post.title,
       categoryName: post.category,
-      image: post.image || '',
+      image: post.image || "",
       imageFile: null,
       slug: post.slug,
       writer: post.writer,
-      readingTime: post.readingTime || '5 min',
+      authorId: post.authorId || "",
+      readingTime: post.readingTime || "5 min",
       details: post.details,
       tags: post.tags,
       status: post.status,
-      serviceId: post.serviceId || '',
-      isFeatured: post.isFeatured || false
+      serviceId: post.serviceId || "",
+      isFeatured: post.isFeatured || false,
     });
     setIsModalOpen(true);
   };
@@ -167,8 +180,8 @@ export function BlogManagement() {
   const handleDelete = async (post: BlogDisplay) => {
     setStatusModal({
       isOpen: true,
-      type: 'error',
-      title: 'Delete Blog Post',
+      type: "error",
+      title: "Delete Blog Post",
       message: `Are you sure you want to delete "${post.title}"?`,
       action: async () => {
         try {
@@ -176,21 +189,22 @@ export function BlogManagement() {
           setPosts(posts.filter((p) => p.id !== post.id));
           setStatusModal({
             isOpen: true,
-            type: 'success',
-            title: 'Post Deleted',
-            message: `Blog post "${post.title}" has been successfully deleted.`
+            type: "success",
+            title: "Post Deleted",
+            message: `Blog post "${post.title}" has been successfully deleted.`,
           });
         } catch (err: any) {
-          console.error('Error deleting blog:', err);
+          console.error("Error deleting blog:", err);
           setStatusModal({
             isOpen: true,
-            type: 'error',
-            title: 'Delete Failed',
-            message: err.message || 'Failed to delete blog post. Please try again.'
+            type: "error",
+            title: "Delete Failed",
+            message:
+              err.message || "Failed to delete blog post. Please try again.",
           });
         }
       },
-      secondaryActionLabel: 'Cancel'
+      secondaryActionLabel: "Cancel",
     });
   };
 
@@ -199,12 +213,21 @@ export function BlogManagement() {
       const normalizedCategory = postForm.categoryName.trim();
 
       // Basic Validation
-      if (!postForm.title || !postForm.writer || !postForm.details || !normalizedCategory) {
+      if (
+        !postForm.title ||
+        !postForm.writer ||
+        !postForm.details ||
+        !normalizedCategory
+      ) {
         setStatusModal({
           isOpen: true,
-          type: 'error',
-          title: 'Validation Error',
-          message: `Please fill in all required fields: ${!postForm.title ? 'Title, ' : ''}${!postForm.writer ? 'Author, ' : ''}${!postForm.details ? 'Content, ' : ''}${!normalizedCategory ? 'Category' : ''}`.replace(/, $/, '')
+          type: "error",
+          title: "Validation Error",
+          message:
+            `Please fill in all required fields: ${!postForm.title ? "Title, " : ""}${!postForm.writer ? "Author, " : ""}${!postForm.details ? "Content, " : ""}${!normalizedCategory ? "Category" : ""}`.replace(
+              /, $/,
+              "",
+            ),
         });
         return;
       }
@@ -212,9 +235,9 @@ export function BlogManagement() {
       if (!editingPost && !postForm.imageFile) {
         setStatusModal({
           isOpen: true,
-          type: 'error',
-          title: 'Validation Error',
-          message: 'Please upload a featured image for the blog post.'
+          type: "error",
+          title: "Validation Error",
+          message: "Please upload a featured image for the blog post.",
         });
         return;
       }
@@ -227,6 +250,7 @@ export function BlogManagement() {
       const payload: CreateBlogPayload = {
         title: postForm.title,
         writer: postForm.writer,
+        authorId: postForm.authorId,
         readingTime: postForm.readingTime,
         details: postForm.details,
         tags: postForm.tags,
@@ -243,17 +267,17 @@ export function BlogManagement() {
         await blogsApi.update(editingPost.id, payload);
         setStatusModal({
           isOpen: true,
-          type: 'success',
-          title: 'Post Updated',
-          message: `Blog post "${postForm.title}" has been successfully updated.`
+          type: "success",
+          title: "Post Updated",
+          message: `Blog post "${postForm.title}" has been successfully updated.`,
         });
       } else {
         await blogsApi.create(payload);
         setStatusModal({
           isOpen: true,
-          type: 'success',
-          title: 'Post Created',
-          message: `Blog post "${postForm.title}" has been successfully created.`
+          type: "success",
+          title: "Post Created",
+          message: `Blog post "${postForm.title}" has been successfully created.`,
         });
       }
       await fetchPosts();
@@ -262,9 +286,9 @@ export function BlogManagement() {
       console.error(err);
       setStatusModal({
         isOpen: true,
-        type: 'error',
-        title: 'Operation Failed',
-        message: err.message || 'Failed to save blog post. Please try again.'
+        type: "error",
+        title: "Operation Failed",
+        message: err.message || "Failed to save blog post. Please try again.",
       });
     }
   };
@@ -274,45 +298,46 @@ export function BlogManagement() {
     setEditingPost(null);
     setIsNewCategory(false);
     setPostForm({
-      title: '',
-      categoryName: '',
-      image: '',
+      title: "",
+      categoryName: "",
+      image: "",
       imageFile: null,
-      slug: '',
-      writer: 'Admin',
-      readingTime: '5 min',
-      details: '',
+      slug: "",
+      writer: "Admin",
+      authorId: "",
+      readingTime: "5 min",
+      details: "",
       tags: [],
-      status: 'draft',
-      serviceId: '',
-      isFeatured: false
+      status: "draft",
+      serviceId: "",
+      isFeatured: false,
     });
-    setTagInput('');
+    setTagInput("");
   };
 
   const addTag = () => {
     if (tagInput.trim() && !postForm.tags.includes(tagInput.trim())) {
       setPostForm({
         ...postForm,
-        tags: [...postForm.tags, tagInput.trim()]
+        tags: [...postForm.tags, tagInput.trim()],
       });
-      setTagInput('');
+      setTagInput("");
     }
   };
 
   const removeTag = (index: number) => {
     setPostForm({
       ...postForm,
-      tags: postForm.tags.filter((_, i) => i !== index)
+      tags: postForm.tags.filter((_, i) => i !== index),
     });
   };
 
   const columns = [
     {
-      key: 'icon',
-      label: 'Icon',
+      key: "icon",
+      label: "Icon",
       render: (value: string) => {
-        const key = (value || '').toLowerCase();
+        const key = (value || "").toLowerCase();
         const IconComponent = blogIconMap[key as keyof typeof blogIconMap];
 
         return (
@@ -320,16 +345,16 @@ export function BlogManagement() {
             {IconComponent ? (
               <IconComponent size={18} className="text-white" />
             ) : (
-              <span className="text-sm text-gray-300">{value || '📰'}</span>
+              <span className="text-sm text-gray-300">{value || "📰"}</span>
             )}
           </div>
         );
       },
     },
     {
-      key: 'title',
-      label: 'Post Title',
-      render: (value: string, row: BlogDisplay) =>
+      key: "title",
+      label: "Post Title",
+      render: (value: string, row: BlogDisplay) => (
         <div className="flex items-center gap-3">
           {row.image && (
             <img
@@ -337,7 +362,8 @@ export function BlogManagement() {
               alt={value}
               className="w-12 h-12 rounded-lg object-cover"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48?text=Blog';
+                (e.target as HTMLImageElement).src =
+                  "https://via.placeholder.com/48?text=Blog";
               }}
             />
           )}
@@ -349,47 +375,54 @@ export function BlogManagement() {
             </div>
           </div>
         </div>
+      ),
     },
     {
-      key: 'category',
-      label: 'Category',
+      key: "category",
+      label: "Category",
       render: (value: string) => (
         <span className="px-2 py-1 rounded-full text-xs font-bold bg-[#3B82F620] text-[#3B82F6]">
           {value}
         </span>
-      )
+      ),
     },
     {
-      key: 'date',
-      label: 'Date',
-      render: (value: string) => new Date(value).toLocaleDateString()
+      key: "date",
+      label: "Date",
+      render: (value: string) => new Date(value).toLocaleDateString(),
     },
     {
-      key: 'readTime',
-      label: 'Read Time'
+      key: "readTime",
+      label: "Read Time",
     },
     {
-      key: 'serviceId',
-      label: 'Related Service',
+      key: "serviceId",
+      label: "Related Service",
       render: (value: string) => {
-        const serviceCategory = serviceCategories.find((category) => category._id === value);
+        const serviceCategory = serviceCategories.find(
+          (category) => category._id === value,
+        );
         return serviceCategory ? (
-          <span className="text-blue-400 font-medium">{serviceCategory.name}</span>
+          <span className="text-blue-400 font-medium">
+            {serviceCategory.name}
+          </span>
         ) : (
           <span className="text-gray-500">-</span>
         );
-      }
+      },
     },
     {
-      key: 'status',
-      label: 'Status',
-      render: (value: string) =>
+      key: "status",
+      label: "Status",
+      render: (value: string) => (
         <span
-          className={`px-2 py-1 rounded-full text-xs font-bold ${value === 'published' ? 'bg-[color:var(--vibrant-green)]/20 text-[color:var(--vibrant-green)]' : 'bg-yellow-500/20 text-yellow-500'}`}>
-
+          className={`px-2 py-1 rounded-full text-xs font-bold ${value === "published" ? "bg-[color:var(--vibrant-green)]/20 text-[color:var(--vibrant-green)]" : "bg-yellow-500/20 text-yellow-500"}`}
+        >
           {value}
         </span>
-    }];
+      ),
+    },
+  ];
 
   if (loading) {
     return (
@@ -402,20 +435,21 @@ export function BlogManagement() {
   const categoryCount = new Set(
     posts
       .map((post) => post.category?.trim())
-      .filter((category): category is string => Boolean(category))
+      .filter((category): category is string => Boolean(category)),
   ).size;
 
   const existingCategories = Array.from(
     new Set(
       posts
         .map((post) => post.category?.trim())
-        .filter((category): category is string => Boolean(category))
-    )
+        .filter((category): category is string => Boolean(category)),
+    ),
   ).sort((a, b) => a.localeCompare(b));
 
-  const categoryOptions = postForm.categoryName && !existingCategories.includes(postForm.categoryName)
-    ? [postForm.categoryName, ...existingCategories]
-    : existingCategories;
+  const categoryOptions =
+    postForm.categoryName && !existingCategories.includes(postForm.categoryName)
+      ? [postForm.categoryName, ...existingCategories]
+      : existingCategories;
 
   return (
     <>
@@ -430,43 +464,42 @@ export function BlogManagement() {
           <div className="flex gap-3">
             <button
               onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all">
-
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all"
+            >
               <Plus size={20} />
               New Post
             </button>
           </div>
         </div>
 
-
-
-
-
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <ManagementStatsCard
             title="Total Posts"
             value={posts.length}
             icon={BookOpen}
-            color="from-blue-500 to-cyan-500" />
+            color="from-blue-500 to-cyan-500"
+          />
 
           <ManagementStatsCard
             title="Published"
-            value={posts.filter((p) => p.status === 'published').length}
+            value={posts.filter((p) => p.status === "published").length}
             icon={BookOpen}
-            color="from-green-500 to-emerald-500" />
+            color="from-green-500 to-emerald-500"
+          />
 
           <ManagementStatsCard
             title="Drafts"
-            value={posts.filter((p) => p.status === 'draft').length}
+            value={posts.filter((p) => p.status === "draft").length}
             icon={BookOpen}
-            color="from-yellow-500 to-orange-500" />
+            color="from-yellow-500 to-orange-500"
+          />
 
           <ManagementStatsCard
             title="Categories"
             value={categoryCount}
             icon={Calendar}
-            color="from-purple-500 to-pink-500" />
-
+            color="from-purple-500 to-pink-500"
+          />
         </div>
 
         <DataTable
@@ -474,16 +507,17 @@ export function BlogManagement() {
           data={posts}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          searchable />
+          searchable
+        />
       </div>
 
       <ContentModal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={editingPost ? 'Edit Blog Post' : 'Create New Post'}
+        title={editingPost ? "Edit Blog Post" : "Create New Post"}
         onSave={handleSave}
-        saveLabel={editingPost ? 'Update' : 'Publish'}>
-
+        saveLabel={editingPost ? "Update" : "Publish"}
+      >
         <div className="space-y-6">
           <div className="space-y-2">
             <label className="text-sm text-gray-400 font-medium">
@@ -496,16 +530,14 @@ export function BlogManagement() {
                 setPostForm({
                   ...postForm,
                   title: e.target.value,
-                  slug: postForm.slug ? postForm.slug : slugify(e.target.value)
+                  slug: postForm.slug ? postForm.slug : slugify(e.target.value),
                 })
               }
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
               placeholder="The Future of AI in Mobile Development"
-              required />
-
+              required
+            />
           </div>
-
-
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -513,14 +545,14 @@ export function BlogManagement() {
                 Category *
               </label>
               <select
-                value={isNewCategory ? '__new__' : postForm.categoryName}
+                value={isNewCategory ? "__new__" : postForm.categoryName}
                 onChange={(e) => {
                   const { value } = e.target;
-                  if (value === '__new__') {
+                  if (value === "__new__") {
                     setIsNewCategory(true);
                     setPostForm({
                       ...postForm,
-                      categoryName: ''
+                      categoryName: "",
                     });
                     return;
                   }
@@ -528,20 +560,35 @@ export function BlogManagement() {
                   setIsNewCategory(false);
                   setPostForm({
                     ...postForm,
-                    categoryName: value
+                    categoryName: value,
                   });
                 }}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-                style={{ color: '#FFFFFF', backgroundColor: '#141414' }}
+                style={{ color: "#FFFFFF", backgroundColor: "#141414" }}
                 required
               >
-                <option value="" disabled style={{ color: '#111111', backgroundColor: '#FFFFFF' }}>Select Category</option>
+                <option
+                  value=""
+                  disabled
+                  style={{ color: "#111111", backgroundColor: "#FFFFFF" }}
+                >
+                  Select Category
+                </option>
                 {categoryOptions.map((category) => (
-                  <option key={category} value={category} style={{ color: '#111111', backgroundColor: '#FFFFFF' }}>
+                  <option
+                    key={category}
+                    value={category}
+                    style={{ color: "#111111", backgroundColor: "#FFFFFF" }}
+                  >
                     {category}
                   </option>
                 ))}
-                <option value="__new__" style={{ color: '#111111', backgroundColor: '#FFFFFF' }}>+ Create New Category</option>
+                <option
+                  value="__new__"
+                  style={{ color: "#111111", backgroundColor: "#FFFFFF" }}
+                >
+                  + Create New Category
+                </option>
               </select>
 
               {isNewCategory && (
@@ -551,7 +598,7 @@ export function BlogManagement() {
                   onChange={(e) =>
                     setPostForm({
                       ...postForm,
-                      categoryName: e.target.value
+                      categoryName: e.target.value,
                     })
                   }
                   className="w-full mt-2 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
@@ -570,12 +617,12 @@ export function BlogManagement() {
                 onChange={(e) =>
                   setPostForm({
                     ...postForm,
-                    readingTime: e.target.value
+                    readingTime: e.target.value,
                   })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-                placeholder="5 min" />
-
+                placeholder="5 min"
+              />
             </div>
           </div>
 
@@ -583,18 +630,13 @@ export function BlogManagement() {
             <label className="text-sm text-gray-400 font-medium">
               Author/Writer *
             </label>
-            <input
-              type="text"
-              value={postForm.writer}
-              onChange={(e) =>
-                setPostForm({
-                  ...postForm,
-                  writer: e.target.value
-                })
+            <AuthorDropdown
+              value={postForm.authorId}
+              authorName={postForm.writer}
+              onChange={(id, name) =>
+                setPostForm({ ...postForm, authorId: id, writer: name })
               }
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-              placeholder="John Doe"
-              required />
+            />
           </div>
 
           <div className="space-y-2">
@@ -607,13 +649,12 @@ export function BlogManagement() {
               onChange={(e) =>
                 setPostForm({
                   ...postForm,
-                  slug: slugify(e.target.value)
+                  slug: slugify(e.target.value),
                 })
               }
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
               placeholder="future-of-ai-mobile-dev"
             />
-
           </div>
 
           <div className="space-y-2">
@@ -624,35 +665,36 @@ export function BlogManagement() {
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyPress={(e) =>
-                  e.key === 'Enter' && (e.preventDefault(), addTag())
+                  e.key === "Enter" && (e.preventDefault(), addTag())
                 }
                 className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-                placeholder="Add tag (press Enter)" />
+                placeholder="Add tag (press Enter)"
+              />
 
               <button
                 type="button"
                 onClick={addTag}
-                className="px-4 py-3 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors">
-
+                className="px-4 py-3 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors"
+              >
                 Add
               </button>
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
-              {postForm.tags.map((tag, i) =>
+              {postForm.tags.map((tag, i) => (
                 <span
                   key={i}
-                  className="px-3 py-1 bg-white/10 rounded-full text-sm text-white flex items-center gap-2">
-
+                  className="px-3 py-1 bg-white/10 rounded-full text-sm text-white flex items-center gap-2"
+                >
                   {tag}
                   <button
                     type="button"
                     onClick={() => removeTag(i)}
-                    className="hover:text-red-500">
-
+                    className="hover:text-red-500"
+                  >
                     ×
                   </button>
                 </span>
-              )}
+              ))}
             </div>
           </div>
 
@@ -666,17 +708,23 @@ export function BlogManagement() {
                 onChange={(e) =>
                   setPostForm({
                     ...postForm,
-                    serviceId: e.target.value
+                    serviceId: e.target.value,
                   })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-                style={{ color: '#FFFFFF', backgroundColor: '#141414' }}>
-                <option value="" style={{ color: '#111111', backgroundColor: '#FFFFFF' }}>Select Main Service Category</option>
+                style={{ color: "#FFFFFF", backgroundColor: "#141414" }}
+              >
+                <option
+                  value=""
+                  style={{ color: "#111111", backgroundColor: "#FFFFFF" }}
+                >
+                  Select Main Service Category
+                </option>
                 {serviceCategories.map((category) => (
                   <option
                     key={category._id}
                     value={category._id}
-                    style={{ color: '#111111', backgroundColor: '#FFFFFF' }}
+                    style={{ color: "#111111", backgroundColor: "#FFFFFF" }}
                   >
                     {category.name}
                   </option>
@@ -685,7 +733,10 @@ export function BlogManagement() {
             </div>
 
             <div className="text-xs text-gray-400">
-              Auto Icon: {serviceCategories.find((category) => category._id === postForm.serviceId)?.iconKey || '-'}
+              Auto Icon:{" "}
+              {serviceCategories.find(
+                (category) => category._id === postForm.serviceId,
+              )?.iconKey || "-"}
             </div>
           </div>
 
@@ -694,29 +745,29 @@ export function BlogManagement() {
             onChange={(url) =>
               setPostForm({
                 ...postForm,
-                image: url
+                image: url,
               })
             }
             onFileChange={(file) =>
               setPostForm({
                 ...postForm,
-                imageFile: file
+                imageFile: file,
               })
             }
-            label="Featured Image *" />
-
+            label="Featured Image *"
+          />
 
           <RichTextEditor
             value={postForm.details}
             onChange={(details) =>
               setPostForm({
                 ...postForm,
-                details
+                details,
               })
             }
             label="Post Content *"
-            placeholder="Write your blog post content here..." />
-
+            placeholder="Write your blog post content here..."
+          />
 
           <div className="space-y-2">
             <label className="text-sm text-gray-400 font-medium">Status</label>
@@ -725,13 +776,14 @@ export function BlogManagement() {
                 <input
                   type="radio"
                   value="published"
-                  checked={postForm.status === 'published'}
+                  checked={postForm.status === "published"}
                   onChange={(e) =>
                     setPostForm({
                       ...postForm,
-                      status: e.target.value as 'published' | 'draft'
+                      status: e.target.value as "published" | "draft",
                     })
-                  } />
+                  }
+                />
 
                 <span className="text-white">Published</span>
               </label>
@@ -739,13 +791,14 @@ export function BlogManagement() {
                 <input
                   type="radio"
                   value="draft"
-                  checked={postForm.status === 'draft'}
+                  checked={postForm.status === "draft"}
                   onChange={(e) =>
                     setPostForm({
                       ...postForm,
-                      status: e.target.value as 'published' | 'draft'
+                      status: e.target.value as "published" | "draft",
                     })
-                  } />
+                  }
+                />
 
                 <span className="text-white">Draft</span>
               </label>
@@ -760,14 +813,13 @@ export function BlogManagement() {
                 onChange={(e) =>
                   setPostForm({
                     ...postForm,
-                    isFeatured: e.target.checked
+                    isFeatured: e.target.checked,
                   })
                 }
               />
               <span className="text-white">Featured Post</span>
             </label>
           </div>
-
         </div>
       </ContentModal>
 
@@ -777,7 +829,7 @@ export function BlogManagement() {
         type={statusModal.type}
         title={statusModal.title}
         message={statusModal.message}
-        actionLabel={statusModal.secondaryActionLabel ? 'Confirm' : undefined}
+        actionLabel={statusModal.secondaryActionLabel ? "Confirm" : undefined}
         onAction={statusModal.action}
         secondaryActionLabel={statusModal.secondaryActionLabel}
       />
