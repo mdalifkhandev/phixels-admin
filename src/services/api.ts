@@ -222,11 +222,13 @@ export const reviewsApi = {
       const formData = new FormData();
       if (data.name !== undefined) formData.append("name", data.name);
       if (data.role !== undefined) formData.append("role", data.role);
-      if (data.rating !== undefined) formData.append("rating", String(data.rating));
+      if (data.rating !== undefined)
+        formData.append("rating", String(data.rating));
       if (data.review !== undefined) formData.append("review", data.review);
       if (data.project !== undefined) formData.append("project", data.project);
       if (data.budget !== undefined) formData.append("budget", data.budget);
-      if (data.duration !== undefined) formData.append("duration", data.duration);
+      if (data.duration !== undefined)
+        formData.append("duration", data.duration);
       if (data.summary !== undefined) formData.append("summary", data.summary);
       formData.append("image", imageFile);
       const response = await apiClient.patch(`/reviews/${id}`, formData, {
@@ -251,9 +253,9 @@ export const reviewsApi = {
 export const blogsApi = {
   uploadImage: async (file: File): Promise<string> => {
     const formData = new FormData();
-    formData.append('image', file);
-    const response = await apiClient.post('/blogs/upload-image', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+    formData.append("image", file);
+    const response = await apiClient.post("/blogs/upload-image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
     const payload = getData<{ image: string }>(response);
     return payload.image;
@@ -269,7 +271,8 @@ export const blogsApi = {
     if (data.slug) formData.append("slug", data.slug);
     if (data.status) formData.append("status", data.status);
     if (data.serviceId) formData.append("serviceId", data.serviceId);
-    if (data.isFeatured !== undefined) formData.append("isFeatured", String(data.isFeatured));
+    if (data.isFeatured !== undefined)
+      formData.append("isFeatured", String(data.isFeatured));
     if (data.featuredOrder !== undefined && data.featuredOrder !== null) {
       formData.append("featuredOrder", String(data.featuredOrder));
     }
@@ -299,11 +302,14 @@ export const blogsApi = {
     if (data.readingTime) formData.append("readingTime", data.readingTime);
     if (data.details) formData.append("details", data.details);
     if (data.tags) formData.append("tags", JSON.stringify(data.tags));
-    if (data.categoryName !== undefined) formData.append("categoryName", data.categoryName);
+    if (data.categoryName !== undefined)
+      formData.append("categoryName", data.categoryName);
     if (data.slug !== undefined) formData.append("slug", data.slug);
     if (data.status !== undefined) formData.append("status", data.status);
-    if (data.serviceId !== undefined) formData.append("serviceId", data.serviceId);
-    if (data.isFeatured !== undefined) formData.append("isFeatured", String(data.isFeatured));
+    if (data.serviceId !== undefined)
+      formData.append("serviceId", data.serviceId);
+    if (data.isFeatured !== undefined)
+      formData.append("isFeatured", String(data.isFeatured));
     if (data.featuredOrder !== undefined && data.featuredOrder !== null) {
       formData.append("featuredOrder", String(data.featuredOrder));
     }
@@ -323,7 +329,7 @@ export const blogsApi = {
     return getData(response);
   },
   reorder: async (blogs: { id: string; position: number }[]) => {
-    const response = await apiClient.patch('/blogs/reorder', { blogs });
+    const response = await apiClient.patch("/blogs/reorder", { blogs });
     return getData(response);
   },
 };
@@ -419,7 +425,7 @@ export const productsApi = {
     return getData<Product>(response);
   },
   reorder: async (orderedIds: string[]) => {
-    const response = await apiClient.patch('/products/reorder', { orderedIds });
+    const response = await apiClient.patch("/products/reorder", { orderedIds });
     return getData(response);
   },
 };
@@ -460,7 +466,7 @@ export const servicesApi = {
     return getData<ServiceCategory>(response);
   },
   getCategories: async (): Promise<ServiceCategory[]> => {
-    const response = await apiClient.get("/services/categories");
+    const response = await apiClient.get("/services/categories?all=true");
     return getData<ServiceCategory[]>(response);
   },
   updateCategory: async (id: string, data: Partial<ServiceCategory>) => {
@@ -482,11 +488,14 @@ export const servicesApi = {
     return getData<ServiceSubcategory>(response);
   },
   getSubcategories: async (): Promise<ServiceSubcategory[]> => {
-    const response = await apiClient.get("/services/subcategories");
+    const response = await apiClient.get("/services/subcategories?all=true");
     return getData<ServiceSubcategory[]>(response);
   },
   updateSubcategory: async (id: string, data: Partial<ServiceSubcategory>) => {
-    const response = await apiClient.patch(`/services/subcategories/${id}`, data);
+    const response = await apiClient.patch(
+      `/services/subcategories/${id}`,
+      data,
+    );
     return getData<ServiceSubcategory>(response);
   },
   deleteSubcategory: async (id: string) => {
