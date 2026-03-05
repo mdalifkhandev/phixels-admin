@@ -524,6 +524,10 @@ export const careersApi = {
     const response = await apiClient.delete(`/careers/${id}`);
     return getData(response);
   },
+  reorder: async (orderedIds: string[]) => {
+    const response = await apiClient.patch("/careers/reorder", { orderedIds });
+    return getData(response);
+  },
 };
 
 // Analytics API
