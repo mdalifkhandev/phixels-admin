@@ -51,7 +51,7 @@ export interface Blog {
   image?: string; // URL or path
   categoryName?: string;
   slug?: string;
-  status?: 'published' | 'draft';
+  status?: "published" | "draft";
   icon?: string;
   serviceId?: string;
   authorId?: string;
@@ -72,7 +72,7 @@ export interface CreateBlogPayload {
   imageUrl?: string;
   categoryName?: string;
   slug?: string;
-  status?: 'published' | 'draft';
+  status?: "published" | "draft";
   icon?: string;
   serviceId?: string;
   authorId?: string;
@@ -91,6 +91,7 @@ export interface PortfolioItem {
   activeUsers?: string;
   image: string;
   liveLink?: string;
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -106,6 +107,7 @@ export interface CaseStudy {
   result: string;
   image: string;
   link: string;
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -137,6 +139,7 @@ export interface Product {
   downloadCount?: number | null;
   isPinned?: boolean;
   pinOrder?: 1 | 2 | 3 | null;
+  isActive?: boolean;
   isDeleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -167,6 +170,7 @@ export interface Career {
   salaryRange: string;
   deadline: string;
   applicationEmail: string;
+  isActive?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -183,7 +187,6 @@ export interface CreateCareerPayload {
   applicationEmail: string;
 }
 
-
 // Reviews
 export interface Review {
   _id: string;
@@ -196,6 +199,7 @@ export interface Review {
   budget: string;
   duration: string;
   summary: string;
+  isActive?: boolean;
   isDeleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -211,6 +215,7 @@ export interface CreateReviewPayload {
   budget: string;
   duration: string;
   summary: string;
+  isActive?: boolean;
 }
 
 // Analytics
@@ -237,7 +242,7 @@ export interface AnalyticsOverview {
     id: string;
     title: string;
     description: string;
-    severity: 'high' | 'medium' | 'low';
+    severity: "high" | "medium" | "low";
   }>;
   notifications?: Array<{
     id: string;
@@ -299,7 +304,7 @@ export interface CountryDataPoint {
   visitors: number;
   conversions: number;
   rate: number;
-  trend: 'up' | 'down' | 'neutral';
+  trend: "up" | "down" | "neutral";
 }
 
 export interface DeviceData {
@@ -383,7 +388,7 @@ export interface ServiceSubcategory {
 
 export interface CampaignPerformanceData {
   name: string;
-  status: 'Active' | 'Paused' | 'Ended';
+  status: "Active" | "Paused" | "Ended";
   impressions: number;
   clicks: number;
   ctr: number;
@@ -396,7 +401,7 @@ export interface CampaignPerformanceData {
 export interface PlatformPerformanceData {
   id: string;
   name: string;
-  status: 'connected' | 'disconnected';
+  status: "connected" | "disconnected";
   impressions: number;
   clicks: number;
   conversions: number;

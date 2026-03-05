@@ -363,6 +363,28 @@ export function ProductsManagement() {
     });
   };
 
+  const handleToggleActive = async (product: ProductDisplay) => {
+    try {
+      const newStatus = product.isActive === false ? true : false;
+
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === product.id ? { ...p, isActive: newStatus } : p,
+        ),
+      );
+
+      await productsApi.update(product.id, { isActive: newStatus });
+    } catch (err: any) {
+      await fetchProducts();
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Toggle Failed",
+        message: err.message || "Failed to update status",
+      });
+    }
+  };
+
   const columns = [
     {
       key: "name",
@@ -385,6 +407,28 @@ export function ProductsManagement() {
         <span className="px-2 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold">
           {value}
         </span>
+      ),
+    },
+    {
+      key: "isActive",
+      label: "Status",
+      render: (value: boolean, row: ProductDisplay) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggleActive(row);
+          }}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            row.isActive !== false ? "bg-green-500" : "bg-gray-600"
+          }`}
+          title={row.isActive !== false ? "Published" : "Draft"}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              row.isActive !== false ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
       ),
     },
     {

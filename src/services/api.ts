@@ -114,6 +114,14 @@ export const authApi = {
     const response = await apiClient.post("/auth/logout");
     return getData(response);
   },
+  changePassword: async (data: {
+    email: string;
+    currentPassword: string;
+    newPassword: string;
+  }) => {
+    const response = await apiClient.patch("/auth/change-password", data);
+    return getData(response);
+  },
 };
 
 // Authors API
@@ -210,7 +218,7 @@ export const reviewsApi = {
     return getData<Review>(response);
   },
   getAll: async (): Promise<Review[]> => {
-    const response = await apiClient.get("/reviews");
+    const response = await apiClient.get("/reviews?all=true");
     return getData<Review[]>(response);
   },
   getOne: async (id: string): Promise<Review> => {
@@ -341,7 +349,7 @@ export const portfolioApi = {
     return getData<PortfolioItem>(response);
   },
   getAll: async (): Promise<PortfolioItem[]> => {
-    const response = await apiClient.get("/portfolio");
+    const response = await apiClient.get("/portfolio?all=true");
     return getData<PortfolioItem[]>(response);
   },
   getOne: async (id: string): Promise<PortfolioItem> => {
@@ -365,7 +373,7 @@ export const caseStudiesApi = {
     return getData<CaseStudy>(response);
   },
   getAll: async (): Promise<CaseStudy[]> => {
-    const response = await apiClient.get("/case-studies");
+    const response = await apiClient.get("/case-studies?all=true");
     return getData<CaseStudy[]>(response);
   },
   getOne: async (id: string): Promise<CaseStudy> => {
@@ -398,7 +406,7 @@ export const productsApi = {
     return getData<Product>(response);
   },
   getAll: async (): Promise<Product[]> => {
-    const response = await apiClient.get("/products");
+    const response = await apiClient.get("/products?all=true");
     return getData<Product[]>(response);
   },
   getOne: async (id: string): Promise<Product> => {
@@ -518,7 +526,7 @@ export const careersApi = {
     return getData<Career>(response);
   },
   getAll: async (): Promise<Career[]> => {
-    const response = await apiClient.get("/careers");
+    const response = await apiClient.get("/careers?all=true");
     return getData<Career[]>(response);
   },
   getOne: async (id: string): Promise<Career> => {
@@ -633,6 +641,25 @@ export const settingsApi = {
   ): Promise<DashboardSettings> => {
     const response = await apiClient.patch("/settings", data);
     return getData<DashboardSettings>(response);
+  },
+};
+
+export const usersApi = {
+  getAll: async (): Promise<any[]> => {
+    const response = await apiClient.get("/users");
+    return getData<any[]>(response);
+  },
+  create: async (data: any): Promise<any> => {
+    const response = await apiClient.post("/users", data);
+    return getData<any>(response);
+  },
+  update: async (id: string, data: any): Promise<any> => {
+    const response = await apiClient.patch(`/users/${id}`, data);
+    return getData<any>(response);
+  },
+  delete: async (id: string): Promise<any> => {
+    const response = await apiClient.delete(`/users/${id}`);
+    return getData<any>(response);
   },
 };
 

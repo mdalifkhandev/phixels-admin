@@ -1,0 +1,25 @@
+src/pages/dashboard/CareersManagement.tsx(239,29): error TS2339: Property 'isActive' does not exist on type 'CareerDisplay'.
+src/pages/dashboard/CareersManagement.tsx(245,41): error TS2353: Object literal may only specify known properties, and 'isActive' does not exist in type 'Partial<Career>'.
+src/pages/dashboard/CareersManagement.tsx(294,16): error TS6133: 'value' is declared but its value is never read.
+src/pages/dashboard/CareersManagement.tsx(301,17): error TS2339: Property 'isActive' does not exist on type 'CareerDisplay'.
+src/pages/dashboard/CareersManagement.tsx(303,22): error TS2339: Property 'isActive' does not exist on type 'CareerDisplay'.
+src/pages/dashboard/CareersManagement.tsx(307,19): error TS2339: Property 'isActive' does not exist on type 'CareerDisplay'.
+src/pages/dashboard/CaseStudiesManagement.tsx(208,31): error TS2339: Property 'isActive' does not exist on type 'CaseStudyDisplay'.
+src/pages/dashboard/CaseStudiesManagement.tsx(216,47): error TS2353: Object literal may only specify known properties, and 'isActive' does not exist in type 'Partial<CaseStudy>'.
+src/pages/dashboard/CaseStudiesManagement.tsx(275,16): error TS6133: 'value' is declared but its value is never read.
+src/pages/dashboard/CaseStudiesManagement.tsx(282,17): error TS2339: Property 'isActive' does not exist on type 'CaseStudyDisplay'.
+src/pages/dashboard/CaseStudiesManagement.tsx(284,22): error TS2339: Property 'isActive' does not exist on type 'CaseStudyDisplay'.
+src/pages/dashboard/CaseStudiesManagement.tsx(288,19): error TS2339: Property 'isActive' does not exist on type 'CaseStudyDisplay'.
+src/pages/dashboard/LeadManagement.tsx(24,15): error TS6196: 'AnalyticsEventRecord' is declared but never used.
+src/pages/dashboard/PortfolioManagement.tsx(207,30): error TS2339: Property 'isActive' does not exist on type 'PortfolioDisplay'.
+src/pages/dashboard/PortfolioManagement.tsx(213,44): error TS2353: Object literal may only specify known properties, and 'isActive' does not exist in type 'Partial<PortfolioItem>'.
+src/pages/dashboard/PortfolioManagement.tsx(262,16): error TS6133: 'value' is declared but its value is never read.
+src/pages/dashboard/PortfolioManagement.tsx(269,17): error TS2339: Property 'isActive' does not exist on type 'PortfolioDisplay'.
+src/pages/dashboard/PortfolioManagement.tsx(271,22): error TS2339: Property 'isActive' does not exist on type 'PortfolioDisplay'.
+src/pages/dashboard/PortfolioManagement.tsx(275,19): error TS2339: Property 'isActive' does not exist on type 'PortfolioDisplay'.
+src/pages/dashboard/ProductsManagement.tsx(368,33): error TS2339: Property 'isActive' does not exist on type 'ProductDisplay'.
+src/pages/dashboard/ProductsManagement.tsx(376,46): error TS2353: Object literal may only specify known properties, and 'isActive' does not exist in type 'Partial<Product>'.
+src/pages/dashboard/ProductsManagement.tsx(415,16): error TS6133: 'value' is declared but its value is never read.
+src/pages/dashboard/ProductsManagement.tsx(422,17): error TS2339: Property 'isActive' does not exist on type 'ProductDisplay'.
+src/pages/dashboard/ProductsManagement.tsx(424,22): error TS2339: Property 'isActive' does not exist on type 'ProductDisplay'.
+src/pages/dashboard/ProductsManagement.tsx(428,19): error TS2339: Property 'isActive' does not exist on type 'ProductDisplay'.

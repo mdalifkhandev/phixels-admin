@@ -234,6 +234,26 @@ export function CareersManagement() {
     });
   };
 
+  const handleToggleActive = async (job: CareerDisplay) => {
+    try {
+      const newStatus = job.isActive === false ? true : false;
+
+      setJobs((prev) =>
+        prev.map((j) => (j.id === job.id ? { ...j, isActive: newStatus } : j)),
+      );
+
+      await careersApi.update(job.id, { isActive: newStatus });
+    } catch (err: any) {
+      await fetchCareers();
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Toggle Failed",
+        message: err.message || "Failed to update status",
+      });
+    }
+  };
+
   const columns = [
     {
       key: "jobTitle",
@@ -266,6 +286,28 @@ export function CareersManagement() {
           <Calendar size={14} />{" "}
           {value ? new Date(value).toLocaleDateString() : "N/A"}
         </span>
+      ),
+    },
+    {
+      key: "isActive",
+      label: "Status",
+      render: (_value: boolean, row: CareerDisplay) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggleActive(row);
+          }}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            row.isActive !== false ? "bg-green-500" : "bg-gray-600"
+          }`}
+          title={row.isActive !== false ? "Published" : "Draft"}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              row.isActive !== false ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
       ),
     },
     {

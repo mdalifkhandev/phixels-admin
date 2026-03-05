@@ -207,6 +207,28 @@ export function ReviewsManagement() {
     });
   };
 
+  const handleToggleActive = async (review: ReviewDisplay) => {
+    try {
+      const newStatus = review.isActive === false ? true : false;
+
+      setReviews((prev) =>
+        prev.map((r) =>
+          r.id === review.id ? { ...r, isActive: newStatus } : r,
+        ),
+      );
+
+      await reviewsApi.update(review.id, { isActive: newStatus });
+    } catch (err: any) {
+      await fetchReviews();
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Toggle Failed",
+        message: err.message || "Failed to update status",
+      });
+    }
+  };
+
   const columns = [
     {
       key: "name",
@@ -257,6 +279,28 @@ export function ReviewsManagement() {
         <span className="font-bold text-[color:var(--vibrant-green)]">
           {value}
         </span>
+      ),
+    },
+    {
+      key: "isActive",
+      label: "Status",
+      render: (_: boolean, row: ReviewDisplay) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggleActive(row);
+          }}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            row.isActive !== false ? "bg-green-500" : "bg-gray-600"
+          }`}
+          title={row.isActive !== false ? "Published" : "Draft"}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              row.isActive !== false ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
       ),
     },
   ];

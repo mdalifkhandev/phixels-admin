@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { Briefcase, Plus } from 'lucide-react';
-import { DataTable } from '../../components/dashboard/DataTable';
-import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
-import { ContentModal } from '../../components/dashboard/ContentModal';
-import { StatusModal } from '../../components/dashboard/StatusModal';
-import { portfolioApi } from '../../services/api';
-import type { PortfolioItem } from '../../types/types';
+import { useState, useEffect } from "react";
+import { Briefcase, Plus } from "lucide-react";
+import { DataTable } from "../../components/dashboard/DataTable";
+import { ManagementStatsCard } from "../../components/dashboard/ManagementStatsCard";
+import { ContentModal } from "../../components/dashboard/ContentModal";
+import { StatusModal } from "../../components/dashboard/StatusModal";
+import { portfolioApi } from "../../services/api";
+import type { PortfolioItem } from "../../types/types";
 
 interface PortfolioDisplay extends PortfolioItem {
   id: string;
@@ -18,22 +18,24 @@ export function PortfolioManagement() {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<PortfolioDisplay | null>(null);
-  const [formData, setFormData] = useState<Omit<PortfolioItem, '_id' | 'createdAt' | 'updatedAt'>>({
-    title: '',
-    client: '',
-    category: '',
-    details: '',
+  const [formData, setFormData] = useState<
+    Omit<PortfolioItem, "_id" | "createdAt" | "updatedAt">
+  >({
+    title: "",
+    client: "",
+    category: "",
+    details: "",
     technology: [],
-    image: '',
-    liveLink: '',
-    activeUsers: ''
+    image: "",
+    liveLink: "",
+    activeUsers: "",
   });
-  const [techInput, setTechInput] = useState('');
+  const [techInput, setTechInput] = useState("");
 
   // Status Modal State
   const [statusModal, setStatusModal] = useState<{
     isOpen: boolean;
-    type: 'success' | 'error';
+    type: "success" | "error";
     title: string;
     message: string;
     action?: () => void;
@@ -41,9 +43,9 @@ export function PortfolioManagement() {
     onSecondaryAction?: () => void;
   }>({
     isOpen: false,
-    type: 'success',
-    title: '',
-    message: ''
+    type: "success",
+    title: "",
+    message: "",
   });
 
   useEffect(() => {
@@ -55,18 +57,18 @@ export function PortfolioManagement() {
       setLoading(true);
       const data = await portfolioApi.getAll();
       // Map _id to id for DataTable compatibility
-      const portfolioWithIds = data.map(item => ({
+      const portfolioWithIds = data.map((item) => ({
         ...item,
-        id: item._id
+        id: item._id,
       }));
       setItems(portfolioWithIds);
     } catch (err: any) {
-      console.error('Error fetching portfolio:', err);
+      console.error("Error fetching portfolio:", err);
       setStatusModal({
         isOpen: true,
-        type: 'error',
-        title: 'Error',
-        message: err.message || 'Failed to load portfolio'
+        type: "error",
+        title: "Error",
+        message: err.message || "Failed to load portfolio",
       });
     } finally {
       setLoading(false);
@@ -82,8 +84,8 @@ export function PortfolioManagement() {
       details: item.details,
       technology: item.technology || [],
       image: item.image,
-      liveLink: item.liveLink || '',
-      activeUsers: item.activeUsers || ''
+      liveLink: item.liveLink || "",
+      activeUsers: item.activeUsers || "",
     });
     setIsModalOpen(true);
   };
@@ -91,42 +93,47 @@ export function PortfolioManagement() {
   const handleDelete = async (item: PortfolioDisplay) => {
     setStatusModal({
       isOpen: true,
-      type: 'error',
-      title: 'Delete Project',
+      type: "error",
+      title: "Delete Project",
       message: `Are you sure you want to delete "${item.title}"?`,
       action: async () => {
         try {
           await portfolioApi.delete(item.id);
-          setItems(items.filter(i => i.id !== item.id));
+          setItems(items.filter((i) => i.id !== item.id));
           setStatusModal({
             isOpen: true,
-            type: 'success',
-            title: 'Deleted',
-            message: 'Project has been deleted successfully.'
+            type: "success",
+            title: "Deleted",
+            message: "Project has been deleted successfully.",
           });
         } catch (err: any) {
-          console.error('Error deleting portfolio item:', err);
+          console.error("Error deleting portfolio item:", err);
           setStatusModal({
             isOpen: true,
-            type: 'error',
-            title: 'Delete Failed',
-            message: err.message || 'Failed to delete item'
+            type: "error",
+            title: "Delete Failed",
+            message: err.message || "Failed to delete item",
           });
         }
       },
-      secondaryActionLabel: 'Cancel'
+      secondaryActionLabel: "Cancel",
     });
   };
 
   const handleSave = async () => {
     try {
       // Basic validation
-      if (!formData.title || !formData.client || !formData.category || !formData.image) {
+      if (
+        !formData.title ||
+        !formData.client ||
+        !formData.category ||
+        !formData.image
+      ) {
         setStatusModal({
           isOpen: true,
-          type: 'error',
-          title: 'Validation Error',
-          message: 'Please fill in all required fields'
+          type: "error",
+          title: "Validation Error",
+          message: "Please fill in all required fields",
         });
         return;
       }
@@ -135,29 +142,29 @@ export function PortfolioManagement() {
         await portfolioApi.update(editingItem.id, formData);
         setStatusModal({
           isOpen: true,
-          type: 'success',
-          title: 'Updated',
-          message: 'Project has been updated successfully.'
+          type: "success",
+          title: "Updated",
+          message: "Project has been updated successfully.",
         });
       } else {
         await portfolioApi.create(formData);
         setStatusModal({
           isOpen: true,
-          type: 'success',
-          title: 'Created',
-          message: 'Project has been created successfully.'
+          type: "success",
+          title: "Created",
+          message: "Project has been created successfully.",
         });
       }
 
       await fetchPortfolio();
       handleCloseModal();
     } catch (err: any) {
-      console.error('Error saving portfolio item:', err);
+      console.error("Error saving portfolio item:", err);
       setStatusModal({
         isOpen: true,
-        type: 'error',
-        title: 'Save Failed',
-        message: err.message || 'Failed to save item'
+        type: "error",
+        title: "Save Failed",
+        message: err.message || "Failed to save item",
       });
     }
   };
@@ -166,39 +173,59 @@ export function PortfolioManagement() {
     setIsModalOpen(false);
     setEditingItem(null);
     setFormData({
-      title: '',
-      client: '',
-      category: '',
-      details: '',
+      title: "",
+      client: "",
+      category: "",
+      details: "",
       technology: [],
-      image: '',
-      liveLink: '',
-      activeUsers: ''
+      image: "",
+      liveLink: "",
+      activeUsers: "",
     });
-    setTechInput('');
+    setTechInput("");
   };
 
   const addTech = () => {
     if (techInput.trim() && !formData.technology.includes(techInput.trim())) {
       setFormData({
         ...formData,
-        technology: [...formData.technology, techInput.trim()]
+        technology: [...formData.technology, techInput.trim()],
       });
-      setTechInput('');
+      setTechInput("");
     }
   };
 
   const removeTech = (techToRemove: string) => {
     setFormData({
       ...formData,
-      technology: formData.technology.filter(t => t !== techToRemove)
+      technology: formData.technology.filter((t) => t !== techToRemove),
     });
+  };
+
+  const handleToggleActive = async (item: PortfolioDisplay) => {
+    try {
+      const newStatus = item.isActive === false ? true : false;
+
+      setItems((prev) =>
+        prev.map((i) => (i.id === item.id ? { ...i, isActive: newStatus } : i)),
+      );
+
+      await portfolioApi.update(item.id, { isActive: newStatus });
+    } catch (err: any) {
+      await fetchPortfolio();
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Toggle Failed",
+        message: err.message || "Failed to update status",
+      });
+    }
   };
 
   const columns = [
     {
-      key: 'title',
-      label: 'Project',
+      key: "title",
+      label: "Project",
       render: (value: string, row: PortfolioDisplay) => (
         <div className="flex items-center gap-3">
           {row.image && (
@@ -207,7 +234,8 @@ export function PortfolioManagement() {
               alt={value}
               className="w-12 h-12 rounded-lg object-cover"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48?text=Img';
+                (e.target as HTMLImageElement).src =
+                  "https://via.placeholder.com/48?text=Img";
               }}
             />
           )}
@@ -216,12 +244,12 @@ export function PortfolioManagement() {
       ),
     },
     {
-      key: 'client',
-      label: 'Client',
+      key: "client",
+      label: "Client",
     },
     {
-      key: 'category',
-      label: 'Category',
+      key: "category",
+      label: "Category",
       render: (value: string) => (
         <span className="px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-bold">
           {value}
@@ -229,8 +257,30 @@ export function PortfolioManagement() {
       ),
     },
     {
-      key: 'technology',
-      label: 'Tech Stack',
+      key: "isActive",
+      label: "Status",
+      render: (value: boolean, row: PortfolioDisplay) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggleActive(row);
+          }}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            row.isActive !== false ? "bg-green-500" : "bg-gray-600"
+          }`}
+          title={row.isActive !== false ? "Published" : "Draft"}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              row.isActive !== false ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
+      ),
+    },
+    {
+      key: "technology",
+      label: "Tech Stack",
       render: (value: string[]) => (
         <div className="flex flex-wrap gap-1">
           {value?.slice(0, 3).map((tech, i) => (
@@ -262,11 +312,14 @@ export function PortfolioManagement() {
             <h1 className="text-4xl font-bold text-white mb-2">
               Portfolio Management
             </h1>
-            <p className="text-gray-400">View and manage your project showcase</p>
+            <p className="text-gray-400">
+              View and manage your project showcase
+            </p>
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all">
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all"
+          >
             <Plus size={20} />
             Add Project
           </button>
@@ -277,17 +330,20 @@ export function PortfolioManagement() {
             title="Total Projects"
             value={items.length}
             icon={Briefcase}
-            color="from-blue-500 to-cyan-500" />
+            color="from-blue-500 to-cyan-500"
+          />
           <ManagementStatsCard
             title="Categories"
             value={new Set(items.map((i) => i.category)).size}
             icon={Briefcase}
-            color="from-purple-500 to-pink-500" />
+            color="from-purple-500 to-pink-500"
+          />
           <ManagementStatsCard
             title="Clients"
             value={new Set(items.map((i) => i.client)).size}
             icon={Briefcase}
-            color="from-green-500 to-emerald-500" />
+            color="from-green-500 to-emerald-500"
+          />
         </div>
 
         <DataTable
@@ -295,14 +351,15 @@ export function PortfolioManagement() {
           data={items}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          searchable />
+          searchable
+        />
 
         <ContentModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
-          title={editingItem ? 'Edit Project' : 'Add New Project'}
+          title={editingItem ? "Edit Project" : "Add New Project"}
           onSave={handleSave}
-          saveLabel={editingItem ? 'Update' : 'Create'}
+          saveLabel={editingItem ? "Update" : "Create"}
         >
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -313,7 +370,9 @@ export function PortfolioManagement() {
                 <input
                   type="text"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
                   placeholder="e.g. E-commerce Platform"
                   required
@@ -327,7 +386,9 @@ export function PortfolioManagement() {
                 <input
                   type="text"
                   value={formData.client}
-                  onChange={(e) => setFormData({ ...formData, client: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, client: e.target.value })
+                  }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
                   placeholder="e.g. Tech Corp"
                   required
@@ -343,7 +404,9 @@ export function PortfolioManagement() {
                 <input
                   type="text"
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
                   placeholder="e.g. Web Development"
                   required
@@ -357,7 +420,9 @@ export function PortfolioManagement() {
                 <input
                   type="text"
                   value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, image: e.target.value })
+                  }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
                   placeholder="https://..."
                   required
@@ -371,7 +436,9 @@ export function PortfolioManagement() {
               </label>
               <textarea
                 value={formData.details}
-                onChange={(e) => setFormData({ ...formData, details: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, details: e.target.value })
+                }
                 rows={3}
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none resize-none"
                 placeholder="Describe the project..."
@@ -386,7 +453,9 @@ export function PortfolioManagement() {
                 <input
                   type="text"
                   value={formData.liveLink}
-                  onChange={(e) => setFormData({ ...formData, liveLink: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, liveLink: e.target.value })
+                  }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
                   placeholder="https://..."
                 />
@@ -399,7 +468,9 @@ export function PortfolioManagement() {
                 <input
                   type="text"
                   value={formData.activeUsers}
-                  onChange={(e) => setFormData({ ...formData, activeUsers: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, activeUsers: e.target.value })
+                  }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
                   placeholder="e.g. 10k+"
                 />
@@ -415,7 +486,9 @@ export function PortfolioManagement() {
                   type="text"
                   value={techInput}
                   onChange={(e) => setTechInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTech())}
+                  onKeyPress={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), addTech())
+                  }
                   className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                   placeholder="Add technology (press Enter)"
                 />
@@ -445,7 +518,6 @@ export function PortfolioManagement() {
                 ))}
               </div>
             </div>
-
           </div>
         </ContentModal>
       </div>
@@ -456,7 +528,7 @@ export function PortfolioManagement() {
         type={statusModal.type}
         title={statusModal.title}
         message={statusModal.message}
-        actionLabel={statusModal.secondaryActionLabel ? 'Confirm' : undefined}
+        actionLabel={statusModal.secondaryActionLabel ? "Confirm" : undefined}
         onAction={statusModal.action}
         secondaryActionLabel={statusModal.secondaryActionLabel}
       />

@@ -203,6 +203,28 @@ export function CaseStudiesManagement() {
     });
   };
 
+  const handleToggleActive = async (study: CaseStudyDisplay) => {
+    try {
+      const newStatus = study.isActive === false ? true : false;
+
+      setStudies((prev) =>
+        prev.map((s) =>
+          s.id === study.id ? { ...s, isActive: newStatus } : s,
+        ),
+      );
+
+      await caseStudiesApi.update(study.id, { isActive: newStatus });
+    } catch (err: any) {
+      await fetchStudies();
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Toggle Failed",
+        message: err.message || "Failed to update status",
+      });
+    }
+  };
+
   const columns = [
     {
       key: "title",
@@ -248,13 +270,25 @@ export function CaseStudiesManagement() {
       },
     },
     {
-      key: "result",
-      label: "Result",
-      render: (value: string) => (
-        <div
-          className="font-bold text-[color:var(--vibrant-green)] line-clamp-2"
-          dangerouslySetInnerHTML={{ __html: value }}
-        />
+      key: "isActive",
+      label: "Status",
+      render: (value: boolean, row: CaseStudyDisplay) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleToggleActive(row);
+          }}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            row.isActive !== false ? "bg-green-500" : "bg-gray-600"
+          }`}
+          title={row.isActive !== false ? "Published" : "Draft"}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              row.isActive !== false ? "translate-x-6" : "translate-x-1"
+            }`}
+          />
+        </button>
       ),
     },
     {
