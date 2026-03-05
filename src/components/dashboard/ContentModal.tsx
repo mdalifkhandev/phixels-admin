@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
+import { useState } from 'react';
 interface ContentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,6 +20,19 @@ export function ContentModal({
   saveLabel = 'Save',
   isLoading = false
 }: ContentModalProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const busy = isLoading || isSubmitting;
+
+  const handleSave = async () => {
+    if (!onSave || busy) return;
+    setIsSubmitting(true);
+    try {
+      await Promise.resolve(onSave());
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen &&
@@ -60,7 +74,8 @@ export function ContentModal({
                 <h2 className="text-2xl font-bold text-white">{title}</h2>
                 <button
                 onClick={onClose}
-                className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
+                disabled={busy}
+                className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
 
                   <X size={20} />
                 </button>
@@ -76,16 +91,17 @@ export function ContentModal({
             <div className="flex items-center justify-end gap-3 p-6 border-t border-white/10">
                   <button
                 onClick={onClose}
-                className="px-6 py-2 rounded-lg border border-white/10 text-white hover:bg-white/5 transition-colors">
+                disabled={busy}
+                className="px-6 py-2 rounded-lg border border-white/10 text-white hover:bg-white/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
 
                     Cancel
                   </button>
                   <button
-                onClick={onSave}
-                disabled={isLoading}
+                onClick={handleSave}
+                disabled={busy}
                 className="px-6 py-2 rounded-lg bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
 
-                    {isLoading ? 'Saving...' : saveLabel}
+                    {busy ? 'Saving...' : saveLabel}
                   </button>
                 </div>
             }

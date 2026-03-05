@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
 
 interface StatusModalProps {
     isOpen: boolean;
@@ -24,6 +25,28 @@ export function StatusModal({
     secondaryActionLabel,
     onSecondaryAction
 }: StatusModalProps) {
+    const [isActing, setIsActing] = useState(false);
+
+    const handleAction = async () => {
+        if (isActing) return;
+        setIsActing(true);
+        try {
+            await Promise.resolve((onAction || onClose)());
+        } finally {
+            setIsActing(false);
+        }
+    };
+
+    const handleSecondaryAction = async () => {
+        if (isActing) return;
+        setIsActing(true);
+        try {
+            await Promise.resolve((onSecondaryAction || onClose)());
+        } finally {
+            setIsActing(false);
+        }
+    };
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -46,6 +69,7 @@ export function StatusModal({
                             <div className="flex justify-end">
                                 <button
                                     onClick={onClose}
+                                    disabled={isActing}
                                     className="text-gray-400 hover:text-white transition-colors"
                                 >
                                     <X size={20} />
@@ -76,20 +100,24 @@ export function StatusModal({
                                 <div className="flex gap-2 w-full mt-4">
                                     {secondaryActionLabel && (
                                         <button
-                                            onClick={onSecondaryAction || onClose}
-                                            className="flex-1 py-3 rounded-xl font-bold text-gray-400 bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
+                                            onClick={handleSecondaryAction}
+                                            disabled={isActing}
+                                            className="flex-1 py-3 rounded-xl font-bold text-gray-400 bg-white/5 border border-white/10 hover:bg-white/10 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {secondaryActionLabel}
                                         </button>
                                     )}
                                     <button
-                                        onClick={onAction || onClose}
+                                        onClick={handleAction}
+                                        disabled={isActing}
                                         className={`${secondaryActionLabel ? 'flex-1' : 'w-full'} py-3 rounded-xl font-bold text-white transition-all ${type === 'success'
                                             ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]'
                                             : 'bg-gradient-to-r from-red-500 to-rose-600 hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]'
                                             }`}
                                     >
-                                        {actionLabel || (type === 'success' ? 'Continue' : 'Try Again')}
+                                        {isActing
+                                            ? 'Loading...'
+                                            : actionLabel || (type === 'success' ? 'Continue' : 'Try Again')}
                                     </button>
                                 </div>
                             </div>

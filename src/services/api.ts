@@ -241,6 +241,10 @@ export const reviewsApi = {
     const response = await apiClient.delete(`/reviews/${id}`);
     return getData(response);
   },
+  reorder: async (orderedIds: string[]) => {
+    const response = await apiClient.patch("/reviews/reorder", { orderedIds });
+    return getData(response);
+  },
 };
 
 // Blogs API
