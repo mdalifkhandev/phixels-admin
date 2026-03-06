@@ -663,4 +663,11 @@ export const usersApi = {
   },
 };
 
+export const activityLogsApi = {
+  getAll: async (): Promise<any[]> => {
+    const response = await apiClient.get("/activity-logs");
+    return getData<any[]>(response);
+  },
+};
+
 export default apiClient;

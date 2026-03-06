@@ -20,10 +20,16 @@ import {
   Ban,
   CheckCircle,
   UserPlus,
+  History,
 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { StatusModal } from "../../components/dashboard/StatusModal";
-import { settingsApi, authApi, usersApi } from "../../services/api";
+import {
+  settingsApi,
+  authApi,
+  usersApi,
+  activityLogsApi,
+} from "../../services/api";
 import type { DashboardSettings } from "../../types/types";
 
 const defaultSettings: DashboardSettings = {
@@ -49,6 +55,8 @@ export function SettingsPage() {
   const [settings, setSettings] = useState<DashboardSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<any[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [logsLoading, setLogsLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [changePwModal, setChangePwModal] = useState(false);
   const [changePwForm, setChangePwForm] = useState({
@@ -79,9 +87,21 @@ export function SettingsPage() {
     name: "",
     email: "",
     password: "",
-    role: "user",
+    role: "staff",
     isDeleted: false,
   });
+
+  const handleLogsRefresh = async () => {
+    setLogsLoading(true);
+    try {
+      const data = await activityLogsApi.getAll();
+      setLogs(data || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLogsLoading(false);
+    }
+  };
 
   const handleUserRefresh = async () => {
     try {
@@ -103,7 +123,8 @@ export function SettingsPage() {
           role: userForm.role,
         });
       } else {
-        await usersApi.create(userForm);
+        const { _id, ...newUserData } = userForm;
+        await usersApi.create(newUserData);
       }
       setStatusModal({
         isOpen: true,
@@ -206,7 +227,11 @@ export function SettingsPage() {
   }, []);
 
   const toggleSection = (section: string) => {
-    setActiveSection(activeSection === section ? null : section);
+    const nextSection = activeSection === section ? null : section;
+    setActiveSection(nextSection);
+    if (nextSection === "logs") {
+      handleLogsRefresh();
+    }
   };
 
   const handleSave = async (section: "notifications" | "account") => {
@@ -710,9 +735,18 @@ export function SettingsPage() {
                         </td>
                         <td className="py-3 px-4 text-sm">
                           <span
-                            className={`px-2 py-1 bg-[color:var(--bright-red)]/10 text-[color:var(--bright-red)] rounded text-xs font-bold uppercase`}
+                            className={`px-2 py-1 rounded text-xs font-bold uppercase 
+                            ${
+                              user.role === "super_admin"
+                                ? "bg-purple-500/10 text-purple-400"
+                                : user.role === "admin"
+                                  ? "bg-[color:var(--bright-red)]/10 text-[color:var(--bright-red)]"
+                                  : user.role === "client"
+                                    ? "bg-blue-500/10 text-blue-400"
+                                    : "bg-green-500/10 text-green-400"
+                            }`}
                           >
-                            {user.role}
+                            {user.role?.replace("_", " ")}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-sm">
@@ -767,6 +801,71 @@ export function SettingsPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "logs",
+      title: "Activity Logs",
+      icon: History,
+      description: "Track administrator activities and modifications",
+      content: (
+        <div className="space-y-6">
+          <div className="p-4 bg-[#0A0A0A] rounded-xl border border-white/10">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                System Activity
+              </h3>
+              <Button
+                variant="outline"
+                className="text-xs"
+                onClick={handleLogsRefresh}
+                disabled={logsLoading}
+              >
+                Refresh Logs
+              </Button>
+            </div>
+
+            {logsLoading ? (
+              <div className="text-center py-10">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[color:var(--bright-red)]"></div>
+                <p className="mt-2 text-gray-400 text-sm">Fetching logs...</p>
+              </div>
+            ) : logs.length === 0 ? (
+              <div className="text-center py-10 text-gray-500 text-sm">
+                No recent activity logs found.
+              </div>
+            ) : (
+              <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                {logs.map((log, index) => (
+                  <div
+                    key={log._id || index}
+                    className="flex items-start gap-4 p-4 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 transition-colors"
+                  >
+                    <div className="p-2 rounded-lg bg-[color:var(--bright-red)]/10 text-[color:var(--bright-red)] mt-1">
+                      <Shield size={16} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-4 mb-1">
+                        <span className="text-sm font-bold text-white truncate">
+                          {log.userName}
+                        </span>
+                        <span className="text-[10px] text-gray-500 font-medium whitespace-nowrap">
+                          {new Date(log.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-400 mb-1 truncate">
+                        {log.userEmail}
+                      </p>
+                      <p className="text-sm text-gray-300">
+                        {log.actionDescription}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -857,20 +956,23 @@ export function SettingsPage() {
                     <div className="p-6 pt-0 border-t border-white/5">
                       <div className="pt-6">
                         {section.content}
-                        <div className="mt-6 flex justify-end pt-4 border-t border-white/5">
-                          <Button
-                            variant="primary"
-                            className="px-8"
-                            onClick={() =>
-                              handleSave(
-                                section.id as "notifications" | "account",
-                              )
-                            }
-                            disabled={saving}
-                          >
-                            {saving ? "Saving..." : "Save Changes"}
-                          </Button>
-                        </div>
+                        {(section.id === "notifications" ||
+                          section.id === "account") && (
+                          <div className="mt-6 flex justify-end pt-4 border-t border-white/5">
+                            <Button
+                              variant="primary"
+                              className="px-8"
+                              onClick={() =>
+                                handleSave(
+                                  section.id as "notifications" | "account",
+                                )
+                              }
+                              disabled={saving}
+                            >
+                              {saving ? "Saving..." : "Save Changes"}
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </motion.div>
@@ -976,8 +1078,10 @@ export function SettingsPage() {
                       }
                       className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none appearance-none cursor-pointer"
                     >
-                      <option value="user">Staff (User)</option>
-                      <option value="admin">Administrator</option>
+                      <option value="client">Client</option>
+                      <option value="staff">Staff / Employee</option>
+                      <option value="admin">Administrator / Manager</option>
+                      <option value="super_admin">Super Admin (Founder)</option>
                     </select>
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                       <ChevronDown size={18} />
