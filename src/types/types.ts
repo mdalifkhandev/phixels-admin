@@ -6,6 +6,8 @@ export interface User {
   fullName?: string;
   email: string;
   role?: string;
+  passwordLastChangedAt?: string;
+  twoFactorEnabled?: boolean;
 }
 
 export interface AuthResponse {

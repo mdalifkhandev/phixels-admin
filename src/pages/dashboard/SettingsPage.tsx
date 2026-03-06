@@ -31,6 +31,7 @@ import {
   activityLogsApi,
 } from "../../services/api";
 import type { DashboardSettings } from "../../types/types";
+import { useAuth } from "../../context/AuthContext";
 
 const defaultSettings: DashboardSettings = {
   notificationRecipients: ["phixels.io@gmail.com"],
@@ -49,6 +50,7 @@ const defaultSettings: DashboardSettings = {
 };
 
 export function SettingsPage() {
+  const { user: currentUser, updateUser } = useAuth();
   const [activeSection, setActiveSection] = useState<string | null>(
     "notifications",
   );
@@ -201,7 +203,16 @@ export function SettingsPage() {
           },
           account: {
             ...defaultSettings.account,
-            ...(data.account || {}),
+            // Strictly use current user data for the account section
+            fullName:
+              currentUser?.name ||
+              currentUser?.fullName ||
+              defaultSettings.account.fullName,
+            email: currentUser?.email || defaultSettings.account.email,
+            passwordLastChangedAt: currentUser?.passwordLastChangedAt,
+            twoFactorEnabled:
+              currentUser?.twoFactorEnabled ||
+              defaultSettings.account.twoFactorEnabled,
           },
           notificationRecipients:
             data.notificationRecipients &&
@@ -224,7 +235,24 @@ export function SettingsPage() {
 
     fetchSettings();
     handleUserRefresh();
-  }, []);
+  }, [currentUser]); // Added currentUser to dependencies
+
+  useEffect(() => {
+    if (currentUser) {
+      setSettings((prev) => ({
+        ...prev,
+        account: {
+          ...prev.account,
+          fullName:
+            currentUser.name || currentUser.fullName || prev.account.fullName,
+          email: currentUser.email || prev.account.email,
+          passwordLastChangedAt:
+            currentUser.passwordLastChangedAt ||
+            prev.account.passwordLastChangedAt,
+        },
+      }));
+    }
+  }, [currentUser]);
 
   const toggleSection = (section: string) => {
     const nextSection = activeSection === section ? null : section;
@@ -243,9 +271,18 @@ export function SettingsPage() {
           alerts: settings.alerts,
         });
       } else {
-        await settingsApi.update({
-          account: settings.account,
-        });
+        // No longer update global account settings, as they've been removed in favor of per-user profiles.
+        // We only update the personal user profile here.
+
+        // Also update current user profile if it's the account section
+        if (currentUser?.id) {
+          const updatedUser = await usersApi.update(currentUser.id, {
+            name: settings.account.fullName,
+          });
+          if (updatedUser) {
+            updateUser(updatedUser);
+          }
+        }
       }
 
       setStatusModal({
@@ -298,15 +335,22 @@ export function SettingsPage() {
 
     setChangePwLoading(true);
     try {
-      const stored = localStorage.getItem("dashboard_user");
-      const user = stored ? JSON.parse(stored) : null;
-      const email = user?.email || settings.account.email;
+      const email = currentUser?.email;
+      if (!email) throw new Error("User email not found");
 
       await authApi.changePassword({
         email,
         currentPassword: changePwForm.currentPassword,
         newPassword: changePwForm.newPassword,
       });
+
+      // Update the currentUser in context to reflect new passwordLastChangedAt
+      if (currentUser) {
+        updateUser({
+          ...currentUser,
+          passwordLastChangedAt: new Date().toISOString(),
+        });
+      }
 
       setChangePwModal(false);
       setChangePwForm({
@@ -587,6 +631,7 @@ export function SettingsPage() {
                   }))
                 }
                 className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                placeholder="Enter your full name"
               />
             </div>
             <div className="space-y-2">
@@ -596,13 +641,8 @@ export function SettingsPage() {
               <input
                 type="email"
                 value={settings.account.email}
-                onChange={(e) =>
-                  setSettings((prev) => ({
-                    ...prev,
-                    account: { ...prev.account, email: e.target.value },
-                  }))
-                }
-                className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                disabled
+                className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none opacity-60 cursor-not-allowed"
               />
             </div>
           </div>
@@ -620,7 +660,10 @@ export function SettingsPage() {
                     {settings.account.passwordLastChangedAt
                       ? new Date(
                           settings.account.passwordLastChangedAt,
-                        ).toLocaleDateString()
+                        ).toLocaleString(undefined, {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                        })
                       : "N/A"}
                   </div>
                 </div>
