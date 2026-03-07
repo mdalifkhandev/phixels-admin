@@ -412,7 +412,7 @@ export function ProductsManagement() {
     {
       key: "isActive",
       label: "Status",
-      render: (value: boolean, row: ProductDisplay) => (
+      render: (_: boolean, row: ProductDisplay) => (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -790,9 +790,13 @@ export function ProductsManagement() {
                 type="text"
                 value={featureInput}
                 onChange={(e) => setFeatureInput(e.target.value)}
-                onKeyPress={(e) =>
-                  e.key === "Enter" && (e.preventDefault(), addFeature())
-                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    addFeature();
+                  }
+                }}
                 className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                 placeholder="Add feature (press Enter)"
               />

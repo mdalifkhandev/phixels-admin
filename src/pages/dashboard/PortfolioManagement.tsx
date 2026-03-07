@@ -259,7 +259,7 @@ export function PortfolioManagement() {
     {
       key: "isActive",
       label: "Status",
-      render: (value: boolean, row: PortfolioDisplay) => (
+      render: (_: boolean, row: PortfolioDisplay) => (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -486,9 +486,13 @@ export function PortfolioManagement() {
                   type="text"
                   value={techInput}
                   onChange={(e) => setTechInput(e.target.value)}
-                  onKeyPress={(e) =>
-                    e.key === "Enter" && (e.preventDefault(), addTech())
-                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      addTech();
+                    }
+                  }}
                   className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                   placeholder="Add technology (press Enter)"
                 />

@@ -504,9 +504,13 @@ export function CareersManagement() {
                   type="text"
                   value={reqInput}
                   onChange={(e) => setReqInput(e.target.value)}
-                  onKeyPress={(e) =>
-                    e.key === "Enter" && (e.preventDefault(), addRequirement())
-                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      addRequirement();
+                    }
+                  }}
                   className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                   placeholder="Add requirement (press Enter)"
                 />
@@ -547,10 +551,13 @@ export function CareersManagement() {
                   type="text"
                   value={respInput}
                   onChange={(e) => setRespInput(e.target.value)}
-                  onKeyPress={(e) =>
-                    e.key === "Enter" &&
-                    (e.preventDefault(), addResponsibility())
-                  }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      addResponsibility();
+                    }
+                  }}
                   className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                   placeholder="Add responsibility (press Enter)"
                 />

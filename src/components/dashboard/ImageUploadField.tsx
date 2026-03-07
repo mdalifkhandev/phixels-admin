@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { X, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useRef } from "react";
+import { X, Image as ImageIcon } from "lucide-react";
 
 interface ImageUploadFieldProps {
   value: string;
@@ -12,7 +12,7 @@ export function ImageUploadField({
   value,
   onChange,
   onFileChange,
-  label
+  label,
 }: ImageUploadFieldProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -42,68 +42,82 @@ export function ImageUploadField({
     fileInputRef.current?.click();
   };
 
+  const clearImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <label className="text-sm text-gray-400 font-medium">{label}</label>
 
-      {value ? (
-        <div className="relative group">
+      {/* Preview Section */}
+      {value && (
+        <div className="relative group rounded-xl overflow-hidden border border-white/10 bg-white/5 aspect-video flex items-center justify-center">
           <img
             src={value}
             alt="Preview"
-            className="w-full h-48 object-cover rounded-xl border border-white/10"
+            className="w-full h-full object-contain"
           />
-
           <button
             type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              onChange('');
-            }}
-            className="absolute top-2 right-2 p-2 rounded-lg bg-black/80 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={clearImage}
+            className="absolute top-2 right-2 p-2 rounded-lg bg-black/80 text-white hover:bg-red-500 transition-colors z-10"
+            title="Clear Image"
           >
             <X size={16} />
           </button>
         </div>
-      ) : (
-        <div
-          onClick={handleClick}
-          onDragOver={(e) => {
-            e.preventDefault();
-            setIsDragging(true);
-          }}
-          onDragLeave={() => setIsDragging(false)}
-          onDrop={handleDrop}
-          className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${isDragging
-            ? 'border-[color:var(--bright-red)] bg-[color:var(--bright-red)]/5'
-            : 'border-white/10 hover:border-white/20'
-            }`}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              if (e.target.files && e.target.files[0]) {
-                handleFileSelect(e.target.files[0]);
-              }
-            }}
-          />
-
-          <ImageIcon className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-          <p className="text-gray-400 mb-2">Drag & drop or click to upload</p>
-          <div onClick={(e) => e.stopPropagation()}>
-            <input
-              type="text"
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              placeholder="Or paste image URL"
-              className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
-            />
-          </div>
-        </div>
       )}
+
+      {/* Upload/Input Section */}
+      <div
+        onClick={handleClick}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={handleDrop}
+        className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors cursor-pointer ${
+          isDragging
+            ? "border-[color:var(--bright-red)] bg-[color:var(--bright-red)]/5"
+            : "border-white/10 hover:border-white/20 bg-white/5"
+        }`}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            if (e.target.files && e.target.files[0]) {
+              handleFileSelect(e.target.files[0]);
+            }
+          }}
+        />
+
+        <div className="flex flex-col items-center gap-2 mb-4">
+          <ImageIcon className="w-8 h-8 text-gray-400" />
+          <p className="text-sm text-gray-400">
+            {value ? "Change Image: " : ""}Drag & drop or{" "}
+            <span className="text-[color:var(--bright-red)] font-semibold">
+              click to upload
+            </span>
+          </p>
+        </div>
+
+        <div onClick={(e) => e.stopPropagation()} className="relative">
+          <input
+            type="text"
+            value={value.startsWith("blob:") ? "" : value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Or paste image URL"
+            className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white text-sm focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
+          />
+        </div>
+      </div>
     </div>
   );
 }
