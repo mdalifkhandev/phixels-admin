@@ -136,13 +136,21 @@ export function CaseStudiesManagement() {
   const handleSave = async () => {
     try {
       // Basic Validation
-      if (!form.title || !form.client || !form.challenge || !form.solution) {
+      if (
+        !form.title ||
+        !form.client ||
+        !form.category ||
+        !form.challenge ||
+        !form.solution ||
+        !form.image ||
+        !form.result
+      ) {
         setStatusModal({
           isOpen: true,
           type: "error",
           title: "Validation Error",
           message:
-            "Please fill in all required fields (Client, Title, Challenge, Solution).",
+            "Please fill in all required fields (Client, Category, Title, Thumbnail, Challenge, Solution, and Results).",
         });
         return;
       }
@@ -272,7 +280,7 @@ export function CaseStudiesManagement() {
     {
       key: "isActive",
       label: "Status",
-      render: (value: boolean, row: CaseStudyDisplay) => (
+      render: (_value: boolean, row: CaseStudyDisplay) => (
         <button
           onClick={(e) => {
             e.stopPropagation();
