@@ -364,6 +364,21 @@ export const portfolioApi = {
     const response = await apiClient.delete(`/portfolio/${id}`);
     return getData(response);
   },
+  uploadImage: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await apiClient.post("/portfolio/upload-image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    const payload = getData<{ image: string }>(response);
+    return payload.image;
+  },
+  reorder: async (orderedIds: string[]) => {
+    const response = await apiClient.patch("/portfolio/reorder", {
+      orderedIds,
+    });
+    return getData(response);
+  },
 };
 
 // Case Studies API
@@ -386,6 +401,25 @@ export const caseStudiesApi = {
   },
   delete: async (id: string) => {
     const response = await apiClient.delete(`/case-studies/${id}`);
+    return getData(response);
+  },
+  uploadImage: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await apiClient.post(
+      "/case-studies/upload-image",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+    const payload = getData<{ image: string }>(response);
+    return payload.image;
+  },
+  reorder: async (orderedIds: string[]) => {
+    const response = await apiClient.patch("/case-studies/reorder", {
+      orderedIds,
+    });
     return getData(response);
   },
 };

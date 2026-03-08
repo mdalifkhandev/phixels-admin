@@ -6,6 +6,7 @@ import { ContentModal } from "../../components/dashboard/ContentModal";
 import { StatusModal } from "../../components/dashboard/StatusModal";
 import { portfolioApi } from "../../services/api";
 import type { PortfolioItem } from "../../types/types";
+import { ImageUploadField } from "../../components/dashboard/ImageUploadField";
 
 interface PortfolioDisplay extends PortfolioItem {
   id: string;
@@ -222,6 +223,21 @@ export function PortfolioManagement() {
     }
   };
 
+  const handleReorder = async (newData: any[]) => {
+    try {
+      setItems(newData);
+      await portfolioApi.reorder(newData.map((item) => item.id));
+    } catch (err: any) {
+      await fetchPortfolio();
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Reorder Failed",
+        message: err.message || "Failed to reorder portfolio items",
+      });
+    }
+  };
+
   const columns = [
     {
       key: "title",
@@ -352,6 +368,7 @@ export function PortfolioManagement() {
           onEdit={handleEdit}
           onDelete={handleDelete}
           searchable
+          onReorder={handleReorder}
         />
 
         <ContentModal
@@ -413,21 +430,26 @@ export function PortfolioManagement() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm text-gray-400 font-medium">
-                  Image URL *
-                </label>
-                <input
-                  type="text"
-                  value={formData.image}
-                  onChange={(e) =>
-                    setFormData({ ...formData, image: e.target.value })
+              <ImageUploadField
+                value={formData.image}
+                onChange={(url: string) =>
+                  setFormData({ ...formData, image: url })
+                }
+                onFileChange={async (file: File) => {
+                  try {
+                    const url = await portfolioApi.uploadImage(file);
+                    setFormData({ ...formData, image: url });
+                  } catch (err: any) {
+                    setStatusModal({
+                      isOpen: true,
+                      type: "error",
+                      title: "Upload Failed",
+                      message: err.message || "Failed to upload image",
+                    });
                   }
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
-                  placeholder="https://..."
-                  required
-                />
-              </div>
+                }}
+                label="Portfolio Image *"
+              />
             </div>
 
             <div className="space-y-2">

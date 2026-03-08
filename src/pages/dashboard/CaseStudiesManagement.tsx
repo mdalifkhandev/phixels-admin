@@ -233,6 +233,21 @@ export function CaseStudiesManagement() {
     }
   };
 
+  const handleReorder = async (newData: any[]) => {
+    try {
+      setStudies(newData);
+      await caseStudiesApi.reorder(newData.map((s) => s.id));
+    } catch (err: any) {
+      await fetchStudies();
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Reorder Failed",
+        message: err.message || "Failed to reorder case studies",
+      });
+    }
+  };
+
   const columns = [
     {
       key: "title",
@@ -356,6 +371,7 @@ export function CaseStudiesManagement() {
           onEdit={handleEdit}
           onDelete={handleDelete}
           searchable
+          onReorder={handleReorder}
         />
       </div>
 

@@ -95,6 +95,7 @@ export interface PortfolioItem {
   image: string;
   liveLink?: string;
   isActive?: boolean;
+  sortOrder?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -111,6 +112,7 @@ export interface CaseStudy {
   image: string;
   link: string;
   isActive?: boolean;
+  sortOrder?: number;
   createdAt?: string;
   updatedAt?: string;
 }
