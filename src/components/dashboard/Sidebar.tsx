@@ -21,6 +21,7 @@ import {
   MessageSquare,
   Star,
   Wrench,
+  Info,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { StatusModal } from "./StatusModal";
@@ -110,6 +111,11 @@ const categories: MenuCategory[] = [
         name: "Careers",
         path: "/dashboard/careers",
         icon: Users,
+      },
+      {
+        name: "About Page",
+        path: "/dashboard/about",
+        icon: Info,
       },
     ],
   },

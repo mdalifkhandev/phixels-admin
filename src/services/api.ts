@@ -27,6 +27,8 @@ import type {
   DashboardSettings,
   ServiceCategory,
   ServiceSubcategory,
+  AboutContent,
+  TeamMember,
 } from "../types/types";
 
 // Base URL from environment (fallback to production API)
@@ -675,6 +677,96 @@ export const settingsApi = {
   ): Promise<DashboardSettings> => {
     const response = await apiClient.patch("/settings", data);
     return getData<DashboardSettings>(response);
+  },
+};
+
+export const aboutContentApi = {
+  get: async (): Promise<AboutContent> => {
+    const response = await apiClient.get("/about-content");
+    return getData<AboutContent>(response);
+  },
+  update: async (data: Partial<AboutContent>): Promise<AboutContent> => {
+    const response = await apiClient.put("/about-content", data);
+    return getData<AboutContent>(response);
+  },
+  uploadImage: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await apiClient.post("/about-content/upload-image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    const payload = getData<{ image: string }>(response);
+    return payload.image;
+  },
+};
+
+export const teamMembersApi = {
+  uploadImage: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await apiClient.post("/team-members/upload-image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    const payload = getData<{ image: string }>(response);
+    return payload.image;
+  },
+  create: async (data: Omit<TeamMember, "_id">, imageFile?: File) => {
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("role", data.role);
+      formData.append("isActive", String(data.isActive ?? true));
+      formData.append("sortOrder", String(data.sortOrder ?? 0));
+      formData.append("socialLinks", JSON.stringify(data.socialLinks ?? {}));
+      formData.append("image", imageFile);
+      const response = await apiClient.post("/team-members", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return getData<TeamMember>(response);
+    }
+
+    const response = await apiClient.post("/team-members", data);
+    return getData<TeamMember>(response);
+  },
+  getAll: async (): Promise<TeamMember[]> => {
+    const response = await apiClient.get("/team-members?all=true");
+    return getData<TeamMember[]>(response);
+  },
+  getOne: async (id: string): Promise<TeamMember> => {
+    const response = await apiClient.get(`/team-members/${id}`);
+    return getData<TeamMember>(response);
+  },
+  update: async (id: string, data: Partial<TeamMember>, imageFile?: File) => {
+    if (imageFile) {
+      const formData = new FormData();
+      if (data.name !== undefined) formData.append("name", data.name);
+      if (data.role !== undefined) formData.append("role", data.role);
+      if (data.isActive !== undefined) {
+        formData.append("isActive", String(data.isActive));
+      }
+      if (data.sortOrder !== undefined) {
+        formData.append("sortOrder", String(data.sortOrder));
+      }
+      if (data.socialLinks !== undefined) {
+        formData.append("socialLinks", JSON.stringify(data.socialLinks));
+      }
+      formData.append("image", imageFile);
+      const response = await apiClient.patch(`/team-members/${id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      return getData<TeamMember>(response);
+    }
+
+    const response = await apiClient.patch(`/team-members/${id}`, data);
+    return getData<TeamMember>(response);
+  },
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/team-members/${id}`);
+    return getData(response);
+  },
+  reorder: async (orderedIds: string[]) => {
+    const response = await apiClient.patch("/team-members/reorder", { orderedIds });
+    return getData(response);
   },
 };
 

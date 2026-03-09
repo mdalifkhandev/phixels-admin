@@ -27,6 +27,7 @@ import { ProductsManagement } from './pages/dashboard/ProductsManagement';
 import { ServicesManagement } from './pages/dashboard/ServicesManagement';
 import { ReviewsManagement } from './pages/dashboard/ReviewsManagement';
 import { CareersManagement } from './pages/dashboard/CareersManagement';
+import { AboutManagement } from './pages/dashboard/AboutManagement';
 // Marketing Pages
 import { LeadManagement } from './pages/dashboard/LeadManagement';
 import { CampaignIntegration } from './pages/dashboard/CampaignIntegration';
@@ -69,6 +70,7 @@ export function App() {
               <Route path="services" element={<ServicesManagement />} />
               <Route path="reviews" element={<ReviewsManagement />} />
               <Route path="careers" element={<CareersManagement />} />
+              <Route path="about" element={<AboutManagement />} />
 
               {/* Marketing */}
               <Route path="leads" element={<LeadManagement />} />
