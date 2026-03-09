@@ -29,6 +29,7 @@ import type {
   ServiceSubcategory,
   AboutContent,
   TeamMember,
+  PageMetricsContent,
 } from "../types/types";
 
 // Base URL from environment (fallback to production API)
@@ -767,6 +768,19 @@ export const teamMembersApi = {
   reorder: async (orderedIds: string[]) => {
     const response = await apiClient.patch("/team-members/reorder", { orderedIds });
     return getData(response);
+  },
+};
+
+export const pageMetricsApi = {
+  get: async (): Promise<PageMetricsContent> => {
+    const response = await apiClient.get("/page-metrics");
+    return getData<PageMetricsContent>(response);
+  },
+  update: async (
+    data: Partial<PageMetricsContent>,
+  ): Promise<PageMetricsContent> => {
+    const response = await apiClient.put("/page-metrics", data);
+    return getData<PageMetricsContent>(response);
   },
 };
 

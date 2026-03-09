@@ -22,6 +22,7 @@ import {
   Star,
   Wrench,
   Info,
+  ChartColumn,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { StatusModal } from "./StatusModal";
@@ -116,6 +117,11 @@ const categories: MenuCategory[] = [
         name: "About Page",
         path: "/dashboard/about",
         icon: Info,
+      },
+      {
+        name: "Page Metrics",
+        path: "/dashboard/page-metrics",
+        icon: ChartColumn,
       },
     ],
   },

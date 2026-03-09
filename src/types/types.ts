@@ -470,6 +470,24 @@ export interface TeamMember {
   updatedAt?: string;
 }
 
+export type PageMetricIconKey = "users" | "download" | "star" | "trending-up";
+
+export interface PageMetric {
+  label: string;
+  value: number;
+  suffix: string;
+  iconKey?: PageMetricIconKey;
+}
+
+export interface PageMetricsContent {
+  _id?: string;
+  homeHeroMetrics: [PageMetric, PageMetric];
+  servicesPageMetrics: [PageMetric, PageMetric, PageMetric, PageMetric];
+  productsPageMetrics: [PageMetric, PageMetric, PageMetric, PageMetric];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // API Response wrapper
 export interface ApiResponse<T> {
   success: boolean;

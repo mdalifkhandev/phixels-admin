@@ -28,6 +28,7 @@ import { ServicesManagement } from './pages/dashboard/ServicesManagement';
 import { ReviewsManagement } from './pages/dashboard/ReviewsManagement';
 import { CareersManagement } from './pages/dashboard/CareersManagement';
 import { AboutManagement } from './pages/dashboard/AboutManagement';
+import { PageMetricsManagement } from './pages/dashboard/PageMetricsManagement';
 // Marketing Pages
 import { LeadManagement } from './pages/dashboard/LeadManagement';
 import { CampaignIntegration } from './pages/dashboard/CampaignIntegration';
@@ -71,6 +72,7 @@ export function App() {
               <Route path="reviews" element={<ReviewsManagement />} />
               <Route path="careers" element={<CareersManagement />} />
               <Route path="about" element={<AboutManagement />} />
+              <Route path="page-metrics" element={<PageMetricsManagement />} />
 
               {/* Marketing */}
               <Route path="leads" element={<LeadManagement />} />
