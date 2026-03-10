@@ -365,7 +365,7 @@ export function AboutManagement() {
                   {
                     key: "member",
                     label: "Member",
-                    render: (value: any, row: any) => (
+                    render: (_: any, row: any) => (
                       <div className="flex items-center space-x-3">
                         {row.image ? (
                           <img src={row.image} alt={row.name} className="w-10 h-10 rounded-full object-cover border border-white/10" />
@@ -382,7 +382,7 @@ export function AboutManagement() {
                   {
                     key: "status",
                     label: "Status",
-                    render: (value: any, row: any) => (
+                    render: (_: any, row: any) => (
                       <span className={`px-2 py-1 text-xs rounded-full ${row.isActive ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}`}>
                         {row.isActive ? "Active" : "Inactive"}
                       </span>
@@ -391,7 +391,7 @@ export function AboutManagement() {
                   {
                     key: "links",
                     label: "Links",
-                    render: (value: any, row: any) => {
+                    render: (_: any, row: any) => {
                       const links = [];
                       if (row.socialLinks?.linkedin) links.push("IN");
                       if (row.socialLinks?.twitter) links.push("TW");

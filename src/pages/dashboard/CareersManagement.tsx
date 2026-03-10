@@ -412,16 +412,20 @@ export function CareersManagement() {
                 <label className="text-sm text-gray-400 font-medium">
                   Job Type *
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.jobType}
                   onChange={(e) =>
                     setFormData({ ...formData, jobType: e.target.value })
                   }
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-                  placeholder="Full-time"
+                  className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                   required
-                />
+                >
+                  <option value="Full-time">Full-time</option>
+                  <option value="Part-time">Part-time</option>
+                  <option value="Remote">Remote</option>
+                  <option value="Contract">Contract</option>
+                  <option value="Internship">Internship</option>
+                </select>
               </div>
               <div className="space-y-2">
                 <label className="text-sm text-gray-400 font-medium">
