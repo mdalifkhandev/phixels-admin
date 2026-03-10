@@ -4,7 +4,7 @@ import { DataTable } from "../../components/dashboard/DataTable";
 import { ManagementStatsCard } from "../../components/dashboard/ManagementStatsCard";
 import { ContentModal } from "../../components/dashboard/ContentModal";
 import { StatusModal } from "../../components/dashboard/StatusModal";
-import { portfolioApi } from "../../services/api";
+import { portfolioApi, servicesApi } from "../../services/api";
 import type { PortfolioItem } from "../../types/types";
 import { ImageUploadField } from "../../components/dashboard/ImageUploadField";
 
@@ -14,6 +14,7 @@ interface PortfolioDisplay extends PortfolioItem {
 
 export function PortfolioManagement() {
   const [items, setItems] = useState<PortfolioDisplay[]>([]);
+  const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Modal State
@@ -56,13 +57,19 @@ export function PortfolioManagement() {
   const fetchPortfolio = async () => {
     try {
       setLoading(true);
-      const data = await portfolioApi.getAll();
+      const [data, servicesData] = await Promise.all([
+        portfolioApi.getAll(),
+        servicesApi.getCategories()
+      ]);
       // Map _id to id for DataTable compatibility
-      const portfolioWithIds = data.map((item) => ({
+      const portfolioWithIds = data.map((item: any) => ({
         ...item,
         id: item._id,
       }));
       setItems(portfolioWithIds);
+      if (Array.isArray(servicesData)) {
+        setServices(servicesData);
+      }
     } catch (err: any) {
       console.error("Error fetching portfolio:", err);
       setStatusModal({
@@ -266,11 +273,21 @@ export function PortfolioManagement() {
     {
       key: "category",
       label: "Category",
-      render: (value: string) => (
-        <span className="px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-400 text-xs font-bold">
-          {value}
-        </span>
-      ),
+      render: (value: string) => {
+        // Find it as ID first ("Related Services" style lookup)
+        const matchedService = services.find(
+          (s) => s._id === value || s.name === value,
+        );
+        const displayName = matchedService
+          ? matchedService.name
+          : value || "N/A";
+
+        return (
+          <span className="px-3 py-1 bg-white/10 rounded-full text-xs font-medium text-gray-300">
+            {displayName}
+          </span>
+        );
+      },
     },
     {
       key: "isActive",
@@ -418,16 +435,21 @@ export function PortfolioManagement() {
                 <label className="text-sm text-gray-400 font-medium">
                   Category *
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.category}
                   onChange={(e) =>
                     setFormData({ ...formData, category: e.target.value })
                   }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
-                  placeholder="e.g. Web Development"
                   required
-                />
+                >
+                  <option value="" style={{ color: "#111111", backgroundColor: "#FFFFFF" }}>Select Category</option>
+                  {services.map((svc) => (
+                    <option key={svc._id} value={svc._id} style={{ color: "#111111", backgroundColor: "#FFFFFF" }}>
+                      {svc.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <ImageUploadField
