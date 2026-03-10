@@ -442,6 +442,7 @@ export function CaseStudiesManagement() {
             <input
               type="text"
               value={form.title}
+              maxLength={100}
               onChange={(e) =>
                 setForm({
                   ...form,
@@ -452,6 +453,7 @@ export function CaseStudiesManagement() {
               placeholder="Optimizing Last-Mile Delivery with AI"
               required
             />
+            <div className="text-right text-xs text-gray-500">{form.title.length}/100</div>
           </div>
 
           <ImageUploadField
@@ -462,6 +464,17 @@ export function CaseStudiesManagement() {
                 image: url,
               })
             }
+            onFileChange={async (file) => {
+              try {
+                const url = await caseStudiesApi.uploadImage(file);
+                setForm({
+                  ...form,
+                  image: url,
+                });
+              } catch (e) {
+                console.error("Failed to upload case study image", e);
+              }
+            }}
             label="Project Thumbnail *"
           />
 
