@@ -444,10 +444,22 @@ export interface AboutPhilosophy {
   image?: string;
 }
 
+export interface AboutContactInfo {
+  whatsapp: string;
+  fiverr: string;
+  linkedin: string;
+  email: string;
+  behance: string;
+  facebook: string;
+  phone: string;
+  address: string;
+}
+
 export interface AboutContent {
   _id?: string;
   metrics: AboutMetric[];
   philosophy: AboutPhilosophy;
+  contactInfo: AboutContactInfo;
   createdAt?: string;
   updatedAt?: string;
 }

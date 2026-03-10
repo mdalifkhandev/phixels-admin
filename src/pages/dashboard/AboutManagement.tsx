@@ -8,13 +8,23 @@ import { aboutContentApi, teamMembersApi } from "../../services/api";
 import type { AboutContent, AboutMetric, TeamMember } from "../../types/types";
 
 export function AboutManagement() {
-  const [activeTab, setActiveTab] = useState<"metrics" | "philosophy" | "team">("metrics");
+  const [activeTab, setActiveTab] = useState<"metrics" | "philosophy" | "team" | "contact">("metrics");
   const [loading, setLoading] = useState(true);
 
   // About Content State
   const [aboutContent, setAboutContent] = useState<AboutContent>({
     metrics: [],
     philosophy: { heading: "", description: "", image: "" },
+    contactInfo: {
+      whatsapp: "",
+      fiverr: "",
+      linkedin: "",
+      email: "",
+      behance: "",
+      facebook: "",
+      phone: "",
+      address: "",
+    },
   });
 
   // Team State
@@ -45,7 +55,20 @@ export function AboutManagement() {
         aboutContentApi.get(),
         teamMembersApi.getAll(),
       ]);
-      setAboutContent(contentRes || { metrics: [], philosophy: { heading: "", description: "", image: "" } });
+      setAboutContent(contentRes || { 
+        metrics: [], 
+        philosophy: { heading: "", description: "", image: "" },
+        contactInfo: {
+          whatsapp: "",
+          fiverr: "",
+          linkedin: "",
+          email: "",
+          behance: "",
+          facebook: "",
+          phone: "",
+          address: "",
+        }
+      });
       const mappedTeam = (teamRes || []).map((t) => ({ ...t, id: t._id }));
       // Sort team members based on sortOrder
       mappedTeam.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
@@ -194,6 +217,14 @@ export function AboutManagement() {
             }`}
           >
             Team Members
+          </button>
+          <button
+            onClick={() => setActiveTab("contact")}
+            className={`px-6 py-4 text-sm font-medium transition-colors ${
+              activeTab === "contact" ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]" : "text-gray-400 hover:text-white"
+            }`}
+          >
+            Contact Info
           </button>
         </div>
 
@@ -413,6 +444,147 @@ export function AboutManagement() {
                 }}
                 onDelete={(row) => handleTeamDelete(row.id)}
               />
+            </div>
+          )}
+
+          {activeTab === "contact" && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">WhatsApp Number</label>
+                    <input
+                      type="text"
+                      value={aboutContent.contactInfo?.whatsapp || ""}
+                      onChange={(e) =>
+                        setAboutContent({
+                          ...aboutContent,
+                          contactInfo: { ...aboutContent.contactInfo, whatsapp: e.target.value },
+                        })
+                      }
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                      placeholder="e.g. +8801723289090"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      value={aboutContent.contactInfo?.email || ""}
+                      onChange={(e) =>
+                        setAboutContent({
+                          ...aboutContent,
+                          contactInfo: { ...aboutContent.contactInfo, email: e.target.value },
+                        })
+                      }
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                      placeholder="e.g. phixels.io@gmail.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">Fiverr Profile URL</label>
+                    <input
+                      type="text"
+                      value={aboutContent.contactInfo?.fiverr || ""}
+                      onChange={(e) =>
+                        setAboutContent({
+                          ...aboutContent,
+                          contactInfo: { ...aboutContent.contactInfo, fiverr: e.target.value },
+                        })
+                      }
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                      placeholder="Fiverr URL"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">LinkedIn Profile URL</label>
+                    <input
+                      type="text"
+                      value={aboutContent.contactInfo?.linkedin || ""}
+                      onChange={(e) =>
+                        setAboutContent({
+                          ...aboutContent,
+                          contactInfo: { ...aboutContent.contactInfo, linkedin: e.target.value },
+                        })
+                      }
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                      placeholder="LinkedIn URL"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">Phone / Call Us</label>
+                    <input
+                      type="text"
+                      value={aboutContent.contactInfo?.phone || ""}
+                      onChange={(e) =>
+                        setAboutContent({
+                          ...aboutContent,
+                          contactInfo: { ...aboutContent.contactInfo, phone: e.target.value },
+                        })
+                      }
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                      placeholder="e.g. +880 1723 289090"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">Behance Profile URL</label>
+                    <input
+                      type="text"
+                      value={aboutContent.contactInfo?.behance || ""}
+                      onChange={(e) =>
+                        setAboutContent({
+                          ...aboutContent,
+                          contactInfo: { ...aboutContent.contactInfo, behance: e.target.value },
+                        })
+                      }
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                      placeholder="Behance URL"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">Facebook Page URL</label>
+                    <input
+                      type="text"
+                      value={aboutContent.contactInfo?.facebook || ""}
+                      onChange={(e) =>
+                        setAboutContent({
+                          ...aboutContent,
+                          contactInfo: { ...aboutContent.contactInfo, facebook: e.target.value },
+                        })
+                      }
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                      placeholder="Facebook URL"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">Office Address</label>
+                    <textarea
+                      rows={2}
+                      value={aboutContent.contactInfo?.address || ""}
+                      onChange={(e) =>
+                        setAboutContent({
+                          ...aboutContent,
+                          contactInfo: { ...aboutContent.contactInfo, address: e.target.value },
+                        })
+                      }
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                      placeholder="Physical address"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-end pt-4">
+                <button
+                  onClick={handleSaveAboutContent}
+                  className="flex items-center px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Contact Info
+                </button>
+              </div>
             </div>
           )}
         </div>
