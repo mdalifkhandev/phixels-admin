@@ -174,7 +174,7 @@ export function AboutManagement() {
           <button
             onClick={() => setActiveTab("metrics")}
             className={`px-6 py-4 text-sm font-medium transition-colors ${
-              activeTab === "metrics" ? "text-neon-cyan border-b-2 border-neon-cyan" : "text-gray-400 hover:text-white"
+              activeTab === "metrics" ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]" : "text-gray-400 hover:text-white"
             }`}
           >
             Company Metrics
@@ -182,7 +182,7 @@ export function AboutManagement() {
           <button
             onClick={() => setActiveTab("philosophy")}
             className={`px-6 py-4 text-sm font-medium transition-colors ${
-              activeTab === "philosophy" ? "text-neon-cyan border-b-2 border-neon-cyan" : "text-gray-400 hover:text-white"
+              activeTab === "philosophy" ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]" : "text-gray-400 hover:text-white"
             }`}
           >
             Our Philosophy
@@ -190,7 +190,7 @@ export function AboutManagement() {
           <button
             onClick={() => setActiveTab("team")}
             className={`px-6 py-4 text-sm font-medium transition-colors ${
-              activeTab === "team" ? "text-neon-cyan border-b-2 border-neon-cyan" : "text-gray-400 hover:text-white"
+              activeTab === "team" ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]" : "text-gray-400 hover:text-white"
             }`}
           >
             Team Members
@@ -204,7 +204,7 @@ export function AboutManagement() {
                 <h3 className="text-lg font-medium text-white">Count Metrics</h3>
                 <button
                   onClick={addMetric}
-                  className="flex items-center px-4 py-2 bg-neon-cyan/10 text-neon-cyan rounded-lg hover:bg-neon-cyan/20 transition-colors"
+                  className="flex items-center px-4 py-2 bg-[color:var(--bright-red)]/10 text-[color:var(--bright-red)] rounded-lg hover:bg-[color:var(--bright-red)]/20 transition-colors"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Metric
@@ -225,7 +225,7 @@ export function AboutManagement() {
                         type="text"
                         value={metric.label}
                         onChange={(e) => updateMetric(index, "label", e.target.value)}
-                        className="w-full bg-dark-200 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-cyan"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                         placeholder="e.g. Projects Delivered"
                       />
                     </div>
@@ -236,7 +236,7 @@ export function AboutManagement() {
                           type="number"
                           value={metric.value}
                           onChange={(e) => updateMetric(index, "value", Number(e.target.value))}
-                          className="w-full bg-dark-200 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-cyan"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                         />
                       </div>
                       <div className="flex-1">
@@ -245,7 +245,7 @@ export function AboutManagement() {
                           type="text"
                           value={metric.suffix}
                           onChange={(e) => updateMetric(index, "suffix", e.target.value)}
-                          className="w-full bg-dark-200 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-cyan"
+                          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                           placeholder="e.g. +"
                         />
                       </div>
@@ -256,7 +256,7 @@ export function AboutManagement() {
               <div className="flex justify-end pt-4">
                 <button
                   onClick={handleSaveAboutContent}
-                  className="flex items-center px-6 py-2 bg-neon-cyan text-dark-100 font-medium rounded-lg hover:bg-neon-cyan/90 transition-colors"
+                  className="flex items-center px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Save Metrics
@@ -278,7 +278,7 @@ export function AboutManagement() {
                       philosophy: { ...aboutContent.philosophy, heading: e.target.value },
                     })
                   }
-                  className="w-full bg-dark-300 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-cyan"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                 />
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -293,12 +293,12 @@ export function AboutManagement() {
                         philosophy: { ...aboutContent.philosophy, description: e.target.value },
                       })
                     }
-                    className="w-full bg-dark-300 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-cyan"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-400 mb-1">Philosophy Image</label>
-                  <div className="bg-dark-300 border border-white/10 rounded-lg p-4">
+                  <div className="bg-white/5 border border-white/10 rounded-lg p-4">
                     <ImageUploadField
                       label=""
                       value={aboutContent.philosophy.image || ""}
@@ -326,7 +326,7 @@ export function AboutManagement() {
               <div className="flex justify-end pt-4">
                 <button
                   onClick={handleSaveAboutContent}
-                  className="flex items-center px-6 py-2 bg-neon-cyan text-dark-100 font-medium rounded-lg hover:bg-neon-cyan/90 transition-colors"
+                  className="flex items-center px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Save Philosophy
@@ -351,7 +351,7 @@ export function AboutManagement() {
                     });
                     setIsTeamModalOpen(true);
                   }}
-                  className="flex items-center px-4 py-2 bg-neon-cyan text-dark-100 rounded-lg hover:bg-neon-cyan/90 transition-colors font-medium"
+                  className="flex items-center px-6 py-2 bg-[color:var(--bright-red)] text-white rounded-lg hover:bg-[color:var(--deep-red)] transition-colors font-medium"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Team Member
@@ -446,7 +446,7 @@ export function AboutManagement() {
                 type="text"
                 value={teamFormData.name}
                 onChange={(e) => setTeamFormData({ ...teamFormData, name: e.target.value })}
-                className="w-full bg-dark-300 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-cyan"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
               />
             </div>
             <div>
@@ -456,7 +456,7 @@ export function AboutManagement() {
                 type="text"
                 value={teamFormData.role}
                 onChange={(e) => setTeamFormData({ ...teamFormData, role: e.target.value })}
-                className="w-full bg-dark-300 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-cyan"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
               />
             </div>
           </div>
@@ -470,7 +470,7 @@ export function AboutManagement() {
                   type="url"
                   value={teamFormData.socialLinks.linkedin}
                   onChange={(e) => setTeamFormData({ ...teamFormData, socialLinks: { ...teamFormData.socialLinks, linkedin: e.target.value } })}
-                  className="w-full bg-dark-300 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-cyan text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none text-sm"
                 />
               </div>
               <div>
@@ -479,7 +479,7 @@ export function AboutManagement() {
                   type="url"
                   value={teamFormData.socialLinks.twitter}
                   onChange={(e) => setTeamFormData({ ...teamFormData, socialLinks: { ...teamFormData.socialLinks, twitter: e.target.value } })}
-                  className="w-full bg-dark-300 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-cyan text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none text-sm"
                 />
               </div>
               <div>
@@ -488,7 +488,7 @@ export function AboutManagement() {
                   type="url"
                   value={teamFormData.socialLinks.github}
                   onChange={(e) => setTeamFormData({ ...teamFormData, socialLinks: { ...teamFormData.socialLinks, github: e.target.value } })}
-                  className="w-full bg-dark-300 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-neon-cyan text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none text-sm"
                 />
               </div>
             </div>
@@ -500,7 +500,7 @@ export function AboutManagement() {
               id="isActive"
               checked={teamFormData.isActive}
               onChange={(e) => setTeamFormData({ ...teamFormData, isActive: e.target.checked })}
-              className="w-4 h-4 rounded bg-dark-300 border-white/10 text-neon-cyan focus:ring-neon-cyan focus:ring-offset-dark-200"
+              className="w-4 h-4 rounded bg-white/5 border-white/10 text-[color:var(--bright-red)] focus:ring-[color:var(--bright-red)] focus:ring-offset-black"
             />
             <label htmlFor="isActive" className="ml-2 text-sm text-gray-300">
               Active (show on website)
@@ -517,7 +517,7 @@ export function AboutManagement() {
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-neon-cyan text-dark-100 font-medium rounded-lg hover:bg-neon-cyan/90 transition-colors"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all"
             >
               Save Team Member
             </button>
