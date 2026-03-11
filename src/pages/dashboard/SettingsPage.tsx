@@ -21,6 +21,9 @@ import {
   CheckCircle,
   UserPlus,
   History,
+  ShieldCheck,
+  Scale,
+  Loader2,
 } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { StatusModal } from "../../components/dashboard/StatusModal";
@@ -29,8 +32,10 @@ import {
   authApi,
   usersApi,
   activityLogsApi,
+  legalContentApi,
 } from "../../services/api";
-import type { DashboardSettings } from "../../types/types";
+import type { DashboardSettings, LegalSection } from "../../types/types";
+import { RichTextEditor } from "../../components/dashboard/RichTextEditor";
 import { useAuth } from "../../context/AuthContext";
 
 const defaultSettings: DashboardSettings = {
@@ -93,6 +98,18 @@ export function SettingsPage() {
     isDeleted: false,
   });
 
+  // Legal Content State
+  const [legalContent, setLegalContent] = useState<{
+    privacyPolicy: LegalSection[];
+    termsConditions: LegalSection[];
+  }>({
+    privacyPolicy: [],
+    termsConditions: [],
+  });
+  const [legalLoading, setLegalLoading] = useState(false);
+  const [legalSaving, setLegalSaving] = useState(false);
+  const [legalTab, setLegalTab] = useState<"privacy" | "terms">("privacy");
+
   const handleLogsRefresh = async () => {
     setLogsLoading(true);
     try {
@@ -111,6 +128,45 @@ export function SettingsPage() {
       setUsers(data || []);
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleLegalRefresh = async () => {
+    setLegalLoading(true);
+    try {
+      const response = await legalContentApi.get();
+      if (response.success) {
+        setLegalContent(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLegalLoading(false);
+    }
+  };
+
+  const handleLegalSave = async () => {
+    setLegalSaving(true);
+    try {
+      const response = await legalContentApi.update(legalContent);
+      if (response.success) {
+        setStatusModal({
+          isOpen: true,
+          type: "success",
+          title: "Saved",
+          message: "Legal policies updated successfully!",
+        });
+      }
+    } catch (error: any) {
+      console.error(error);
+      setStatusModal({
+        isOpen: true,
+        type: "error",
+        title: "Error",
+        message: error?.response?.data?.message || "Failed to save legal policies",
+      });
+    } finally {
+      setLegalSaving(false);
     }
   };
 
@@ -253,12 +309,14 @@ export function SettingsPage() {
       }));
     }
   }, [currentUser]);
-
   const toggleSection = (section: string) => {
     const nextSection = activeSection === section ? null : section;
     setActiveSection(nextSection);
     if (nextSection === "logs") {
       handleLogsRefresh();
+    }
+    if (nextSection === "legal") {
+      handleLegalRefresh();
     }
   };
 
@@ -915,6 +973,172 @@ export function SettingsPage() {
         </div>
       ),
     },
+    {
+      id: "legal",
+      title: "Legal Policies",
+      icon: ShieldCheck,
+      description: "Manage Privacy Policy and Terms & Conditions",
+      content: (
+        <div className="space-y-6">
+          <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 w-fit">
+            <button
+              onClick={() => setLegalTab("privacy")}
+              className={`flex items-center gap-2 px-6 py-2 rounded-lg transition-all ${
+                legalTab === "privacy"
+                  ? "bg-[color:var(--bright-red)] text-white shadow-lg"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              <ShieldCheck size={18} />
+              <span className="font-bold">Privacy Policy</span>
+            </button>
+            <button
+              onClick={() => setLegalTab("terms")}
+              className={`flex items-center gap-2 px-6 py-2 rounded-lg transition-all ${
+                legalTab === "terms"
+                  ? "bg-[color:var(--bright-red)] text-white shadow-lg"
+                  : "text-gray-400 hover:text-white"
+              }`}
+            >
+              <Scale size={18} />
+              <span className="font-bold">Terms & Conditions</span>
+            </button>
+          </div>
+
+          <div className="bg-[#0A0A0A] rounded-2xl border border-white/10 overflow-hidden">
+            <div className="p-6 border-b border-white/10 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2 capitalize">
+                {legalTab === "privacy" ? "Privacy Policy" : "Terms & Conditions"}{" "}
+                Sections
+              </h2>
+              <button
+                onClick={() => {
+                  const newSection = { title: "", content: "" };
+                  if (legalTab === "privacy") {
+                    setLegalContent({
+                      ...legalContent,
+                      privacyPolicy: [...legalContent.privacyPolicy, newSection],
+                    });
+                  } else {
+                    setLegalContent({
+                      ...legalContent,
+                      termsConditions: [
+                        ...legalContent.termsConditions,
+                        newSection,
+                      ],
+                    });
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg border border-white/10 transition-all text-sm font-bold"
+              >
+                <Plus size={16} className="text-[color:var(--bright-red)]" />
+                Add Section
+              </button>
+            </div>
+
+            <div className="p-6">
+              {legalLoading ? (
+                <div className="text-center py-20">
+                  <Loader2 className="h-8 w-8 animate-spin text-[color:var(--bright-red)] mx-auto mb-4" />
+                  <p className="text-gray-400">Loading policy content...</p>
+                </div>
+              ) : (legalTab === "privacy"
+                  ? legalContent.privacyPolicy
+                  : legalContent.termsConditions
+                ).length === 0 ? (
+                <div className="text-center py-20 bg-white/5 rounded-xl border border-dashed border-white/10">
+                  <ShieldCheck className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400 font-medium">
+                    No sections added yet.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {(legalTab === "privacy"
+                    ? legalContent.privacyPolicy
+                    : legalContent.termsConditions
+                  ).map((section, index) => (
+                    <div
+                      key={index}
+                      className="bg-white/5 rounded-xl border border-white/10 p-5 group hover:border-white/20 transition-all"
+                    >
+                      <div className="flex gap-4">
+                        <div className="flex-1 space-y-4">
+                          <div className="flex gap-4 items-center">
+                            <input
+                              type="text"
+                              value={section.title}
+                              onChange={(e) => {
+                                const newSections =
+                                  legalTab === "privacy"
+                                    ? [...legalContent.privacyPolicy]
+                                    : [...legalContent.termsConditions];
+                                newSections[index] = {
+                                  ...newSections[index],
+                                  title: e.target.value,
+                                };
+                                setLegalContent({
+                                  ...legalContent,
+                                  [legalTab === "privacy"
+                                    ? "privacyPolicy"
+                                    : "termsConditions"]: newSections,
+                                });
+                              }}
+                              placeholder="Section Title"
+                              className="flex-1 bg-[#050505] border border-white/10 rounded-lg px-4 py-2 text-white placeholder:text-gray-600 focus:outline-none focus:border-[color:var(--bright-red)] transition-all font-bold"
+                            />
+                            <button
+                              onClick={() => {
+                                const newSections =
+                                  legalTab === "privacy"
+                                    ? [...legalContent.privacyPolicy]
+                                    : [...legalContent.termsConditions];
+                                newSections.splice(index, 1);
+                                setLegalContent({
+                                  ...legalContent,
+                                  [legalTab === "privacy"
+                                    ? "privacyPolicy"
+                                    : "termsConditions"]: newSections,
+                                });
+                              }}
+                              className="p-2 text-gray-600 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+
+                          <RichTextEditor
+                            label="Section Content"
+                            value={section.content}
+                            onChange={(val) => {
+                              const newSections =
+                                legalTab === "privacy"
+                                  ? [...legalContent.privacyPolicy]
+                                  : [...legalContent.termsConditions];
+                              newSections[index] = {
+                                ...newSections[index],
+                                content: val,
+                              };
+                              setLegalContent({
+                                ...legalContent,
+                                [legalTab === "privacy"
+                                  ? "privacyPolicy"
+                                  : "termsConditions"]: newSections,
+                                });
+                            }}
+                            placeholder="Write section content..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ),
+    },
   ];
 
   if (loading) {
@@ -1000,19 +1224,26 @@ export function SettingsPage() {
                       <div className="pt-6">
                         {section.content}
                         {(section.id === "notifications" ||
-                          section.id === "account") && (
+                          section.id === "account" ||
+                          section.id === "legal") && (
                           <div className="mt-6 flex justify-end pt-4 border-t border-white/5">
                             <Button
                               variant="primary"
                               className="px-8"
-                              onClick={() =>
-                                handleSave(
-                                  section.id as "notifications" | "account",
-                                )
-                              }
-                              disabled={saving}
+                              onClick={() => {
+                                if (section.id === "legal") {
+                                  handleLegalSave();
+                                } else {
+                                  handleSave(
+                                    section.id as "notifications" | "account",
+                                  );
+                                }
+                              }}
+                              disabled={saving || legalSaving}
                             >
-                              {saving ? "Saving..." : "Save Changes"}
+                              {(section.id === "legal" ? legalSaving : saving)
+                                ? "Saving..."
+                                : "Save Changes"}
                             </Button>
                           </div>
                         )}

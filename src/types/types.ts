@@ -500,6 +500,24 @@ export interface PageMetricsContent {
   updatedAt?: string;
 }
 
+export interface LegalSection {
+  title: string;
+  content: string;
+}
+
+export interface LegalContent {
+  privacyPolicy: LegalSection[];
+  termsConditions: LegalSection[];
+}
+
+export interface LegalContentResponse {
+  _id?: string;
+  privacyPolicy: LegalSection[];
+  termsConditions: LegalSection[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // API Response wrapper
 export interface ApiResponse<T> {
   success: boolean;

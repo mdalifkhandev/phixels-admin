@@ -29,6 +29,7 @@ import { ReviewsManagement } from './pages/dashboard/ReviewsManagement';
 import { CareersManagement } from './pages/dashboard/CareersManagement';
 import { AboutManagement } from './pages/dashboard/AboutManagement';
 import { PageMetricsManagement } from './pages/dashboard/PageMetricsManagement';
+import { LegalManagement } from './pages/dashboard/LegalManagement';
 // Marketing Pages
 import { LeadManagement } from './pages/dashboard/LeadManagement';
 import { CampaignIntegration } from './pages/dashboard/CampaignIntegration';
@@ -84,6 +85,7 @@ export function App() {
 
               {/* Settings */}
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="legal" element={<LegalManagement />} />
             </Route>
           </Route>
 

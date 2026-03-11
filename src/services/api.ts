@@ -30,6 +30,9 @@ import type {
   AboutContent,
   TeamMember,
   PageMetricsContent,
+  LegalContent,
+  LegalContentResponse,
+  ApiResponse,
 } from "../types/types";
 
 // Base URL from environment (fallback to production API)
@@ -784,6 +787,25 @@ export const pageMetricsApi = {
   },
 };
 
+export const legalContentApi = {
+  get: async (): Promise<ApiResponse<LegalContentResponse>> => {
+    const response = await apiClient.get("/legal-content");
+    return response.data;
+  },
+  update: async (data: Partial<LegalContent>): Promise<ApiResponse<LegalContentResponse>> => {
+    const response = await apiClient.patch("/legal-content", data);
+    return response.data;
+  },
+};
+
+
+export const activityLogsApi = {
+  getAll: async (): Promise<any[]> => {
+    const response = await apiClient.get("/activity-logs");
+    return getData<any[]>(response);
+  },
+};
+
 export const usersApi = {
   getAll: async (): Promise<any[]> => {
     const response = await apiClient.get("/users");
@@ -799,15 +821,31 @@ export const usersApi = {
   },
   delete: async (id: string): Promise<any> => {
     const response = await apiClient.delete(`/users/${id}`);
-    return getData<any>(response);
+    return getData(response);
   },
 };
 
-export const activityLogsApi = {
-  getAll: async (): Promise<any[]> => {
-    const response = await apiClient.get("/activity-logs");
-    return getData<any[]>(response);
-  },
+export const apiService = {
+  auth: authApi,
+  authors: authorsApi,
+  mail: mailApi,
+  reviews: reviewsApi,
+  blogs: blogsApi,
+  portfolio: portfolioApi,
+  caseStudies: caseStudiesApi,
+  products: productsApi,
+  services: servicesApi,
+  careers: careersApi,
+  analytics: analyticsApi,
+  settings: settingsApi,
+  aboutContent: aboutContentApi,
+  teamMembers: teamMembersApi,
+  pageMetrics: pageMetricsApi,
+  legalContent: legalContentApi,
+  users: usersApi,
+  // Activity Logs API
+  activityLogsApi,
+  // Direct access for backward compatibility or convenience in LegalManagement
+  getLegalContent: legalContentApi.get,
+  updateLegalContent: legalContentApi.update,
 };
-
-export default apiClient;
