@@ -134,11 +134,6 @@ const categories: MenuCategory[] = [
         path: "/dashboard/settings",
         icon: Settings,
       },
-      {
-        name: "Legal Pages",
-        path: "/dashboard/legal",
-        icon: FileText,
-      },
     ],
   },
 ];

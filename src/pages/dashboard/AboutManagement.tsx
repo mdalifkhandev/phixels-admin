@@ -8,7 +8,7 @@ import { aboutContentApi, teamMembersApi } from "../../services/api";
 import type { AboutContent, AboutMetric, TeamMember } from "../../types/types";
 
 export function AboutManagement() {
-  const [activeTab, setActiveTab] = useState<"metrics" | "philosophy" | "team" | "contact">("metrics");
+  const [activeTab, setActiveTab] = useState<"metrics" | "philosophy" | "team" | "contact" | "clients">("metrics");
   const [loading, setLoading] = useState(true);
 
   // About Content State
@@ -25,6 +25,7 @@ export function AboutManagement() {
       phone: "",
       address: "",
     },
+    clients: [],
   });
 
   // Team State
@@ -67,7 +68,8 @@ export function AboutManagement() {
           facebook: "",
           phone: "",
           address: "",
-        }
+        },
+        clients: [],
       });
       const mappedTeam = (teamRes || []).map((t) => ({ ...t, id: t._id }));
       // Sort team members based on sortOrder
@@ -119,6 +121,25 @@ export function AboutManagement() {
   const removeMetric = (index: number) => {
     const newMetrics = aboutContent.metrics.filter((_, i) => i !== index);
     setAboutContent({ ...aboutContent, metrics: newMetrics });
+  };
+
+  // Clients Handlers
+  const addClient = () => {
+    setAboutContent({
+      ...aboutContent,
+      clients: [...aboutContent.clients, { name: "", logo: "" }],
+    });
+  };
+
+  const updateClient = (index: number, field: "name" | "logo", value: string) => {
+    const newClients = [...aboutContent.clients];
+    newClients[index] = { ...newClients[index], [field]: value };
+    setAboutContent({ ...aboutContent, clients: newClients });
+  };
+
+  const removeClient = (index: number) => {
+    const newClients = aboutContent.clients.filter((_, i) => i !== index);
+    setAboutContent({ ...aboutContent, clients: newClients });
   };
 
   // Team Handlers
@@ -225,6 +246,14 @@ export function AboutManagement() {
             }`}
           >
             Contact Info
+          </button>
+          <button
+            onClick={() => setActiveTab("clients")}
+            className={`px-6 py-4 text-sm font-medium transition-colors ${
+              activeTab === "clients" ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]" : "text-gray-400 hover:text-white"
+            }`}
+          >
+            Our Clients
           </button>
         </div>
 
@@ -583,6 +612,78 @@ export function AboutManagement() {
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Save Contact Info
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "clients" && (
+            <div className="space-y-6">
+              <div className="flex justify-between items-center mb-4">
+                <div>
+                  <h3 className="text-lg font-medium text-white">Our Clients</h3>
+                  <p className="text-sm text-gray-400">Manage logos displayed in the "Trusted By" sections</p>
+                </div>
+                <button
+                  onClick={addClient}
+                  className="flex items-center px-4 py-2 bg-[color:var(--bright-red)]/10 text-[color:var(--bright-red)] rounded-lg hover:bg-[color:var(--bright-red)]/20 transition-colors"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Client Let's Connect
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {(aboutContent.clients || []).map((client, index) => (
+                  <div key={index} className="bg-dark-300 p-5 rounded-xl border border-white/5 space-y-4">
+                    <div className="flex justify-between items-center pb-2 border-b border-white/5">
+                      <h4 className="text-sm font-medium text-gray-300">Client #{index + 1}</h4>
+                      <button onClick={() => removeClient(index)} className="text-red-400 hover:text-red-300 p-1 bg-red-400/10 rounded">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">Company / Brand Name</label>
+                      <input
+                        type="text"
+                        value={client.name}
+                        onChange={(e) => updateClient(index, "name", e.target.value)}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                        placeholder="e.g. Google, Apple"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">Company Logo</label>
+                      <div className="bg-white/5 border border-white/10 rounded-lg p-3">
+                        <ImageUploadField
+                          label=""
+                          value={client.logo || ""}
+                          onChange={(url) => updateClient(index, "logo", url)}
+                          onFileChange={async (file) => {
+                            try {
+                              const url = await aboutContentApi.uploadImage(file);
+                              updateClient(index, "logo", url);
+                            } catch (e) {
+                              console.error("Failed to upload client logo", e);
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {(!aboutContent.clients || aboutContent.clients.length === 0) && (
+                <div className="text-center py-10 bg-white/5 rounded-xl border border-dashed border-white/10">
+                  <p className="text-gray-500">No clients added yet. Click 'Add Client' to start.</p>
+                </div>
+              )}
+              <div className="flex justify-end pt-4">
+                <button
+                  onClick={handleSaveAboutContent}
+                  className="flex items-center px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Clients
                 </button>
               </div>
             </div>
