@@ -2,6 +2,8 @@
 
 The Phixels.io Admin Dashboard is a specialized CMS platform designed for non-technical users to manage engineering content, hero sections, and SEO data with precision and ease.
 
+- **Live Demo**: [phixels-admin-eta.vercel.app](https://phixels-admin-eta.vercel.app)
+
 ---
 
 ## 🎯 Purpose and Vision
