@@ -30,6 +30,7 @@ import { CareersManagement } from './pages/dashboard/CareersManagement';
 import { AboutManagement } from './pages/dashboard/AboutManagement';
 import { PageMetricsManagement } from './pages/dashboard/PageMetricsManagement';
 import { LegalManagement } from './pages/dashboard/LegalManagement';
+import { ContentManagement } from './pages/dashboard/ContentManagement';
 // Marketing Pages
 import { LeadManagement } from './pages/dashboard/LeadManagement';
 import { CampaignIntegration } from './pages/dashboard/CampaignIntegration';
@@ -74,6 +75,7 @@ export function App() {
               <Route path="careers" element={<CareersManagement />} />
               <Route path="about" element={<AboutManagement />} />
               <Route path="page-metrics" element={<PageMetricsManagement />} />
+              <Route path="content" element={<ContentManagement />} />
 
               {/* Marketing */}
               <Route path="leads" element={<LeadManagement />} />

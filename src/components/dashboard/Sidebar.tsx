@@ -123,6 +123,11 @@ const categories: MenuCategory[] = [
         path: "/dashboard/page-metrics",
         icon: ChartColumn,
       },
+      {
+        name: "CMS / Content",
+        path: "/dashboard/content",
+        icon: FileText,
+      },
     ],
   },
   {

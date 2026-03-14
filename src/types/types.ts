@@ -519,6 +519,28 @@ export interface LegalContentResponse {
   updatedAt?: string;
 }
 
+// Page Content CMS
+export interface PageSection {
+  sectionKey: string;
+  head?: string;
+  subHead?: string;
+  caption?: string;
+  description?: string;
+  buttonText?: string;
+  buttonLink?: string;
+  image?: string;
+  video?: string;
+}
+
+export interface PageContent {
+  _id?: string;
+  pageKey: string;
+  title: string;
+  sections: PageSection[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 // API Response wrapper
 export interface ApiResponse<T> {
   success: boolean;

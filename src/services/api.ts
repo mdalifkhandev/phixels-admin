@@ -32,6 +32,7 @@ import type {
   PageMetricsContent,
   LegalContent,
   LegalContentResponse,
+  PageContent,
   ApiResponse,
 } from "../types/types";
 
@@ -799,6 +800,30 @@ export const legalContentApi = {
 };
 
 
+export const pageContentApi = {
+  getAll: async (): Promise<PageContent[]> => {
+    const response = await apiClient.get("/page-content");
+    return getData<PageContent[]>(response);
+  },
+  getOne: async (pageKey: string): Promise<PageContent> => {
+    const response = await apiClient.get(`/page-content/${pageKey}`);
+    return getData<PageContent>(response);
+  },
+  update: async (data: PageContent): Promise<PageContent> => {
+    const response = await apiClient.post("/page-content", data);
+    return getData<PageContent>(response);
+  },
+  uploadImage: async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const response = await apiClient.post("/about-content/upload-image", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    const payload = getData<{ image: string }>(response);
+    return payload.image;
+  },
+};
+
 export const activityLogsApi = {
   getAll: async (): Promise<any[]> => {
     const response = await apiClient.get("/activity-logs");
@@ -842,6 +867,7 @@ export const apiService = {
   teamMembers: teamMembersApi,
   pageMetrics: pageMetricsApi,
   legalContent: legalContentApi,
+  pageContent: pageContentApi,
   users: usersApi,
   // Activity Logs API
   activityLogsApi,
