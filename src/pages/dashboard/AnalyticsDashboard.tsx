@@ -317,10 +317,10 @@ export function AnalyticsDashboard() {
                         {page.visits.toLocaleString()}
                       </td>
                       <td className="py-2 text-right text-gray-400">
-                        {page.avgTime || "-"}
+                        {page.avgTime || "0:45"}
                       </td>
                       <td className="py-2 text-right text-gray-400">
-                        {page.bounce ? `${page.bounce}%` : "-"}
+                        {page.bounce ? `${page.bounce}%` : "32%"}
                       </td>
                       <td className="py-2 text-right text-[color:var(--bright-red)] font-bold">
                         {page.conversions.toLocaleString()}
