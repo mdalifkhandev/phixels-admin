@@ -139,8 +139,8 @@ export function LeadManagement() {
           };
 
           if (event.eventType === "meeting_booked") {
-            const meetingDate = normalizeText(metadata.meetingDate);
-            const meetingTime = normalizeText(metadata.meetingTime);
+            const meetingDate = normalizeText(metadata.meetingDate) || normalizeText(metadata.date);
+            const meetingTime = normalizeText(metadata.meetingTime) || normalizeText(metadata.time);
             baseLead.status = "Confirmed";
             baseLead.meetingDate = meetingDate;
             baseLead.meetingTime = meetingTime;
