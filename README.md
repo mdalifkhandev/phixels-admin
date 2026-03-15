@@ -1,40 +1,36 @@
 # 📊 Phixels.io - Content Management Dashboard
 
-The Phixels.io Admin Dashboard is a specialized CMS platform designed for non-technical users to manage engineering content, hero sections, and SEO data with precision and ease.
+The Phixels.io Admin Dashboard is a specialized CMS platform designed for non-technical users to manage engineering content, hero sections, and SEO data with precision and ease. It simplifies the bridge between content creation and live deployment through an intuitive, visual interface.
 
 - **Live Demo**: [phixels-admin-eta.vercel.app](https://phixels-admin-eta.vercel.app)
 
 ---
 
-## 🎯 Purpose and Vision
-The dashboard was engineered to eliminate the friction between content creation and deployment. By providing a custom-built, highly intuitive interface, it empowers marketing teams to update high-fidelity website sections—including complex formatting like gradients and custom colors—without requiring developer intervention or deployment cycles.
-
----
-
 ## 🚀 Key Features
 
-### 🖋️ Custom Rich Text Architecture
-- **Tiptap Integration**: A fully customized implementation of the Tiptap framework, tailored for high-performance visual editing.
-- **Brand-Aware Styling**: 
-    - **Custom Gradients**: Direct support for the brand's signature signature red/deep-red gradient.
-    - **Flexible Color Selection**: Full control over solid colors and custom from/to gradient combinations.
-- **Consistent Rendering**: The editor is configured to use CSS inheritance, ensuring that headings and bold text reflect the chosen colors accurately across both the dashboard and the live site.
+### 🖋️ Advanced WYSIWYG Content Engine
+- **Custom Tiptap Implementation**: A modern, inline rich text editor that provides a Google Docs-style experience for managing website content.
+- **Dynamic Styling Controls**: 
+    - **Brand Gradients**: One-click application of the brand's signature signature red/deep-red gradient.
+    - **Custom Gradient Builder**: Full control over `from` and `to` colors for bespoke text gradients.
+    - **Solid Color Selection**: A curated palette of brand colors alongside a flexible custom hex picker.
+- **Robust Parsing & Rendering**: Specialized logic ensures that complex marks like gradients and custom colors are correctly serialized, stored, and re-rendered with 100% fidelity.
 
-### ⚡ Operational Efficiency
-- **Direct Save Implementation**: Removed redundant confirmation steps to enable a streamlined "Edit -> Save -> Live" workflow.
-- **Tab-Based Navigation**: Organized content management by pages (Home, Services, Blog, etc.) for intuitive information architecture.
-- **Real-Time Data Table**: Clean overview of all page sections with instant access to edit/delete operations.
+### ⚡ Operational Efficiency & Workflow
+- **Direct Save Mechanism**: Designed for speed, allowing users to sync changes immediately to the database in a single transaction from within editor modals.
+- **Grid-Based Color Interface**: A responsive, scaled grid system for color selection that ensures precision and a premium user experience.
+- **Tab-Based Information Architecture**: Content is organized by logical page sections (Home, Services, Blog, etc.), making it easy to navigate and manage large-scale sites.
 
-### 🖼️ Media Management
-- **Intelligent Uploads**: Drag-and-drop or select images with automatic integration to the Rich Text flow.
-- **Layout Control**: Fine-tune image sizing and fit directly within the editor.
+### 🖼️ Seamless Media Handling
+- **Integrated Image Processing**: Simple drag-and-drop or selection interface with automatic backend syncing.
+- **Layout Precision**: Native support for controlling image sizing, alignment, and fit (cover/contain) directly within the content stream.
 
 ---
 
 ## 🛠️ Technical Stack
 
 - **Core**: React 18, TypeScript, Vite
-- **Rich Text**: Tiptap SDK (StarterKit, Link, Underline, TextAlign, Placeholder, etc.)
+- **Rich Text**: Tiptap SDK (StarterKit, Color, TextStyle, Link, Underline, TextAlign, etc.)
 - **Styling**: Tailwind CSS
 - **Data Visuals**: Recharts
 - **Icons**: Lucide React
@@ -44,10 +40,10 @@ The dashboard was engineered to eliminate the friction between content creation 
 
 ## ⚙️ How It Works
 
-1.  **Authentication**: Users login to a secure environment via JWT-protected routes.
-2.  **State Synchronization**: When a section is opened, the dashboard fetches the RAW HTML content from the MongoDB backend.
-3.  **Visual Editing**: The Tiptap instance parses the HTML, identifies custom marks (like gradients), and provides a visual interface for editing.
-4.  **Transaction Handling**: On save, the application serializes the edited content and sends a `PUT` request to update the page structure in a single transaction.
+1.  **Secure Access**: Users authenticate via JWT-protected routes to access the management environment.
+2.  **Data Synchronization**: The dashboard fetches RAW HTML content from the MongoDB backend, which is then parsed by the Tiptap engine for visual editing.
+3.  **Real-Time Editing**: Users modify content visually; the application handles the underlying HTML transformation automatically.
+4.  **Atomic Updates**: On save, the serialized content is sent via a single `PUT` request to ensure data integrity and instant live updates.
 
 ---
 
@@ -61,7 +57,8 @@ cd phixels-admin
 # Install dependencies
 npm install
 
-# Run development server
+# Setup environment
+# Refer to .env.example for required keys
 npm run dev
 ```
 

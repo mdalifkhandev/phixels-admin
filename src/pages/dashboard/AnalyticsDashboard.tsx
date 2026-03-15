@@ -376,7 +376,7 @@ export function AnalyticsDashboard() {
             <h2 className="text-xs font-bold text-white mb-3 flex items-center justify-between uppercase tracking-wider">
               <span>Real-Time Users</span>
               <span className="text-[10px] font-mono text-[color:var(--bright-red)] animate-pulse">
-                {analyticsData?.realtimeUsers || 0} active
+                {realtimeData?.activeUsers || 0} active
               </span>
             </h2>
             <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
