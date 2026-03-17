@@ -271,7 +271,6 @@ export interface RealtimeAnalytics {
     event: string;
     location: string;
     device: string;
-    duration?: string;
     time: string;
     activity: string;
   }>;
@@ -516,28 +515,6 @@ export interface LegalContentResponse {
   _id?: string;
   privacyPolicy: LegalSection[];
   termsConditions: LegalSection[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-// Page Content CMS
-export interface PageSection {
-  sectionKey: string;
-  head?: string;
-  subHead?: string;
-  caption?: string;
-  description?: string;
-  buttonText?: string;
-  buttonLink?: string;
-  image?: string;
-  video?: string;
-}
-
-export interface PageContent {
-  _id?: string;
-  pageKey: string;
-  title: string;
-  sections: PageSection[];
   createdAt?: string;
   updatedAt?: string;
 }

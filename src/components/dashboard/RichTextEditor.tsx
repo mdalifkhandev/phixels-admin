@@ -5,13 +5,9 @@ import Link from "@tiptap/extension-link";
 import Underline from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
 import Placeholder from "@tiptap/extension-placeholder";
-import { TextStyle } from "@tiptap/extension-text-style";
-import { Color } from "@tiptap/extension-color";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { NodeSelection } from "@tiptap/pm/state";
-import { Mark, mergeAttributes } from "@tiptap/core";
 import {
-  Palette,
   Bold,
   Italic,
   UnderlineIcon,
@@ -59,77 +55,6 @@ const EditableImage = Image.extend({
         },
       },
     };
-  },
-});
-
-const TextGradient = Mark.create({
-  name: "textGradient",
-
-  addAttributes() {
-    return {
-      from: {
-        default: "var(--bright-red)",
-        parseHTML: (element) => element.style.getPropertyValue("--tw-gradient-from") || element.getAttribute("data-from"),
-        renderHTML: (attributes) => ({ "data-from": attributes.from }),
-      },
-      to: {
-        default: "var(--deep-red)",
-        parseHTML: (element) => element.style.getPropertyValue("--tw-gradient-to") || element.getAttribute("data-to"),
-        renderHTML: (attributes) => ({ "data-to": attributes.to }),
-      },
-    };
-  },
-
-  parseHTML() {
-    return [
-      {
-        tag: "span",
-        getAttrs: (element) => {
-          const el = element as HTMLElement;
-          const isGrad = el.classList.contains("text-gradient") || el.classList.contains("text-gradient-custom");
-          if (!isGrad) return false;
-          
-          return {
-            from: el.getAttribute("data-from") || "var(--bright-red)",
-            to: el.getAttribute("data-to") || "var(--deep-red)",
-          };
-        },
-      },
-    ];
-  },
-
-  renderHTML({ HTMLAttributes }) {
-    const { from, to, ...rest } = HTMLAttributes;
-    
-    // Check if it's the default/signature gradient
-    const isDefault = 
-      (from === "var(--bright-red)" && to === "var(--deep-red)") ||
-      (from === "#ED1F24" && to === "#8B161A");
-
-    if (isDefault) {
-        return ["span", mergeAttributes(rest, { class: "text-gradient" }), 0];
-    }
-
-    // Direct background-image seems more stable than shorthand 'background' in some DOM environments.
-    // Also adding vendor prefixes to ensure frontend compatibility.
-    const styleString = [
-      `background-image: linear-gradient(to right, ${from}, ${to})`,
-      `background-clip: text`,
-      `-webkit-background-clip: text`,
-      `-webkit-text-fill-color: transparent`,
-      `display: inline-block`
-    ].join(";");
-
-    return [
-      "span",
-      mergeAttributes(rest, { 
-        class: "text-gradient-custom", 
-        style: styleString,
-        "data-from": from, 
-        "data-to": to 
-      }),
-      0,
-    ];
   },
 });
 
@@ -211,15 +136,6 @@ function Toolbar({ editor }: { editor: Editor }) {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [uploadLayout, setUploadLayout] = useState<ImageLayoutWidth>(100);
   const uploadingRef = useRef(false);
-  const [showColorPicker, setShowColorPicker] = useState(false);
-  const [showGradientPicker, setShowGradientPicker] = useState(false);
-
-  const [gradFrom, setGradFrom] = useState("#ED1F24");
-  const [gradTo, setGradTo] = useState("#8B161A");
-
-  const colors = [
-    "#FFFFFF", "#000000", "#ED1F24", "#8B161A", "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6"
-  ];
 
   const setLink = () => {
     const prev = editor.getAttributes("link").href;
@@ -340,89 +256,6 @@ function Toolbar({ editor }: { editor: Editor }) {
       >
         <Code size={14} />
       </ToolBtn>
-
-      <div className="relative">
-        <ToolBtn
-          onClick={() => setShowColorPicker(!showColorPicker)}
-          active={editor.isActive("textStyle") && !!editor.getAttributes("textStyle").color}
-          title="Text Color"
-        >
-          <Palette size={14} />
-        </ToolBtn>
-        {showColorPicker && (
-          <div className="absolute top-full mt-2 left-0 z-[100] p-3 bg-[#111] border border-white/20 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5)] w-40">
-            <div className="grid grid-cols-4 gap-2">
-              {colors.map(c => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => {
-                    editor.chain().focus().setColor(c).run();
-                    setShowColorPicker(false);
-                  }}
-                  className="w-7 h-7 rounded-md border border-white/10 hover:scale-110 transition-transform cursor-pointer flex-shrink-0"
-                  style={{ backgroundColor: c }}
-                  title={c}
-                />
-              ))}
-              <div className="relative w-7 h-7 rounded-md border border-white/10 overflow-hidden hover:scale-110 transition-transform">
-                <input 
-                  type="color" 
-                  className="absolute inset-0 w-[200%] h-[200%] -top-1/2 -left-1/2 cursor-pointer border-none p-0 outline-none"
-                  onChange={(e) => {
-                    editor.chain().focus().setColor(e.target.value).run();
-                    setShowColorPicker(false);
-                  }}
-                  title="Custom Color"
-                />
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="relative">
-        <ToolBtn
-          onClick={() => setShowGradientPicker(!showGradientPicker)}
-          active={editor.isActive("textGradient")}
-          title="Text Gradient"
-        >
-          <div className="flex flex-col gap-0.5">
-            <span className="w-3.5 h-1 bg-gradient-to-r from-red-500 to-red-900 rounded-full" />
-            <span className="w-3.5 h-1 bg-gradient-to-r from-blue-500 to-blue-900 rounded-full opacity-50" />
-          </div>
-        </ToolBtn>
-        {showGradientPicker && (
-          <div className="absolute top-full mt-1 left-0 z-50 p-4 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl w-48 space-y-3">
-            <div className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Presets</div>
-            <button
-               onClick={() => {
-                 editor.chain().focus().toggleMark("textGradient", { from: "var(--bright-red)", to: "var(--deep-red)" }).run();
-                 setShowGradientPicker(false);
-               }}
-               className="w-full h-8 rounded bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-[10px] text-white font-bold"
-            >
-               Custom 1 (Default)
-            </button>
-            <div className="h-px bg-white/5" />
-            <div className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Custom Gradient</div>
-            <div className="flex items-center gap-2">
-               <input type="color" value={gradFrom} onChange={(e) => setGradFrom(e.target.value)} className="w-full h-6 rounded bg-transparent p-0 cursor-pointer" />
-               <span className="text-gray-600">→</span>
-               <input type="color" value={gradTo} onChange={(e) => setGradTo(e.target.value)} className="w-full h-6 rounded bg-transparent p-0 cursor-pointer" />
-            </div>
-            <button
-               onClick={() => {
-                 editor.chain().focus().setMark("textGradient", { from: gradFrom, to: gradTo }).run();
-                 setShowGradientPicker(false);
-               }}
-               className="w-full py-1.5 bg-blue-600 text-white rounded text-xs font-bold"
-            >
-               Apply Custom
-            </button>
-          </div>
-        )}
-      </div>
 
       <Sep />
 
@@ -552,9 +385,6 @@ export function RichTextEditor({
     extensions: [
       StarterKit,
       Underline,
-      TextStyle,
-      Color,
-      TextGradient,
       EditableImage.configure({ inline: true, allowBase64: false }),
       Link.configure({
         openOnClick: false,
@@ -597,9 +427,9 @@ export function RichTextEditor({
           "min-h-[400px] max-h-[700px] overflow-y-auto",
           "outline-none text-gray-200 text-sm leading-7 px-6 py-5",
           // Headings
-          "[&_h1]:text-3xl [&_h1]:font-bold [&_h1]:text-inherit [&_h1]:mt-6 [&_h1]:mb-3",
-          "[&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-inherit [&_h2]:mt-5 [&_h2]:mb-2",
-          "[&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-inherit [&_h3]:mt-4 [&_h3]:mb-2",
+          "[&_h1]:text-3xl [&_h1]:font-bold [&_h1]:text-white [&_h1]:mt-6 [&_h1]:mb-3",
+          "[&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-white [&_h2]:mt-5 [&_h2]:mb-2",
+          "[&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-white [&_h3]:mt-4 [&_h3]:mb-2",
           // Paragraph
           "[&_p]:mb-3 [&_p]:leading-7",
           // Text align
@@ -623,10 +453,8 @@ export function RichTextEditor({
           // Links
           "[&_a]:text-blue-400 [&_a]:underline [&_a]:cursor-pointer",
           // Strong & em
-          "[&_strong]:text-inherit [&_strong]:font-bold",
+          "[&_strong]:text-white [&_strong]:font-bold",
           "[&_em]:italic",
-          // Custom Gradient
-          "[&_.text-gradient]:bg-gradient-to-r [&_.text-gradient]:from-[color:var(--bright-red)] [&_.text-gradient]:to-[color:var(--deep-red)] [&_.text-gradient]:bg-clip-text [&_.text-gradient]:text-transparent [&_.text-gradient]:inline-block",
         ].join(" "),
       },
     },

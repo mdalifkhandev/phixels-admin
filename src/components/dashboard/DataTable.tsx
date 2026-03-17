@@ -244,14 +244,14 @@ export function DataTable({
       )}
 
       <div className="rounded-2xl border border-white/10 overflow-hidden">
-        <div className="overflow-x-auto scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/10">
+        <div className="overflow-x-auto">
           {onReorder ? (
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
               onDragEnd={handleDragEnd}
             >
-              <table className="w-full table-fixed min-w-[1000px]">
+              <table className="w-full">
                 <TableHeader />
                 <SortableContext
                   items={paginatedData.map((item, index) => item.id || index)}
@@ -277,7 +277,7 @@ export function DataTable({
               </table>
             </DndContext>
           ) : (
-            <table className="w-full table-fixed min-w-[800px]">
+            <table className="w-full">
               <TableHeader />
               <tbody className="divide-y divide-white/10">
                 <AnimatePresence mode="popLayout">

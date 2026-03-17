@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Package,
@@ -7,74 +7,15 @@ import {
   BookOpen,
   Users,
   Eye,
-  Activity,
   Calendar,
   ChevronDown
-} from 'lucide-react';
+} from
+  'lucide-react';
 import { CompactMetricCard } from '../../components/dashboard/CompactMetricCard';
 import { Link } from 'react-router-dom';
-import { 
-  analyticsApi, 
-  productsApi, 
-  portfolioApi, 
-  caseStudiesApi, 
-  blogsApi, 
-  careersApi 
-} from '../../services/api';
-
 export function DashboardHome() {
   const [timeRange, setTimeRange] = useState('1 Month');
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
-  const [activeUsers, setActiveUsers] = useState<number | null>(null);
-  const [counts, setCounts] = useState({
-    products: 0,
-    portfolio: 0,
-    caseStudies: 0,
-    blogs: 0,
-    jobs: 0,
-    pageViews: 0
-  });
-
-  useEffect(() => {
-    const fetchCounts = async () => {
-      try {
-        const [products, portfolio, cases, blogs, careers, analytics] = await Promise.all([
-          productsApi.getAll(),
-          portfolioApi.getAll(),
-          caseStudiesApi.getAll(),
-          blogsApi.getAll(),
-          careersApi.getAll(),
-          analyticsApi.getOverview()
-        ]);
-        
-        setCounts({
-          products: products.length,
-          portfolio: portfolio.length,
-          caseStudies: cases.length,
-          blogs: blogs.length,
-          jobs: careers.filter(c => c.isActive !== false).length,
-          pageViews: analytics.totalVisits
-        });
-      } catch (error) {
-        console.error('Failed to fetch dashboard counts:', error);
-      }
-    };
-
-    const fetchRealtime = async () => {
-      try {
-        const realtime = await analyticsApi.getRealtime();
-        setActiveUsers(realtime.activeUsers);
-      } catch (error) {
-        console.error('Failed to fetch realtime users:', error);
-      }
-    };
-
-    fetchCounts();
-    fetchRealtime();
-    const interval = setInterval(fetchRealtime, 15000); // 15s refresh for active users
-    return () => clearInterval(interval);
-  }, []);
-
   const timeOptions = [
     '1 Hour',
     '1 Day',
@@ -83,53 +24,51 @@ export function DashboardHome() {
     '1 Month',
     '3 Months',
     '6 Months',
-    '1 Year'
-  ];
+    '1 Year'];
 
   const stats = [
     {
-      title: 'Active Users',
-      value: activeUsers !== null ? activeUsers.toString() : '...',
-      change: activeUsers !== null ? 'Live' : '',
-      icon: Activity,
-      color: 'text-[color:var(--vibrant-green)]'
-    },
-    {
       title: 'Total Products',
-      value: counts.products.toString(),
-      change: '',
+      value: '12',
+      change: '+2',
       icon: Package,
       color: 'text-blue-400'
     },
     {
       title: 'Portfolio Items',
-      value: counts.portfolio.toString(),
-      change: '',
+      value: '15',
+      change: '+3',
       icon: Briefcase,
       color: 'text-[color:var(--vibrant-green)]'
     },
     {
       title: 'Case Studies',
-      value: counts.caseStudies.toString(),
-      change: '',
+      value: '10',
+      change: '+1',
       icon: FileText,
       color: 'text-purple-400'
     },
     {
       title: 'Blog Posts',
-      value: counts.blogs.toString(),
-      change: '',
+      value: '15',
+      change: '+5',
       icon: BookOpen,
       color: 'text-[color:var(--neon-yellow)]'
     },
     {
+      title: 'Active Jobs',
+      value: '4',
+      change: '0',
+      icon: Users,
+      color: 'text-[color:var(--bright-red)]'
+    },
+    {
       title: 'Page Views',
-      value: counts.pageViews > 1000 ? `${(counts.pageViews / 1000).toFixed(1)}K` : counts.pageViews.toString(),
-      change: '',
+      value: '12.5K',
+      change: '+15%',
       icon: Eye,
-      color: 'text-blue-500'
-    }
-  ];
+      color: 'text-[color:var(--deep-navy)]'
+    }];
 
   const recentActivity = [
     {
