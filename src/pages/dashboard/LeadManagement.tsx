@@ -36,6 +36,7 @@ type LeadRow = {
   meetingTime: string;
   folderUrl: string;
   description: string;
+  files?: Array<{ name: string; url: string }>;
 };
 
 type MessageRow = {
@@ -119,40 +120,59 @@ export function LeadManagement() {
           const sessionId = event.sessionId || event._id;
           const existing = groupedLeads.get(sessionId);
 
-          const baseLead: LeadRow = existing || {
-            id: `REQ-${sessionId.slice(-6).toUpperCase()}`,
-            timestamp: formatTimestamp(event.eventAt),
-            name: normalizeText(metadata.name) || "Unknown",
-            email: normalizeText(metadata.email) || "N/A",
-            phone: normalizeText(metadata.phone) || "N/A",
-            country:
-              normalizeText(metadata.country) || event.country || "Unknown",
-            budget: normalizeText(metadata.budget) || "N/A",
-            status: "Pending",
-            meetingDate: "",
-            meetingTime: "",
-            folderUrl: normalizeText(metadata.folderUrl) || "#",
-            description:
-              normalizeText(metadata.description) ||
-              normalizeText(metadata.message) ||
-              "No description provided.",
-          };
+          if (!existing) {
+            groupedLeads.set(sessionId, {
+              id: `REQ-${sessionId.slice(-6).toUpperCase()}`,
+              timestamp: formatTimestamp(event.eventAt),
+              name: normalizeText(metadata.name) || "Unknown",
+              email: normalizeText(metadata.email) || "N/A",
+              phone: normalizeText(metadata.phone) || "N/A",
+              country: normalizeText(metadata.country) || event.country || "Unknown",
+              budget: normalizeText(metadata.budget) || "N/A",
+              status: event.eventType === "meeting_booked" ? "Confirmed" : "Pending",
+              meetingDate: normalizeText(metadata.meetingDate) || "",
+              meetingTime: normalizeText(metadata.meetingTime) || "",
+              folderUrl: normalizeText(metadata.folderUrl) || "#",
+              description: normalizeText(metadata.description) || normalizeText(metadata.message) || "No description provided.",
+              files: Array.isArray(metadata.files) ? metadata.files : [],
+              _rawDate: new Date(event.eventAt)
+            } as any);
+          } else {
+            // Processing older events now (since list is descending)
+            if (existing.name === "Unknown" && metadata.name) {
+              existing.name = normalizeText(metadata.name);
+            }
+            if (existing.email === "N/A" && metadata.email) {
+              existing.email = normalizeText(metadata.email);
+            }
+            if (existing.phone === "N/A" && metadata.phone) {
+              existing.phone = normalizeText(metadata.phone);
+            }
+            if (existing.budget === "N/A" && metadata.budget) {
+              existing.budget = normalizeText(metadata.budget);
+            }
+            if (existing.folderUrl === "#" && metadata.folderUrl) {
+              existing.folderUrl = normalizeText(metadata.folderUrl);
+            }
+            if (existing.description === "No description provided." && (metadata.description || metadata.message)) {
+              existing.description = normalizeText(metadata.description) || normalizeText(metadata.message);
+            }
+            if ((!existing.files || existing.files.length === 0) && Array.isArray(metadata.files) && metadata.files.length > 0) {
+              existing.files = metadata.files;
+            }
 
-          if (event.eventType === "meeting_booked") {
-            const meetingDate = normalizeText(metadata.meetingDate);
-            const meetingTime = normalizeText(metadata.meetingTime);
-            baseLead.status = "Confirmed";
-            baseLead.meetingDate = meetingDate;
-            baseLead.meetingTime = meetingTime;
+            if (event.eventType === "meeting_booked" && existing.status === "Pending") {
+              existing.status = "Confirmed";
+              if (!existing.meetingDate) existing.meetingDate = normalizeText(metadata.meetingDate);
+              if (!existing.meetingTime) existing.meetingTime = normalizeText(metadata.meetingTime);
+            }
           }
-
-          groupedLeads.set(sessionId, baseLead);
         });
 
         setLeads(
           Array.from(groupedLeads.values()).sort(
-            (a, b) =>
-              new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+            (a: any, b: any) =>
+              b._rawDate.getTime() - a._rawDate.getTime(),
           ),
         );
 
@@ -355,10 +375,20 @@ export function LeadManagement() {
             <Eye size={16} />
           </button>
           <a
-            href={value}
+            href={value && value !== "#" ? value : undefined}
             target="_blank"
             rel="noreferrer"
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-blue-400"
+            className={`p-2 rounded-lg transition-colors ${
+              value && value !== "#" 
+                ? "text-blue-400 hover:bg-white/10" 
+                : "text-gray-600 cursor-not-allowed"
+            }`}
+            onClick={(e) => {
+              if (!value || value === "#") {
+                e.preventDefault();
+              }
+            }}
+            title={value && value !== "#" ? "Open Project Folder" : "No folder available"}
           >
             <Folder size={16} />
           </a>

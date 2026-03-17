@@ -181,61 +181,92 @@ export function LeadDetailModal({
                 </div>
               </section>
             }
-
             {/* Files */}
             <section>
               <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                 <Folder size={14} /> Project Files
               </h3>
-              <a
-                href={lead.folderUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all group">
-
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-white/10 text-white group-hover:bg-[color:var(--bright-red)] group-hover:text-white transition-colors">
-                    <Folder size={20} />
-                  </div>
-                  <div>
-                    <div className="font-bold text-white">
-                      Google Drive Folder
+              <div className="space-y-3">
+                {lead.folderUrl && lead.folderUrl !== "#" && (
+                  <a
+                    href={lead.folderUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-white/10 text-white group-hover:bg-red-600 group-hover:text-white transition-colors">
+                        <Folder size={20} />
+                      </div>
+                      <div>
+                        <div className="font-bold text-white">Google Drive Folder</div>
+                        <div className="text-xs text-gray-400">Contains all uploaded assets</div>
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-400">
-                      Contains all uploaded assets
-                    </div>
-                  </div>
-                </div>
-                <ExternalLink
-                  size={16}
-                  className="text-gray-500 group-hover:text-white transition-colors" />
+                    <ExternalLink size={16} className="text-gray-500 group-hover:text-white transition-colors" />
+                  </a>
+                )}
 
-              </a>
+                {/* Individual Attachments */}
+                {lead.files && lead.files.length > 0 ? (
+                  lead.files.map((file: any, index: number) => (
+                    <a
+                      key={index}
+                      href={file.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-white/10 text-white group-hover:bg-red-600 group-hover:text-white transition-colors">
+                          <FileText size={20} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold text-white truncate">{file.name}</div>
+                          <div className="text-xs text-gray-400">Uploaded Attachment</div>
+                        </div>
+                      </div>
+                      <ExternalLink size={16} className="text-gray-500 group-hover:text-white transition-colors" />
+                    </a>
+                  ))
+                ) : (
+                  (!lead.folderUrl || lead.folderUrl === "#") && (
+                    <div className="text-center py-6 bg-white/5 rounded-xl border border-dashed border-white/10">
+                      <p className="text-sm text-gray-500 italic">No files attached to this request.</p>
+                    </div>
+                  )
+                )}
+              </div>
             </section>
           </div>
 
           {/* Footer Actions */}
-          <div className="p-6 border-t border-white/10 bg-white/5 flex justify-end gap-3">
-            <Button variant="outline" onClick={onClose}>
+          <div className="p-6 border-t border-white/10 bg-white/5 flex flex-wrap justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="px-6 py-3 rounded-xl bg-white/5 text-white hover:bg-white/10 transition-all font-bold text-sm"
+            >
               Close
-            </Button>
-            <Button
-              variant="outline"
+            </button>
+            <button
               onClick={() => window.open(`mailto:${lead.email}`)}
-              className="flex items-center gap-2">
-
+              className="px-6 py-3 rounded-xl bg-white/5 text-white hover:bg-white/10 transition-all font-bold text-sm flex items-center gap-2"
+            >
               <Mail size={16} /> Send Email
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => window.open(lead.folderUrl, '_blank')}
-              className="flex items-center gap-2">
-
-              <Folder size={16} /> Open Project Folder
-            </Button>
+            </button>
+            {lead.folderUrl && lead.folderUrl !== "#" && (
+              <a
+                href={lead.folderUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="px-6 py-3 rounded-xl bg-red-600 text-white hover:bg-red-700 transition-all font-bold text-sm flex items-center gap-2"
+              >
+                <Folder size={16} /> Open Project Folder
+              </a>
+            )}
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>);
-
-}
+    </AnimatePresence>
+  );
+};
