@@ -1,6 +1,6 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Calendar, UserMinus } from 'lucide-react';
-import { Button } from '../ui/Button';
+import { motion, AnimatePresence } from "framer-motion";
+import { X, Mail, Calendar, UserMinus } from "lucide-react";
+import { Button } from "../ui/Button";
 interface NewsletterDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -9,7 +9,7 @@ interface NewsletterDetailModalProps {
 export function NewsletterDetailModal({
   isOpen,
   onClose,
-  subscriber
+  subscriber,
 }: NewsletterDetailModalProps) {
   if (!isOpen || !subscriber) return null;
   return (
@@ -17,36 +17,36 @@ export function NewsletterDetailModal({
       <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
         <motion.div
           initial={{
-            opacity: 0
+            opacity: 0,
           }}
           animate={{
-            opacity: 1
+            opacity: 1,
           }}
           exit={{
-            opacity: 0
+            opacity: 0,
           }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-
+          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        />
 
         <motion.div
           initial={{
             opacity: 0,
             scale: 0.95,
-            y: 20
+            y: 20,
           }}
           animate={{
             opacity: 1,
             scale: 1,
-            y: 0
+            y: 0,
           }}
           exit={{
             opacity: 0,
             scale: 0.95,
-            y: 20
+            y: 20,
           }}
-          className="relative w-full max-w-md bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-
+          className="relative w-full max-w-md bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/5">
             <div className="flex items-center gap-4">
@@ -64,8 +64,8 @@ export function NewsletterDetailModal({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
-
+              className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+            >
               <X size={20} />
             </button>
           </div>
@@ -80,10 +80,11 @@ export function NewsletterDetailModal({
                 {subscriber.email}
               </h3>
               <div
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold mt-2 ${subscriber.status === 'Active' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold mt-2 ${subscriber.status === "Active" ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}
+              >
                 <span
-                  className={`w-1.5 h-1.5 rounded-full ${subscriber.status === 'Active' ? 'bg-green-500' : 'bg-red-500'}`} />
+                  className={`w-1.5 h-1.5 rounded-full ${subscriber.status === "Active" ? "bg-green-500" : "bg-red-500"}`}
+                />
 
                 {subscriber.status}
               </div>
@@ -107,17 +108,17 @@ export function NewsletterDetailModal({
             <Button variant="outline" onClick={onClose} className="flex-1">
               Close
             </Button>
-            {subscriber.status === 'Active' &&
+            {subscriber.status === "Active" && (
               <Button
                 variant="outline"
-                className="flex-1 border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-400">
-
+                className="flex-1 border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-400"
+              >
                 <UserMinus size={16} className="mr-2" /> Unsubscribe
               </Button>
-            }
+            )}
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>);
-
+    </AnimatePresence>
+  );
 }

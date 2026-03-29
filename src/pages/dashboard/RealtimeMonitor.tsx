@@ -46,16 +46,38 @@ export function RealtimeMonitor() {
   const liveEvents = data?.liveEvents ?? [];
 
   // Dynamic calculations for devices and pages
-  const deviceCounts = data?.deviceCounts ?? { desktop: 0, mobile: 0, tablet: 0 };
-  const totalDevices = Object.values(deviceCounts).reduce((a, b) => a + b, 0) || 1;
-  const desktopPct = Math.round(((deviceCounts.desktop || 0) / totalDevices) * 100);
-  const mobilePct = Math.round(((deviceCounts.mobile || 0) / totalDevices) * 100);
-  const tabletPct = Math.round(((deviceCounts.tablet || 0) / totalDevices) * 100);
+  const deviceCounts = data?.deviceCounts ?? {
+    desktop: 0,
+    mobile: 0,
+    tablet: 0,
+  };
+  const totalDevices =
+    Object.values(deviceCounts).reduce((a, b) => a + b, 0) || 1;
+  const desktopPct = Math.round(
+    ((deviceCounts.desktop || 0) / totalDevices) * 100,
+  );
+  const mobilePct = Math.round(
+    ((deviceCounts.mobile || 0) / totalDevices) * 100,
+  );
+  const tabletPct = Math.round(
+    ((deviceCounts.tablet || 0) / totalDevices) * 100,
+  );
 
   const topPages = Object.entries(data?.pageCounts ?? {})
     .map(([path, users]) => ({ path, users }))
     .sort((a, b) => b.users - a.users)
     .slice(0, 5);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <span className="relative flex h-4 w-4">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[color:var(--vibrant-green)] opacity-75"></span>
+          <span className="relative inline-flex h-4 w-4 rounded-full bg-[color:var(--vibrant-green)]"></span>
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -113,7 +135,9 @@ export function RealtimeMonitor() {
                   <Monitor size={12} className="text-blue-400" />
                   <span className="text-gray-300">Desktop</span>
                 </div>
-                <span className="text-white font-bold text-xs">{desktopPct}%</span>
+                <span className="text-white font-bold text-xs">
+                  {desktopPct}%
+                </span>
               </div>
               <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
                 <div
@@ -135,7 +159,9 @@ export function RealtimeMonitor() {
 
                   <span className="text-gray-300">Mobile</span>
                 </div>
-                <span className="text-white font-bold text-xs">{mobilePct}%</span>
+                <span className="text-white font-bold text-xs">
+                  {mobilePct}%
+                </span>
               </div>
               <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
                 <div
@@ -151,14 +177,13 @@ export function RealtimeMonitor() {
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2 text-xs">
-                    <Smartphone
-                      size={12}
-                      className="text-purple-400"
-                    />
+                    <Smartphone size={12} className="text-purple-400" />
 
                     <span className="text-gray-300">Tablet</span>
                   </div>
-                  <span className="text-white font-bold text-xs">{tabletPct}%</span>
+                  <span className="text-white font-bold text-xs">
+                    {tabletPct}%
+                  </span>
                 </div>
                 <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
                   <div
@@ -195,7 +220,9 @@ export function RealtimeMonitor() {
                 </div>
               ))
             ) : (
-              <div className="text-xs text-gray-500 italic py-2">No active pages</div>
+              <div className="text-xs text-gray-500 italic py-2">
+                No active pages
+              </div>
             )}
           </div>
         </motion.div>

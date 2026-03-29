@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   Briefcase,
@@ -6,10 +6,9 @@ import {
   Mail,
   Link as LinkIcon,
   FileText,
-  ChevronDown
-} from
-  'lucide-react';
-import { Button } from '../ui/Button';
+  ChevronDown,
+} from "lucide-react";
+import { Button } from "../ui/Button";
 interface JobDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,7 +17,7 @@ interface JobDetailModalProps {
 export function JobDetailModal({
   isOpen,
   onClose,
-  application
+  application,
 }: JobDetailModalProps) {
   if (!isOpen || !application) return null;
   return (
@@ -26,36 +25,36 @@ export function JobDetailModal({
       <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
         <motion.div
           initial={{
-            opacity: 0
+            opacity: 0,
           }}
           animate={{
-            opacity: 1
+            opacity: 1,
           }}
           exit={{
-            opacity: 0
+            opacity: 0,
           }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-
+          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        />
 
         <motion.div
           initial={{
             opacity: 0,
             scale: 0.95,
-            y: 20
+            y: 20,
           }}
           animate={{
             opacity: 1,
             scale: 1,
-            y: 0
+            y: 0,
           }}
           exit={{
             opacity: 0,
             scale: 0.95,
-            y: 20
+            y: 20,
           }}
-          className="relative w-full max-w-2xl bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-
+          className="relative w-full max-w-2xl bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/5">
             <div className="flex items-center gap-4">
@@ -73,8 +72,8 @@ export function JobDetailModal({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
-
+              className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+            >
               <X size={20} />
             </button>
           </div>
@@ -116,8 +115,8 @@ export function JobDetailModal({
                 <Button
                   variant="outline"
                   className="text-xs"
-                  onClick={() => window.open(application.portfolio, '_blank')}>
-
+                  onClick={() => window.open(application.portfolio, "_blank")}
+                >
                   Visit
                 </Button>
               </div>
@@ -135,8 +134,8 @@ export function JobDetailModal({
                 <Button
                   variant="outline"
                   className="text-xs"
-                  onClick={() => window.open(application.resumeUrl, '_blank')}>
-
+                  onClick={() => window.open(application.resumeUrl, "_blank")}
+                >
                   Download
                 </Button>
               </div>
@@ -150,8 +149,8 @@ export function JobDetailModal({
               <div className="relative">
                 <select
                   className="w-full bg-[#0A0A0A] border border-white/10 rounded-lg px-4 py-3 text-white appearance-none focus:outline-none focus:border-[color:var(--bright-red)]"
-                  defaultValue={application.status}>
-
+                  defaultValue={application.status}
+                >
                   <option value="New">New Application</option>
                   <option value="Reviewing">Under Review</option>
                   <option value="Shortlisted">Shortlisted</option>
@@ -159,8 +158,8 @@ export function JobDetailModal({
                 </select>
                 <ChevronDown
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
-                  size={16} />
-
+                  size={16}
+                />
               </div>
             </div>
           </div>
@@ -173,13 +172,13 @@ export function JobDetailModal({
             <Button
               variant="primary"
               onClick={() => window.open(`mailto:${application.email}`)}
-              className="flex items-center gap-2">
-
+              className="flex items-center gap-2"
+            >
               <Mail size={16} /> Contact Applicant
             </Button>
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>);
-
+    </AnimatePresence>
+  );
 }

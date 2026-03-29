@@ -163,7 +163,8 @@ export function SettingsPage() {
         isOpen: true,
         type: "error",
         title: "Error",
-        message: error?.response?.data?.message || "Failed to save legal policies",
+        message:
+          error?.response?.data?.message || "Failed to save legal policies",
       });
     } finally {
       setLegalSaving(false);
@@ -1008,7 +1009,9 @@ export function SettingsPage() {
           <div className="bg-[#0A0A0A] rounded-2xl border border-white/10 overflow-hidden">
             <div className="p-6 border-b border-white/10 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white flex items-center gap-2 capitalize">
-                {legalTab === "privacy" ? "Privacy Policy" : "Terms & Conditions"}{" "}
+                {legalTab === "privacy"
+                  ? "Privacy Policy"
+                  : "Terms & Conditions"}{" "}
                 Sections
               </h2>
               <button
@@ -1017,7 +1020,10 @@ export function SettingsPage() {
                   if (legalTab === "privacy") {
                     setLegalContent({
                       ...legalContent,
-                      privacyPolicy: [...legalContent.privacyPolicy, newSection],
+                      privacyPolicy: [
+                        ...legalContent.privacyPolicy,
+                        newSection,
+                      ],
                     });
                   } else {
                     setLegalContent({
@@ -1124,7 +1130,7 @@ export function SettingsPage() {
                                 [legalTab === "privacy"
                                   ? "privacyPolicy"
                                   : "termsConditions"]: newSections,
-                                });
+                              });
                             }}
                             placeholder="Write section content..."
                           />

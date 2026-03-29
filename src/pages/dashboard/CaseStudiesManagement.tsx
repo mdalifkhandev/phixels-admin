@@ -453,7 +453,9 @@ export function CaseStudiesManagement() {
               placeholder="Optimizing Last-Mile Delivery with AI"
               required
             />
-            <div className="text-right text-xs text-gray-500">{form.title.length}/100</div>
+            <div className="text-right text-xs text-gray-500">
+              {form.title.length}/100
+            </div>
           </div>
 
           <ImageUploadField

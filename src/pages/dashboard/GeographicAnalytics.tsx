@@ -1,16 +1,16 @@
-import { useState, useEffect } from 'react';
-import { Globe, MapPin, Loader2 } from 'lucide-react';
-import { CountryTable } from '../../components/dashboard/CountryTable';
-import { CityTable } from '../../components/dashboard/CityTable';
-import { InteractiveMap } from '../../components/dashboard/InteractiveMap';
-import { DataDetailModal } from '../../components/dashboard/DataDetailModal';
-import { analyticsApi } from '../../services/api';
-import { CountryDataPoint, CityDataPoint } from '../../types/types';
+import { useState, useEffect } from "react";
+import { Globe, MapPin, Loader2 } from "lucide-react";
+import { CountryTable } from "../../components/dashboard/CountryTable";
+import { CityTable } from "../../components/dashboard/CityTable";
+import { InteractiveMap } from "../../components/dashboard/InteractiveMap";
+import { DataDetailModal } from "../../components/dashboard/DataDetailModal";
+import { analyticsApi } from "../../services/api";
+import { CountryDataPoint, CityDataPoint } from "../../types/types";
 
 export function GeographicAnalytics() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState<any>(null);
-  const [modalTitle, setModalTitle] = useState('');
+  const [modalTitle, setModalTitle] = useState("");
   const [countries, setCountries] = useState<CountryDataPoint[]>([]);
   const [cities, setCities] = useState<CityDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,17 +23,17 @@ export function GeographicAnalytics() {
     try {
       setLoading(true);
       const [countryData, cityData] = await Promise.all([
-        analyticsApi.getTopCountries('30d'),
-        analyticsApi.getTopCities('30d')
+        analyticsApi.getTopCountries("30d"),
+        analyticsApi.getTopCities("30d"),
       ]);
       setCountries(countryData);
       setCities(cityData);
     } catch (error) {
-      console.error('Failed to fetch geographic data:', error);
+      console.error("Failed to fetch geographic data:", error);
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   const handleRowClick = (data: any, title: string) => {
     setModalData(data);
@@ -44,7 +44,10 @@ export function GeographicAnalytics() {
   if (loading) {
     return (
       <div className="h-[400px] flex items-center justify-center">
-        <Loader2 className="animate-spin text-[color:var(--bright-red)]" size={32} />
+        <Loader2
+          className="animate-spin text-[color:var(--bright-red)]"
+          size={32}
+        />
       </div>
     );
   }
@@ -59,8 +62,8 @@ export function GeographicAnalytics() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         data={modalData}
-        title={modalTitle} />
-
+        title={modalTitle}
+      />
 
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-white">Geographic Data</h1>
@@ -82,8 +85,8 @@ export function GeographicAnalytics() {
           </div>
           <CountryTable
             data={countries}
-            onRowClick={(data) => handleRowClick(data, 'Country Performance')} />
-
+            onRowClick={(data) => handleRowClick(data, "Country Performance")}
+          />
         </div>
 
         {/* City Table */}
@@ -96,8 +99,8 @@ export function GeographicAnalytics() {
           </div>
           <CityTable
             data={cities}
-            onRowClick={(data) => handleRowClick(data, 'City Performance')} />
-
+            onRowClick={(data) => handleRowClick(data, "City Performance")}
+          />
         </div>
       </div>
 
@@ -110,57 +113,61 @@ export function GeographicAnalytics() {
           <div
             className="h-full bg-[color:var(--deep-navy)]"
             style={{
-              width: '45%'
+              width: "45%",
             }}
-            title="North America (45%)" />
+            title="North America (45%)"
+          />
 
           <div
             className="h-full bg-blue-800"
             style={{
-              width: '32%'
+              width: "32%",
             }}
-            title="Europe (32%)" />
+            title="Europe (32%)"
+          />
 
           <div
             className="h-full bg-[color:var(--bright-red)]"
             style={{
-              width: '15%'
+              width: "15%",
             }}
-            title="Asia Pacific (15%)" />
+            title="Asia Pacific (15%)"
+          />
 
           <div
             className="h-full bg-[color:var(--vibrant-green)]"
             style={{
-              width: '5%'
+              width: "5%",
             }}
-            title="South America (5%)" />
+            title="South America (5%)"
+          />
 
           <div
             className="h-full bg-gray-600"
             style={{
-              width: '3%'
+              width: "3%",
             }}
-            title="Others (3%)" />
-
+            title="Others (3%)"
+          />
         </div>
         <div className="flex justify-between mt-2 text-[10px] text-gray-400">
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-[color:var(--deep-navy)]" />{' '}
+            <div className="w-2 h-2 rounded-full bg-[color:var(--deep-navy)]" />{" "}
             N. America
           </div>
           <div className="flex items-center gap-1">
             <div className="w-2 h-2 rounded-full bg-blue-800" /> Europe
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-[color:var(--bright-red)]" />{' '}
+            <div className="w-2 h-2 rounded-full bg-[color:var(--bright-red)]" />{" "}
             Asia Pac.
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-2 h-2 rounded-full bg-[color:var(--vibrant-green)]" />{' '}
+            <div className="w-2 h-2 rounded-full bg-[color:var(--vibrant-green)]" />{" "}
             S. America
           </div>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

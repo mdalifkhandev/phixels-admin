@@ -8,7 +8,9 @@ import { aboutContentApi, teamMembersApi } from "../../services/api";
 import type { AboutContent, AboutMetric, TeamMember } from "../../types/types";
 
 export function AboutManagement() {
-  const [activeTab, setActiveTab] = useState<"metrics" | "philosophy" | "team" | "contact" | "clients">("metrics");
+  const [activeTab, setActiveTab] = useState<
+    "metrics" | "philosophy" | "team" | "contact" | "clients"
+  >("metrics");
   const [loading, setLoading] = useState(true);
 
   // About Content State
@@ -29,7 +31,9 @@ export function AboutManagement() {
   });
 
   // Team State
-  const [teamMembers, setTeamMembers] = useState<(TeamMember & { id: string })[]>([]);
+  const [teamMembers, setTeamMembers] = useState<
+    (TeamMember & { id: string })[]
+  >([]);
 
   // Modals
   const [statusModal, setStatusModal] = useState<{
@@ -40,7 +44,9 @@ export function AboutManagement() {
   }>({ isOpen: false, type: "success", title: "", message: "" });
 
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
-  const [editingTeamMember, setEditingTeamMember] = useState<(TeamMember & { id: string }) | null>(null);
+  const [editingTeamMember, setEditingTeamMember] = useState<
+    (TeamMember & { id: string }) | null
+  >(null);
   const [teamFormData, setTeamFormData] = useState({
     name: "",
     role: "",
@@ -56,21 +62,23 @@ export function AboutManagement() {
         aboutContentApi.get(),
         teamMembersApi.getAll(),
       ]);
-      setAboutContent(contentRes || { 
-        metrics: [], 
-        philosophy: { heading: "", description: "", image: "" },
-        contactInfo: {
-          whatsapp: "",
-          fiverr: "",
-          linkedin: "",
-          email: "",
-          behance: "",
-          facebook: "",
-          phone: "",
-          address: "",
+      setAboutContent(
+        contentRes || {
+          metrics: [],
+          philosophy: { heading: "", description: "", image: "" },
+          contactInfo: {
+            whatsapp: "",
+            fiverr: "",
+            linkedin: "",
+            email: "",
+            behance: "",
+            facebook: "",
+            phone: "",
+            address: "",
+          },
+          clients: [],
         },
-        clients: [],
-      });
+      );
       const mappedTeam = (teamRes || []).map((t) => ({ ...t, id: t._id }));
       // Sort team members based on sortOrder
       mappedTeam.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
@@ -112,7 +120,11 @@ export function AboutManagement() {
     });
   };
 
-  const updateMetric = (index: number, field: keyof AboutMetric, value: string | number) => {
+  const updateMetric = (
+    index: number,
+    field: keyof AboutMetric,
+    value: string | number,
+  ) => {
     const newMetrics = [...aboutContent.metrics];
     newMetrics[index] = { ...newMetrics[index], [field]: value };
     setAboutContent({ ...aboutContent, metrics: newMetrics });
@@ -131,7 +143,11 @@ export function AboutManagement() {
     });
   };
 
-  const updateClient = (index: number, field: "name" | "logo", value: string) => {
+  const updateClient = (
+    index: number,
+    field: "name" | "logo",
+    value: string,
+  ) => {
     const newClients = [...aboutContent.clients];
     newClients[index] = { ...newClients[index], [field]: value };
     setAboutContent({ ...aboutContent, clients: newClients });
@@ -183,7 +199,8 @@ export function AboutManagement() {
   };
 
   const handleTeamDelete = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this team member?")) return;
+    if (!window.confirm("Are you sure you want to delete this team member?"))
+      return;
     try {
       await teamMembersApi.delete(id);
       fetchData();
@@ -205,8 +222,12 @@ export function AboutManagement() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-white">About Page Management</h1>
-          <p className="text-gray-400">Manage metrics, philosophy, and team members</p>
+          <h1 className="text-2xl font-bold text-white">
+            About Page Management
+          </h1>
+          <p className="text-gray-400">
+            Manage metrics, philosophy, and team members
+          </p>
         </div>
         <div className="p-3 bg-neon-cyan/10 rounded-xl">
           <Info className="w-6 h-6 text-neon-cyan" />
@@ -218,7 +239,9 @@ export function AboutManagement() {
           <button
             onClick={() => setActiveTab("metrics")}
             className={`px-6 py-4 text-sm font-medium transition-colors ${
-              activeTab === "metrics" ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]" : "text-gray-400 hover:text-white"
+              activeTab === "metrics"
+                ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]"
+                : "text-gray-400 hover:text-white"
             }`}
           >
             Company Metrics
@@ -226,7 +249,9 @@ export function AboutManagement() {
           <button
             onClick={() => setActiveTab("philosophy")}
             className={`px-6 py-4 text-sm font-medium transition-colors ${
-              activeTab === "philosophy" ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]" : "text-gray-400 hover:text-white"
+              activeTab === "philosophy"
+                ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]"
+                : "text-gray-400 hover:text-white"
             }`}
           >
             Our Philosophy
@@ -234,7 +259,9 @@ export function AboutManagement() {
           <button
             onClick={() => setActiveTab("team")}
             className={`px-6 py-4 text-sm font-medium transition-colors ${
-              activeTab === "team" ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]" : "text-gray-400 hover:text-white"
+              activeTab === "team"
+                ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]"
+                : "text-gray-400 hover:text-white"
             }`}
           >
             Team Members
@@ -242,7 +269,9 @@ export function AboutManagement() {
           <button
             onClick={() => setActiveTab("contact")}
             className={`px-6 py-4 text-sm font-medium transition-colors ${
-              activeTab === "contact" ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]" : "text-gray-400 hover:text-white"
+              activeTab === "contact"
+                ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]"
+                : "text-gray-400 hover:text-white"
             }`}
           >
             Contact Info
@@ -250,7 +279,9 @@ export function AboutManagement() {
           <button
             onClick={() => setActiveTab("clients")}
             className={`px-6 py-4 text-sm font-medium transition-colors ${
-              activeTab === "clients" ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]" : "text-gray-400 hover:text-white"
+              activeTab === "clients"
+                ? "text-[color:var(--bright-red)] border-b-2 border-[color:var(--bright-red)]"
+                : "text-gray-400 hover:text-white"
             }`}
           >
             Our Clients
@@ -261,7 +292,9 @@ export function AboutManagement() {
           {activeTab === "metrics" && (
             <div className="space-y-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-white">Count Metrics</h3>
+                <h3 className="text-lg font-medium text-white">
+                  Count Metrics
+                </h3>
                 <button
                   onClick={addMetric}
                   className="flex items-center px-4 py-2 bg-[color:var(--bright-red)]/10 text-[color:var(--bright-red)] rounded-lg hover:bg-[color:var(--bright-red)]/20 transition-colors"
@@ -272,39 +305,59 @@ export function AboutManagement() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {aboutContent.metrics.map((metric, index) => (
-                  <div key={index} className="bg-dark-300 p-4 rounded-lg border border-white/5 space-y-4">
+                  <div
+                    key={index}
+                    className="bg-dark-300 p-4 rounded-lg border border-white/5 space-y-4"
+                  >
                     <div className="flex justify-between">
-                      <h4 className="text-sm font-medium text-gray-300">Metric #{index + 1}</h4>
-                      <button onClick={() => removeMetric(index)} className="text-red-400 hover:text-red-300">
+                      <h4 className="text-sm font-medium text-gray-300">
+                        Metric #{index + 1}
+                      </h4>
+                      <button
+                        onClick={() => removeMetric(index)}
+                        className="text-red-400 hover:text-red-300"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">Label</label>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">
+                        Label
+                      </label>
                       <input
                         type="text"
                         value={metric.label}
-                        onChange={(e) => updateMetric(index, "label", e.target.value)}
+                        onChange={(e) =>
+                          updateMetric(index, "label", e.target.value)
+                        }
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                         placeholder="e.g. Projects Delivered"
                       />
                     </div>
                     <div className="flex gap-4">
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-400 mb-1">Value</label>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          Value
+                        </label>
                         <input
                           type="number"
                           value={metric.value}
-                          onChange={(e) => updateMetric(index, "value", Number(e.target.value))}
+                          onChange={(e) =>
+                            updateMetric(index, "value", Number(e.target.value))
+                          }
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                         />
                       </div>
                       <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-400 mb-1">Suffix</label>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                          Suffix
+                        </label>
                         <input
                           type="text"
                           value={metric.suffix}
-                          onChange={(e) => updateMetric(index, "suffix", e.target.value)}
+                          onChange={(e) =>
+                            updateMetric(index, "suffix", e.target.value)
+                          }
                           className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                           placeholder="e.g. +"
                         />
@@ -328,14 +381,19 @@ export function AboutManagement() {
           {activeTab === "philosophy" && (
             <div className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-400 mb-1">Heading</label>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Heading
+                </label>
                 <input
                   type="text"
                   value={aboutContent.philosophy.heading}
                   onChange={(e) =>
                     setAboutContent({
                       ...aboutContent,
-                      philosophy: { ...aboutContent.philosophy, heading: e.target.value },
+                      philosophy: {
+                        ...aboutContent.philosophy,
+                        heading: e.target.value,
+                      },
                     })
                   }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
@@ -343,21 +401,28 @@ export function AboutManagement() {
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Description (Supports HTML/Text)</label>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Description (Supports HTML/Text)
+                  </label>
                   <textarea
                     rows={8}
                     value={aboutContent.philosophy.description}
                     onChange={(e) =>
                       setAboutContent({
                         ...aboutContent,
-                        philosophy: { ...aboutContent.philosophy, description: e.target.value },
+                        philosophy: {
+                          ...aboutContent.philosophy,
+                          description: e.target.value,
+                        },
                       })
                     }
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">Philosophy Image</label>
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
+                    Philosophy Image
+                  </label>
                   <div className="bg-white/5 border border-white/10 rounded-lg p-4">
                     <ImageUploadField
                       label=""
@@ -365,7 +430,10 @@ export function AboutManagement() {
                       onChange={(url) =>
                         setAboutContent({
                           ...aboutContent,
-                          philosophy: { ...aboutContent.philosophy, image: url },
+                          philosophy: {
+                            ...aboutContent.philosophy,
+                            image: url,
+                          },
                         })
                       }
                       onFileChange={async (file) => {
@@ -373,7 +441,10 @@ export function AboutManagement() {
                           const url = await aboutContentApi.uploadImage(file);
                           setAboutContent({
                             ...aboutContent,
-                            philosophy: { ...aboutContent.philosophy, image: url },
+                            philosophy: {
+                              ...aboutContent.philosophy,
+                              image: url,
+                            },
                           });
                         } catch (e) {
                           console.error("Failed to upload logic image", e);
@@ -398,7 +469,9 @@ export function AboutManagement() {
           {activeTab === "team" && (
             <div>
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-medium text-white">Manage Team Members</h3>
+                <h3 className="text-lg font-medium text-white">
+                  Manage Team Members
+                </h3>
                 <button
                   onClick={() => {
                     setEditingTeamMember(null);
@@ -417,7 +490,7 @@ export function AboutManagement() {
                   Add Team Member
                 </button>
               </div>
-              
+
               <DataTable
                 data={teamMembers}
                 onReorder={handleTeamReorder}
@@ -428,13 +501,23 @@ export function AboutManagement() {
                     render: (_: any, row: any) => (
                       <div className="flex items-center space-x-3">
                         {row.image ? (
-                          <img src={row.image} alt={row.name} className="w-10 h-10 rounded-full object-cover border border-white/10" />
+                          <img
+                            src={row.image}
+                            alt={row.name}
+                            className="w-10 h-10 rounded-full object-cover border border-white/10"
+                          />
                         ) : (
-                          <div className="w-10 h-10 rounded-full bg-dark-300 flex items-center justify-center border border-white/10 text-gray-400 text-xs">No img</div>
+                          <div className="w-10 h-10 rounded-full bg-dark-300 flex items-center justify-center border border-white/10 text-gray-400 text-xs">
+                            No img
+                          </div>
                         )}
                         <div>
-                          <div className="text-sm font-medium text-white">{row.name}</div>
-                          <div className="text-xs text-gray-400">{row.role}</div>
+                          <div className="text-sm font-medium text-white">
+                            {row.name}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            {row.role}
+                          </div>
                         </div>
                       </div>
                     ),
@@ -443,7 +526,9 @@ export function AboutManagement() {
                     key: "status",
                     label: "Status",
                     render: (_: any, row: any) => (
-                      <span className={`px-2 py-1 text-xs rounded-full ${row.isActive ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}`}>
+                      <span
+                        className={`px-2 py-1 text-xs rounded-full ${row.isActive ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}`}
+                      >
                         {row.isActive ? "Active" : "Inactive"}
                       </span>
                     ),
@@ -456,9 +541,13 @@ export function AboutManagement() {
                       if (row.socialLinks?.linkedin) links.push("IN");
                       if (row.socialLinks?.twitter) links.push("TW");
                       if (row.socialLinks?.github) links.push("GH");
-                      return <span className="text-xs text-gray-400">{links.join(", ") || "None"}</span>;
-                    }
-                  }
+                      return (
+                        <span className="text-xs text-gray-400">
+                          {links.join(", ") || "None"}
+                        </span>
+                      );
+                    },
+                  },
                 ]}
                 onEdit={(row) => {
                   setEditingTeamMember(row);
@@ -466,7 +555,11 @@ export function AboutManagement() {
                     name: row.name,
                     role: row.role,
                     image: row.image || "",
-                    socialLinks: row.socialLinks || { linkedin: "", twitter: "", github: "" },
+                    socialLinks: row.socialLinks || {
+                      linkedin: "",
+                      twitter: "",
+                      github: "",
+                    },
                     isActive: row.isActive ?? true,
                   });
                   setIsTeamModalOpen(true);
@@ -481,14 +574,19 @@ export function AboutManagement() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">WhatsApp Number</label>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      WhatsApp Number
+                    </label>
                     <input
                       type="text"
                       value={aboutContent.contactInfo?.whatsapp || ""}
                       onChange={(e) =>
                         setAboutContent({
                           ...aboutContent,
-                          contactInfo: { ...aboutContent.contactInfo, whatsapp: e.target.value },
+                          contactInfo: {
+                            ...aboutContent.contactInfo,
+                            whatsapp: e.target.value,
+                          },
                         })
                       }
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
@@ -496,14 +594,19 @@ export function AboutManagement() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Email Address</label>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Email Address
+                    </label>
                     <input
                       type="email"
                       value={aboutContent.contactInfo?.email || ""}
                       onChange={(e) =>
                         setAboutContent({
                           ...aboutContent,
-                          contactInfo: { ...aboutContent.contactInfo, email: e.target.value },
+                          contactInfo: {
+                            ...aboutContent.contactInfo,
+                            email: e.target.value,
+                          },
                         })
                       }
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
@@ -511,14 +614,19 @@ export function AboutManagement() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Fiverr Profile URL</label>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Fiverr Profile URL
+                    </label>
                     <input
                       type="text"
                       value={aboutContent.contactInfo?.fiverr || ""}
                       onChange={(e) =>
                         setAboutContent({
                           ...aboutContent,
-                          contactInfo: { ...aboutContent.contactInfo, fiverr: e.target.value },
+                          contactInfo: {
+                            ...aboutContent.contactInfo,
+                            fiverr: e.target.value,
+                          },
                         })
                       }
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
@@ -526,14 +634,19 @@ export function AboutManagement() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">LinkedIn Profile URL</label>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      LinkedIn Profile URL
+                    </label>
                     <input
                       type="text"
                       value={aboutContent.contactInfo?.linkedin || ""}
                       onChange={(e) =>
                         setAboutContent({
                           ...aboutContent,
-                          contactInfo: { ...aboutContent.contactInfo, linkedin: e.target.value },
+                          contactInfo: {
+                            ...aboutContent.contactInfo,
+                            linkedin: e.target.value,
+                          },
                         })
                       }
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
@@ -544,14 +657,19 @@ export function AboutManagement() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Phone / Call Us</label>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Phone / Call Us
+                    </label>
                     <input
                       type="text"
                       value={aboutContent.contactInfo?.phone || ""}
                       onChange={(e) =>
                         setAboutContent({
                           ...aboutContent,
-                          contactInfo: { ...aboutContent.contactInfo, phone: e.target.value },
+                          contactInfo: {
+                            ...aboutContent.contactInfo,
+                            phone: e.target.value,
+                          },
                         })
                       }
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
@@ -559,14 +677,19 @@ export function AboutManagement() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Behance Profile URL</label>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Behance Profile URL
+                    </label>
                     <input
                       type="text"
                       value={aboutContent.contactInfo?.behance || ""}
                       onChange={(e) =>
                         setAboutContent({
                           ...aboutContent,
-                          contactInfo: { ...aboutContent.contactInfo, behance: e.target.value },
+                          contactInfo: {
+                            ...aboutContent.contactInfo,
+                            behance: e.target.value,
+                          },
                         })
                       }
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
@@ -574,14 +697,19 @@ export function AboutManagement() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Facebook Page URL</label>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Facebook Page URL
+                    </label>
                     <input
                       type="text"
                       value={aboutContent.contactInfo?.facebook || ""}
                       onChange={(e) =>
                         setAboutContent({
                           ...aboutContent,
-                          contactInfo: { ...aboutContent.contactInfo, facebook: e.target.value },
+                          contactInfo: {
+                            ...aboutContent.contactInfo,
+                            facebook: e.target.value,
+                          },
                         })
                       }
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
@@ -589,14 +717,19 @@ export function AboutManagement() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">Office Address</label>
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
+                      Office Address
+                    </label>
                     <textarea
                       rows={2}
                       value={aboutContent.contactInfo?.address || ""}
                       onChange={(e) =>
                         setAboutContent({
                           ...aboutContent,
-                          contactInfo: { ...aboutContent.contactInfo, address: e.target.value },
+                          contactInfo: {
+                            ...aboutContent.contactInfo,
+                            address: e.target.value,
+                          },
                         })
                       }
                       className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
@@ -621,8 +754,12 @@ export function AboutManagement() {
             <div className="space-y-6">
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <h3 className="text-lg font-medium text-white">Our Clients</h3>
-                  <p className="text-sm text-gray-400">Manage logos displayed in the "Trusted By" sections</p>
+                  <h3 className="text-lg font-medium text-white">
+                    Our Clients
+                  </h3>
+                  <p className="text-sm text-gray-400">
+                    Manage logos displayed in the "Trusted By" sections
+                  </p>
                 </div>
                 <button
                   onClick={addClient}
@@ -634,25 +771,39 @@ export function AboutManagement() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {(aboutContent.clients || []).map((client, index) => (
-                  <div key={index} className="bg-dark-300 p-5 rounded-xl border border-white/5 space-y-4">
+                  <div
+                    key={index}
+                    className="bg-dark-300 p-5 rounded-xl border border-white/5 space-y-4"
+                  >
                     <div className="flex justify-between items-center pb-2 border-b border-white/5">
-                      <h4 className="text-sm font-medium text-gray-300">Client #{index + 1}</h4>
-                      <button onClick={() => removeClient(index)} className="text-red-400 hover:text-red-300 p-1 bg-red-400/10 rounded">
+                      <h4 className="text-sm font-medium text-gray-300">
+                        Client #{index + 1}
+                      </h4>
+                      <button
+                        onClick={() => removeClient(index)}
+                        className="text-red-400 hover:text-red-300 p-1 bg-red-400/10 rounded"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">Company / Brand Name</label>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">
+                        Company / Brand Name
+                      </label>
                       <input
                         type="text"
                         value={client.name}
-                        onChange={(e) => updateClient(index, "name", e.target.value)}
+                        onChange={(e) =>
+                          updateClient(index, "name", e.target.value)
+                        }
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                         placeholder="e.g. Google, Apple"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">Company Logo</label>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">
+                        Company Logo
+                      </label>
                       <div className="bg-white/5 border border-white/10 rounded-lg p-3">
                         <ImageUploadField
                           label=""
@@ -660,7 +811,8 @@ export function AboutManagement() {
                           onChange={(url) => updateClient(index, "logo", url)}
                           onFileChange={async (file) => {
                             try {
-                              const url = await aboutContentApi.uploadImage(file);
+                              const url =
+                                await aboutContentApi.uploadImage(file);
                               updateClient(index, "logo", url);
                             } catch (e) {
                               console.error("Failed to upload client logo", e);
@@ -674,7 +826,9 @@ export function AboutManagement() {
               </div>
               {(!aboutContent.clients || aboutContent.clients.length === 0) && (
                 <div className="text-center py-10 bg-white/5 rounded-xl border border-dashed border-white/10">
-                  <p className="text-gray-500">No clients added yet. Click 'Add Client' to start.</p>
+                  <p className="text-gray-500">
+                    No clients added yet. Click 'Add Client' to start.
+                  </p>
                 </div>
               )}
               <div className="flex justify-end pt-4">
@@ -713,54 +867,94 @@ export function AboutManagement() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Name *</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Name *
+              </label>
               <input
                 required
                 type="text"
                 value={teamFormData.name}
-                onChange={(e) => setTeamFormData({ ...teamFormData, name: e.target.value })}
+                onChange={(e) =>
+                  setTeamFormData({ ...teamFormData, name: e.target.value })
+                }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-400 mb-1">Role *</label>
+              <label className="block text-sm font-medium text-gray-400 mb-1">
+                Role *
+              </label>
               <input
                 required
                 type="text"
                 value={teamFormData.role}
-                onChange={(e) => setTeamFormData({ ...teamFormData, role: e.target.value })}
+                onChange={(e) =>
+                  setTeamFormData({ ...teamFormData, role: e.target.value })
+                }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
               />
             </div>
           </div>
 
           <div className="space-y-4">
-            <h4 className="text-sm font-medium text-gray-300 border-b border-white/10 pb-2">Social Links</h4>
+            <h4 className="text-sm font-medium text-gray-300 border-b border-white/10 pb-2">
+              Social Links
+            </h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">LinkedIn URL</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1">
+                  LinkedIn URL
+                </label>
                 <input
                   type="url"
                   value={teamFormData.socialLinks.linkedin}
-                  onChange={(e) => setTeamFormData({ ...teamFormData, socialLinks: { ...teamFormData.socialLinks, linkedin: e.target.value } })}
+                  onChange={(e) =>
+                    setTeamFormData({
+                      ...teamFormData,
+                      socialLinks: {
+                        ...teamFormData.socialLinks,
+                        linkedin: e.target.value,
+                      },
+                    })
+                  }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">Twitter URL</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1">
+                  Twitter URL
+                </label>
                 <input
                   type="url"
                   value={teamFormData.socialLinks.twitter}
-                  onChange={(e) => setTeamFormData({ ...teamFormData, socialLinks: { ...teamFormData.socialLinks, twitter: e.target.value } })}
+                  onChange={(e) =>
+                    setTeamFormData({
+                      ...teamFormData,
+                      socialLinks: {
+                        ...teamFormData.socialLinks,
+                        twitter: e.target.value,
+                      },
+                    })
+                  }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none text-sm"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-1">GitHub URL</label>
+                <label className="block text-xs font-medium text-gray-400 mb-1">
+                  GitHub URL
+                </label>
                 <input
                   type="url"
                   value={teamFormData.socialLinks.github}
-                  onChange={(e) => setTeamFormData({ ...teamFormData, socialLinks: { ...teamFormData.socialLinks, github: e.target.value } })}
+                  onChange={(e) =>
+                    setTeamFormData({
+                      ...teamFormData,
+                      socialLinks: {
+                        ...teamFormData.socialLinks,
+                        github: e.target.value,
+                      },
+                    })
+                  }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none text-sm"
                 />
               </div>
@@ -772,7 +966,9 @@ export function AboutManagement() {
               type="checkbox"
               id="isActive"
               checked={teamFormData.isActive}
-              onChange={(e) => setTeamFormData({ ...teamFormData, isActive: e.target.checked })}
+              onChange={(e) =>
+                setTeamFormData({ ...teamFormData, isActive: e.target.checked })
+              }
               className="w-4 h-4 rounded bg-white/5 border-white/10 text-[color:var(--bright-red)] focus:ring-[color:var(--bright-red)] focus:ring-offset-black"
             />
             <label htmlFor="isActive" className="ml-2 text-sm text-gray-300">

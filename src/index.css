@@ -1,4 +1,3 @@
-
 /* URL IMPORTS (SUCH AS FONT IMPORTS) SHOULD BE KEPT ABOVE TAILWIND IMPORTS - DO NOT DELETE THIS COMMENT */
 
 /* PLEASE NOTE: THESE TAILWIND IMPORTS SHOULD NEVER BE DELETED - DO NOT DELETE THIS COMMENT */
@@ -8,14 +7,14 @@
 /* DO NOT DELETE THESE TAILWIND IMPORTS, OTHERWISE THE STYLING WILL NOT RENDER AT ALL - DO NOT DELETE THIS COMMENT */
 
 :root {
-  --deep-navy: #013A63;
-  --deep-red: #8A0303;
-  --bright-red: #ED1F24;
-  --neon-yellow: #FFFF00;
-  --vibrant-green: #00CD49;
+  --deep-navy: #013a63;
+  --deep-red: #8a0303;
+  --bright-red: #ed1f24;
+  --neon-yellow: #ffff00;
+  --vibrant-green: #00cd49;
   --pure-black: #050505;
-  --ice-grey: #D9E1E7;
-  --pure-white: #FFFFFF;
+  --ice-grey: #d9e1e7;
+  --pure-white: #ffffff;
 }
 
 @layer base {
@@ -23,7 +22,7 @@
     @apply bg-[color:var(--pure-black)] text-[color:var(--pure-white)] antialiased;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02";
   }
-  
+
   /* Custom Scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
@@ -58,7 +57,7 @@
   .glass-panel {
     @apply bg-white/5 backdrop-blur-lg border border-white/10;
   }
-  
+
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)];
   }
@@ -66,7 +65,7 @@
   .neon-glow {
     box-shadow: 0 0 10px rgba(237, 31, 36, 0.5);
   }
-  
+
   .neon-border-glow:hover {
     box-shadow: 0 0 15px var(--neon-yellow);
     border-color: var(--neon-yellow);
@@ -75,8 +74,12 @@
 
 /* Marquee Animation */
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
 }
 
 .animate-marquee {

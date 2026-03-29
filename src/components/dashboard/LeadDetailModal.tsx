@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   User,
@@ -12,10 +12,8 @@ import {
   Folder,
   CheckCircle,
   AlertCircle,
-  ExternalLink
-} from
-  'lucide-react';
-import { Button } from '../ui/Button';
+  ExternalLink,
+} from "lucide-react";
 interface LeadDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -24,7 +22,7 @@ interface LeadDetailModalProps {
 export function LeadDetailModal({
   isOpen,
   onClose,
-  lead
+  lead,
 }: LeadDetailModalProps) {
   if (!isOpen || !lead) return null;
   return (
@@ -32,47 +30,47 @@ export function LeadDetailModal({
       <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
         <motion.div
           initial={{
-            opacity: 0
+            opacity: 0,
           }}
           animate={{
-            opacity: 1
+            opacity: 1,
           }}
           exit={{
-            opacity: 0
+            opacity: 0,
           }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-
+          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        />
 
         <motion.div
           initial={{
             opacity: 0,
             scale: 0.95,
-            y: 20
+            y: 20,
           }}
           animate={{
             opacity: 1,
             scale: 1,
-            y: 0
+            y: 0,
           }}
           exit={{
             opacity: 0,
             scale: 0.95,
-            y: 20
+            y: 20,
           }}
-          className="relative w-full max-w-3xl bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-
+          className="relative w-full max-w-3xl bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/5">
             <div className="flex items-center gap-4">
               <div
-                className={`p-3 rounded-xl ${lead.status === 'Confirmed' ? 'bg-[color:var(--vibrant-green)]/10 text-[color:var(--vibrant-green)]' : 'bg-yellow-500/10 text-yellow-500'}`}>
-
-                {lead.status === 'Confirmed' ?
-                  <CheckCircle size={24} /> :
-
+                className={`p-3 rounded-xl ${lead.status === "Confirmed" ? "bg-[color:var(--vibrant-green)]/10 text-[color:var(--vibrant-green)]" : "bg-yellow-500/10 text-yellow-500"}`}
+              >
+                {lead.status === "Confirmed" ? (
+                  <CheckCircle size={24} />
+                ) : (
                   <AlertCircle size={24} />
-                }
+                )}
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white">
@@ -87,8 +85,8 @@ export function LeadDetailModal({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
-
+              className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+            >
               <X size={20} />
             </button>
           </div>
@@ -151,14 +149,14 @@ export function LeadDetailModal({
                     Project Description
                   </div>
                   <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">
-                    {lead.description || 'No description provided.'}
+                    {lead.description || "No description provided."}
                   </p>
                 </div>
               </div>
             </section>
 
             {/* Meeting Info */}
-            {lead.status === 'Confirmed' &&
+            {lead.status === "Confirmed" && (
               <section>
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <Calendar size={14} /> Consultation Details
@@ -180,7 +178,7 @@ export function LeadDetailModal({
                   </div>
                 </div>
               </section>
-            }
+            )}
             {/* Files */}
             <section>
               <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -199,43 +197,57 @@ export function LeadDetailModal({
                         <Folder size={20} />
                       </div>
                       <div>
-                        <div className="font-bold text-white">Google Drive Folder</div>
-                        <div className="text-xs text-gray-400">Contains all uploaded assets</div>
+                        <div className="font-bold text-white">
+                          Google Drive Folder
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          Contains all uploaded assets
+                        </div>
                       </div>
                     </div>
-                    <ExternalLink size={16} className="text-gray-500 group-hover:text-white transition-colors" />
+                    <ExternalLink
+                      size={16}
+                      className="text-gray-500 group-hover:text-white transition-colors"
+                    />
                   </a>
                 )}
 
                 {/* Individual Attachments */}
-                {lead.files && lead.files.length > 0 ? (
-                  lead.files.map((file: any, index: number) => (
-                    <a
-                      key={index}
-                      href={file.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-white/10 text-white group-hover:bg-red-600 group-hover:text-white transition-colors">
-                          <FileText size={20} />
+                {lead.files && lead.files.length > 0
+                  ? lead.files.map((file: any, index: number) => (
+                      <a
+                        key={index}
+                        href={file.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-white/10 text-white group-hover:bg-red-600 group-hover:text-white transition-colors">
+                            <FileText size={20} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-bold text-white truncate">
+                              {file.name}
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              Uploaded Attachment
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold text-white truncate">{file.name}</div>
-                          <div className="text-xs text-gray-400">Uploaded Attachment</div>
-                        </div>
+                        <ExternalLink
+                          size={16}
+                          className="text-gray-500 group-hover:text-white transition-colors"
+                        />
+                      </a>
+                    ))
+                  : (!lead.folderUrl || lead.folderUrl === "#") && (
+                      <div className="text-center py-6 bg-white/5 rounded-xl border border-dashed border-white/10">
+                        <p className="text-sm text-gray-500 italic">
+                          No files attached to this request.
+                        </p>
                       </div>
-                      <ExternalLink size={16} className="text-gray-500 group-hover:text-white transition-colors" />
-                    </a>
-                  ))
-                ) : (
-                  (!lead.folderUrl || lead.folderUrl === "#") && (
-                    <div className="text-center py-6 bg-white/5 rounded-xl border border-dashed border-white/10">
-                      <p className="text-sm text-gray-500 italic">No files attached to this request.</p>
-                    </div>
-                  )
-                )}
+                    )}
               </div>
             </section>
           </div>
@@ -269,4 +281,4 @@ export function LeadDetailModal({
       </div>
     </AnimatePresence>
   );
-};
+}

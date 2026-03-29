@@ -1,4 +1,4 @@
-import { Calendar, ChevronDown } from 'lucide-react';
+import { Calendar, ChevronDown } from "lucide-react";
 export function DateRangePicker() {
   return (
     <div className="relative">
@@ -8,6 +8,6 @@ export function DateRangePicker() {
         <ChevronDown size={14} className="text-gray-500" />
       </button>
       {/* Dropdown would go here in a real implementation */}
-    </div>);
-
+    </div>
+  );
 }

@@ -1,38 +1,39 @@
-import { motion } from 'framer-motion';
-import { Users, MousePointer, MessageSquare, CheckCircle } from 'lucide-react';
+import { motion } from "framer-motion";
+import { Users, MousePointer, MessageSquare, CheckCircle } from "lucide-react";
 const stages = [
   {
-    id: 'visitors',
-    label: 'Total Visitors',
+    id: "visitors",
+    label: "Total Visitors",
     value: 12500,
     percent: 100,
-    color: 'bg-[color:var(--deep-navy)]',
-    icon: Users
+    color: "bg-[color:var(--deep-navy)]",
+    icon: Users,
   },
   {
-    id: 'engaged',
-    label: 'Engaged Users',
+    id: "engaged",
+    label: "Engaged Users",
     value: 8400,
     percent: 67,
-    color: 'bg-blue-800',
-    icon: MousePointer
+    color: "bg-blue-800",
+    icon: MousePointer,
   },
   {
-    id: 'contact',
-    label: 'Started Contact',
+    id: "contact",
+    label: "Started Contact",
     value: 3200,
     percent: 25,
-    color: 'bg-red-900',
-    icon: MessageSquare
+    color: "bg-red-900",
+    icon: MessageSquare,
   },
   {
-    id: 'converted',
-    label: 'Converted',
+    id: "converted",
+    label: "Converted",
     value: 1100,
     percent: 8.8,
-    color: 'bg-[color:var(--bright-red)]',
-    icon: CheckCircle
-  }];
+    color: "bg-[color:var(--bright-red)]",
+    icon: CheckCircle,
+  },
+];
 
 export function BrandedFunnelChart() {
   return (
@@ -40,31 +41,31 @@ export function BrandedFunnelChart() {
       <div className="space-y-4">
         {stages.map((stage, index) => {
           const nextStage = stages[index + 1];
-          const dropOff = nextStage ?
-            Math.round((stage.value - nextStage.value) / stage.value * 100) :
-            0;
+          const dropOff = nextStage
+            ? Math.round(((stage.value - nextStage.value) / stage.value) * 100)
+            : 0;
           return (
             <div key={stage.id} className="relative">
               {/* Funnel Bar */}
               <motion.div
                 initial={{
                   width: 0,
-                  opacity: 0
+                  opacity: 0,
                 }}
                 animate={{
-                  width: '100%',
-                  opacity: 1
+                  width: "100%",
+                  opacity: 1,
                 }}
                 transition={{
                   delay: index * 0.1,
-                  duration: 0.5
+                  duration: 0.5,
                 }}
-                className="relative z-10">
-
+                className="relative z-10"
+              >
                 <div className="flex items-center gap-4">
                   <div
-                    className={`w-10 h-10 rounded-lg ${stage.color} flex items-center justify-center shrink-0 shadow-lg`}>
-
+                    className={`w-10 h-10 rounded-lg ${stage.color} flex items-center justify-center shrink-0 shadow-lg`}
+                  >
                     <stage.icon size={18} className="text-white" />
                   </div>
 
@@ -86,24 +87,24 @@ export function BrandedFunnelChart() {
                     <div className="h-3 bg-white/5 rounded-full overflow-hidden">
                       <motion.div
                         initial={{
-                          width: 0
+                          width: 0,
                         }}
                         animate={{
-                          width: `${stage.percent}%`
+                          width: `${stage.percent}%`,
                         }}
                         transition={{
                           delay: 0.2 + index * 0.1,
-                          duration: 0.8
+                          duration: 0.8,
                         }}
-                        className={`h-full rounded-full ${stage.color}`} />
-
+                        className={`h-full rounded-full ${stage.color}`}
+                      />
                     </div>
                   </div>
                 </div>
               </motion.div>
 
               {/* Drop-off Connector */}
-              {nextStage &&
+              {nextStage && (
                 <div className="absolute left-5 top-10 bottom-0 w-0.5 bg-white/5 -z-0 h-10">
                   <div className="absolute top-1/2 left-4 -translate-y-1/2 flex items-center gap-1">
                     <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--bright-red)]" />
@@ -112,11 +113,11 @@ export function BrandedFunnelChart() {
                     </span>
                   </div>
                 </div>
-              }
-            </div>);
-
+              )}
+            </div>
+          );
         })}
       </div>
-    </div>);
-
+    </div>
+  );
 }

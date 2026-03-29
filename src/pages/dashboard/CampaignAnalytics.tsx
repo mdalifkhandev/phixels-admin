@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { DataDetailModal } from '../../components/dashboard/DataDetailModal';
-import { analyticsApi } from '../../services/api';
+import { useEffect, useState } from "react";
+import { DataDetailModal } from "../../components/dashboard/DataDetailModal";
+import { analyticsApi } from "../../services/api";
 export function CampaignAnalytics() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState<any>(null);
-  const [modalTitle, setModalTitle] = useState('');
+  const [modalTitle, setModalTitle] = useState("");
   const [loading, setLoading] = useState(true);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const handleRowClick = (data: any, title: string) => {
@@ -17,7 +17,7 @@ export function CampaignAnalytics() {
     const fetchCampaigns = async () => {
       setLoading(true);
       try {
-        const data = await analyticsApi.getCampaignPerformance('30d');
+        const data = await analyticsApi.getCampaignPerformance("30d");
         setCampaigns(
           data.map((item) => ({
             ...item,
@@ -25,11 +25,11 @@ export function CampaignAnalytics() {
             clicks: item.clicks.toLocaleString(),
             ctr: `${item.ctr}%`,
             cost: `$${item.cost}`,
-            roi: `${item.roi}%`
-          }))
+            roi: `${item.roi}%`,
+          })),
         );
       } catch (error) {
-        console.error('Failed to fetch campaigns', error);
+        console.error("Failed to fetch campaigns", error);
         setCampaigns([]);
       } finally {
         setLoading(false);
@@ -44,14 +44,16 @@ export function CampaignAnalytics() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         data={modalData}
-        title={modalTitle} />
-
+        title={modalTitle}
+      />
 
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-white">Campaign Performance</h1>
       </div>
 
-      {loading && <div className="text-gray-400 text-sm">Loading campaign data...</div>}
+      {loading && (
+        <div className="text-gray-400 text-sm">Loading campaign data...</div>
+      )}
 
       {/* Campaign Table */}
       <div className="rounded-xl bg-[#0A0A0A] border border-white/10 overflow-hidden">
@@ -88,12 +90,12 @@ export function CampaignAnalytics() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-xs">
-              {campaigns.map((campaign, i) =>
+              {campaigns.map((campaign, i) => (
                 <tr
                   key={i}
-                  onClick={() => handleRowClick(campaign, 'Campaign Details')}
-                  className="hover:bg-white/5 transition-colors group cursor-pointer">
-
+                  onClick={() => handleRowClick(campaign, "Campaign Details")}
+                  className="hover:bg-white/5 transition-colors group cursor-pointer"
+                >
                   <td className="py-3 px-5">
                     <span className="text-white font-medium block group-hover:text-red-500 transition-colors">
                       {campaign.name}
@@ -101,8 +103,8 @@ export function CampaignAnalytics() {
                   </td>
                   <td className="py-3 px-5">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${campaign.status === 'Active' ? 'bg-green-500/10 text-green-500' : campaign.status === 'Paused' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-gray-500/10 text-gray-500'}`}>
-
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${campaign.status === "Active" ? "bg-green-500/10 text-green-500" : campaign.status === "Paused" ? "bg-yellow-500/10 text-yellow-500" : "bg-gray-500/10 text-gray-500"}`}
+                    >
                       {campaign.status}
                     </span>
                   </td>
@@ -125,11 +127,11 @@ export function CampaignAnalytics() {
                     {campaign.roi}
                   </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

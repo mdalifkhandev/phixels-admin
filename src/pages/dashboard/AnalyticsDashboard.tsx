@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Monitor,
   Smartphone,
@@ -13,31 +13,40 @@ import {
   Mail,
   ExternalLink,
   Facebook,
-  BarChart2
-} from 'lucide-react';
-import { BrandedTrafficChart } from '../../components/dashboard/BrandedTrafficChart';
-import { CountryTable } from '../../components/dashboard/CountryTable';
-import { CityTable } from '../../components/dashboard/CityTable';
-import { CompactMetricCard } from '../../components/dashboard/CompactMetricCard';
-import { InteractiveMap } from '../../components/dashboard/InteractiveMap';
-import { DataDetailModal } from '../../components/dashboard/DataDetailModal';
-import { analyticsApi } from '../../services/api';
+  BarChart2,
+} from "lucide-react";
+import { BrandedTrafficChart } from "../../components/dashboard/BrandedTrafficChart";
+import { CountryTable } from "../../components/dashboard/CountryTable";
+import { CityTable } from "../../components/dashboard/CityTable";
+import { CompactMetricCard } from "../../components/dashboard/CompactMetricCard";
+import { InteractiveMap } from "../../components/dashboard/InteractiveMap";
+import { DataDetailModal } from "../../components/dashboard/DataDetailModal";
+import { analyticsApi } from "../../services/api";
 import {
-  AnalyticsOverview, RealtimeAnalytics, FunnelStage, TopPageData, DeviceData,
-  TrafficDataPoint, CountryDataPoint, CityDataPoint
-} from '../../types/types';
+  AnalyticsOverview,
+  RealtimeAnalytics,
+  FunnelStage,
+  TopPageData,
+  DeviceData,
+  TrafficDataPoint,
+  CountryDataPoint,
+  CityDataPoint,
+} from "../../types/types";
 
 // --- Mock Data ---
 // Keep mock data for charts that are not yet integrated or for fallback
-
 
 export function AnalyticsDashboard() {
   const [showMap, setShowMap] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState<any>(null);
-  const [modalTitle, setModalTitle] = useState('');
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsOverview | null>(null);
-  const [realtimeData, setRealtimeData] = useState<RealtimeAnalytics | null>(null);
+  const [modalTitle, setModalTitle] = useState("");
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsOverview | null>(
+    null,
+  );
+  const [realtimeData, setRealtimeData] = useState<RealtimeAnalytics | null>(
+    null,
+  );
   const [funnelData, setFunnelData] = useState<FunnelStage[]>([]);
   const [topPagesData, setTopPagesData] = useState<TopPageData[]>([]);
   const [deviceData, setDeviceData] = useState<DeviceData | null>(null);
@@ -47,22 +56,55 @@ export function AnalyticsDashboard() {
   const [loading, setLoading] = useState(true);
 
   const deviceList = [
-    { name: 'Desktop', icon: Monitor, count: deviceData?.desktop || 0, color: 'text-blue-400', bg: 'bg-blue-400' },
-    { name: 'Mobile', icon: Smartphone, count: deviceData?.mobile || 0, color: 'text-[color:var(--vibrant-green)]', bg: 'bg-[color:var(--vibrant-green)]' },
-    { name: 'Tablet', icon: Tablet, count: deviceData?.tablet || 0, color: 'text-purple-400', bg: 'bg-purple-400' }
+    {
+      name: "Desktop",
+      icon: Monitor,
+      count: deviceData?.desktop || 0,
+      color: "text-blue-400",
+      bg: "bg-blue-400",
+    },
+    {
+      name: "Mobile",
+      icon: Smartphone,
+      count: deviceData?.mobile || 0,
+      color: "text-[color:var(--vibrant-green)]",
+      bg: "bg-[color:var(--vibrant-green)]",
+    },
+    {
+      name: "Tablet",
+      icon: Tablet,
+      count: deviceData?.tablet || 0,
+      color: "text-purple-400",
+      bg: "bg-purple-400",
+    },
   ];
 
-  const totalDeviceCount = deviceList.reduce((acc, d) => acc + (d.count || 0), 0);
-  const devices = deviceList.map(d => ({
+  const totalDeviceCount = deviceList.reduce(
+    (acc, d) => acc + (d.count || 0),
+    0,
+  );
+  const devices = deviceList.map((d) => ({
     ...d,
-    percent: totalDeviceCount > 0 ? Math.round(((d.count || 0) / totalDeviceCount) * 100) : 0
+    percent:
+      totalDeviceCount > 0
+        ? Math.round(((d.count || 0) / totalDeviceCount) * 100)
+        : 0,
   }));
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       setLoading(true);
       try {
-        const [overview, realtime, funnel, pages, devices, traffic, countries, cities] = await Promise.all([
+        const [
+          overview,
+          realtime,
+          funnel,
+          pages,
+          devices,
+          traffic,
+          countries,
+          cities,
+        ] = await Promise.all([
           analyticsApi.getOverview(),
           analyticsApi.getRealtime(),
           analyticsApi.getFunnel(),
@@ -70,7 +112,7 @@ export function AnalyticsDashboard() {
           analyticsApi.getDevices(),
           analyticsApi.getTrafficSeries(),
           analyticsApi.getTopCountries(),
-          analyticsApi.getTopCities()
+          analyticsApi.getTopCities(),
         ]);
 
         setAnalyticsData(overview);
@@ -82,7 +124,7 @@ export function AnalyticsDashboard() {
         setCountryData(countries);
         setCityData(cities);
       } catch (error) {
-        console.error('Failed to fetch analytics:', error);
+        console.error("Failed to fetch analytics:", error);
       } finally {
         setLoading(false);
       }
@@ -95,7 +137,7 @@ export function AnalyticsDashboard() {
         const realtime = await analyticsApi.getRealtime();
         setRealtimeData(realtime);
       } catch (e) {
-        console.error('Failed to refresh realtime data', e);
+        console.error("Failed to refresh realtime data", e);
       }
     }, 30000);
 
@@ -110,35 +152,35 @@ export function AnalyticsDashboard() {
 
   const engagementMetrics = [
     {
-      name: 'LinkedIn Clicks',
+      name: "LinkedIn Clicks",
       value: analyticsData?.clickCounts.linkedin || 0,
       icon: Linkedin,
-      color: 'text-blue-400'
+      color: "text-blue-400",
     },
     {
-      name: 'WhatsApp Clicks',
+      name: "WhatsApp Clicks",
       value: analyticsData?.clickCounts.whatsapp || 0,
       icon: MessageCircle,
-      color: 'text-[color:var(--vibrant-green)]'
+      color: "text-[color:var(--vibrant-green)]",
     },
     {
-      name: 'Email Opens',
+      name: "Email Opens",
       value: analyticsData?.clickCounts.emailOpens || 0,
       icon: Mail,
-      color: 'text-purple-400'
+      color: "text-purple-400",
     },
     {
-      name: 'Fiverr Clicks',
+      name: "Fiverr Clicks",
       value: analyticsData?.clickCounts.fiverr || 0,
       icon: ExternalLink,
-      color: 'text-[color:var(--vibrant-green)]'
+      color: "text-[color:var(--vibrant-green)]",
     },
     {
-      name: 'Facebook Visits',
+      name: "Facebook Visits",
       value: analyticsData?.clickCounts.facebook || 0,
       icon: Facebook,
-      color: 'text-blue-500'
-    }
+      color: "text-blue-500",
+    },
   ];
 
   if (loading) {
@@ -159,10 +201,10 @@ export function AnalyticsDashboard() {
             isOpen={modalOpen}
             onClose={() => setModalOpen(false)}
             data={modalData}
-            title={modalTitle} />
+            title={modalTitle}
+          />
         )}
       </AnimatePresence>
-
 
       {/* Top Metrics Row - Compact & Dense */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -173,7 +215,8 @@ export function AnalyticsDashboard() {
           trend="up"
           icon={Users}
           color="text-blue-400"
-          delay={0} />
+          delay={0}
+        />
 
         <CompactMetricCard
           title="Conversions"
@@ -182,7 +225,8 @@ export function AnalyticsDashboard() {
           trend="up"
           icon={MousePointer}
           color="text-[color:var(--bright-red)]"
-          delay={0.1} />
+          delay={0.1}
+        />
 
         <CompactMetricCard
           title="Bounce Rate"
@@ -191,7 +235,8 @@ export function AnalyticsDashboard() {
           trend="up"
           icon={Activity}
           color="text-[color:var(--neon-yellow)]"
-          delay={0.2} />
+          delay={0.2}
+        />
 
         <CompactMetricCard
           title="Avg. Duration"
@@ -200,20 +245,20 @@ export function AnalyticsDashboard() {
           trend="up"
           icon={Clock}
           color="text-[color:var(--vibrant-green)]"
-          delay={0.3} />
-
+          delay={0.3}
+        />
       </div>
 
       {/* Engagement Metrics Row */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {engagementMetrics.map((metric, i) =>
+        {engagementMetrics.map((metric, i) => (
           <div
             key={i}
-            className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3">
-
+            className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-3"
+          >
             <div
-              className={`p-2 rounded-lg bg-white/5 ${metric.color} bg-opacity-10`}>
-
+              className={`p-2 rounded-lg bg-white/5 ${metric.color} bg-opacity-10`}
+            >
               <metric.icon size={16} className={metric.color} />
             </div>
             <div>
@@ -223,7 +268,7 @@ export function AnalyticsDashboard() {
               <div className="text-lg font-bold text-white">{metric.value}</div>
             </div>
           </div>
-        )}
+        ))}
       </div>
 
       {/* Main Content Grid */}
@@ -236,54 +281,54 @@ export function AnalyticsDashboard() {
               <h2 className="text-xs font-bold text-white flex items-center gap-2 uppercase tracking-wider">
                 <BarChart2
                   size={14}
-                  className="text-[color:var(--bright-red)]" />
-
+                  className="text-[color:var(--bright-red)]"
+                />
                 Traffic Overview
               </h2>
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowMap(!showMap)}
-                  className={`text-xs font-bold px-3 py-1 rounded border transition-all ${showMap ? 'bg-[color:var(--bright-red)] border-[color:var(--bright-red)] text-white' : 'border-white/10 text-gray-400 hover:text-white'}`}>
-
-                  {showMap ? 'Hide Map' : 'View Map'}
+                  className={`text-xs font-bold px-3 py-1 rounded border transition-all ${showMap ? "bg-[color:var(--bright-red)] border-[color:var(--bright-red)] text-white" : "border-white/10 text-gray-400 hover:text-white"}`}
+                >
+                  {showMap ? "Hide Map" : "View Map"}
                 </button>
               </div>
             </div>
 
             <AnimatePresence mode="wait">
-              {showMap ?
+              {showMap ? (
                 <motion.div
                   initial={{
                     opacity: 0,
-                    height: 0
+                    height: 0,
                   }}
                   animate={{
                     opacity: 1,
-                    height: 'auto'
+                    height: "auto",
                   }}
                   exit={{
                     opacity: 0,
-                    height: 0
+                    height: 0,
                   }}
-                  className="mb-4">
-
+                  className="mb-4"
+                >
                   <InteractiveMap />
-                </motion.div> :
-
+                </motion.div>
+              ) : (
                 <motion.div
                   initial={{
-                    opacity: 0
+                    opacity: 0,
                   }}
                   animate={{
-                    opacity: 1
+                    opacity: 1,
                   }}
                   exit={{
-                    opacity: 0
-                  }}>
-
+                    opacity: 0,
+                  }}
+                >
                   <BrandedTrafficChart data={trafficData} />
                 </motion.div>
-              }
+              )}
             </AnimatePresence>
           </div>
 
@@ -304,12 +349,12 @@ export function AnalyticsDashboard() {
                   </tr>
                 </thead>
                 <tbody className="text-xs">
-                  {topPagesData.map((page, i) =>
+                  {topPagesData.map((page, i) => (
                     <tr
                       key={i}
-                      onClick={() => handleRowClick(page, 'Page Performance')}
-                      className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer">
-
+                      onClick={() => handleRowClick(page, "Page Performance")}
+                      className="border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer"
+                    >
                       <td className="py-2 font-medium text-gray-300">
                         {page.path}
                       </td>
@@ -326,7 +371,7 @@ export function AnalyticsDashboard() {
                         {page.conversions.toLocaleString()}
                       </td>
                     </tr>
-                  )}
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -338,33 +383,33 @@ export function AnalyticsDashboard() {
               Master Popup Funnel (Critical Drop-offs)
             </h2>
             <div className="space-y-4">
-              {funnelData.map((stage) =>
+              {funnelData.map((stage) => (
                 <div key={stage.stage} className="relative">
                   <div className="flex justify-between items-center text-xs mb-1">
                     <span className="text-gray-300 font-medium capitalize">
-                      {stage.stage.replace(/_/g, ' ')}
+                      {stage.stage.replace(/_/g, " ")}
                     </span>
                     <div className="flex items-center gap-3">
                       <span className="text-white font-bold">
                         {stage.users.toLocaleString()}
                       </span>
-                      {stage.dropoff && stage.dropoff > 0 &&
+                      {stage.dropoff && stage.dropoff > 0 && (
                         <span className="text-[color:var(--bright-red)] text-[10px]">
                           -{stage.dropoff}%
                         </span>
-                      }
+                      )}
                     </div>
                   </div>
                   <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-[color:var(--deep-navy)] to-[color:var(--bright-red)]"
                       style={{
-                        width: `${stage.rate}%`
-                      }} />
-
+                        width: `${stage.rate}%`,
+                      }}
+                    />
                   </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
         </div>
@@ -380,14 +425,14 @@ export function AnalyticsDashboard() {
               </span>
             </h2>
             <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-              {(realtimeData?.liveEvents || []).map((user, idx) =>
+              {(realtimeData?.liveEvents || []).map((user, idx) => (
                 <div
                   key={idx}
                   onClick={() =>
-                    handleRowClick(user, 'Real-time User Activity')
+                    handleRowClick(user, "Real-time User Activity")
                   }
-                  className="p-2 rounded bg-white/5 border border-white/5 hover:border-[color:var(--bright-red)]/30 transition-colors cursor-pointer group">
-
+                  className="p-2 rounded bg-white/5 border border-white/5 hover:border-[color:var(--bright-red)]/30 transition-colors cursor-pointer group"
+                >
                   <div className="flex justify-between items-start mb-1">
                     <span className="text-[10px] font-bold text-white truncate max-w-[120px] group-hover:text-[color:var(--bright-red)] transition-colors">
                       {user.event}
@@ -401,7 +446,7 @@ export function AnalyticsDashboard() {
                     <span>{user.device}</span>
                   </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
 
@@ -411,10 +456,13 @@ export function AnalyticsDashboard() {
               Top Cities
             </h2>
             <CityTable
-              onRowClick={(data) => handleRowClick(data, 'City Performance')}
-              data={cityData} />
-            <CountryTable onRowClick={(data) => handleRowClick(data, 'Country Breakdown')} data={countryData} />
-
+              onRowClick={(data) => handleRowClick(data, "City Performance")}
+              data={cityData}
+            />
+            <CountryTable
+              onRowClick={(data) => handleRowClick(data, "Country Breakdown")}
+              data={countryData}
+            />
           </div>
 
           {/* Device Breakdown */}
@@ -423,7 +471,7 @@ export function AnalyticsDashboard() {
               Devices
             </h2>
             <div className="space-y-2">
-              {devices.map((device, i) =>
+              {devices.map((device, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <device.icon size={12} className="text-gray-400" />
                   <div className="flex-1">
@@ -437,17 +485,17 @@ export function AnalyticsDashboard() {
                       <div
                         className={`h-full ${device.bg}`}
                         style={{
-                          width: `${device.percent}%`
-                        }} />
-
+                          width: `${device.percent}%`,
+                        }}
+                      />
                     </div>
                   </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
         </div>
       </div>
-    </div>);
-
+    </div>
+  );
 }

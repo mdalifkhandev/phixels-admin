@@ -59,7 +59,7 @@ export function PortfolioManagement() {
       setLoading(true);
       const [data, servicesData] = await Promise.all([
         portfolioApi.getAll(),
-        servicesApi.getCategories()
+        servicesApi.getCategories(),
       ]);
       // Map _id to id for DataTable compatibility
       const portfolioWithIds = data.map((item: any) => ({
@@ -443,9 +443,18 @@ export function PortfolioManagement() {
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
                   required
                 >
-                  <option value="" style={{ color: "#111111", backgroundColor: "#FFFFFF" }}>Select Category</option>
+                  <option
+                    value=""
+                    style={{ color: "#111111", backgroundColor: "#FFFFFF" }}
+                  >
+                    Select Category
+                  </option>
                   {services.map((svc) => (
-                    <option key={svc._id} value={svc._id} style={{ color: "#111111", backgroundColor: "#FFFFFF" }}>
+                    <option
+                      key={svc._id}
+                      value={svc._id}
+                      style={{ color: "#111111", backgroundColor: "#FFFFFF" }}
+                    >
                       {svc.name}
                     </option>
                   ))}

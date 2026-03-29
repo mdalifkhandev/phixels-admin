@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   User,
@@ -7,10 +7,9 @@ import {
   Globe,
   MessageSquare,
   Reply,
-  Check
-} from
-  'lucide-react';
-import { Button } from '../ui/Button';
+  Check,
+} from "lucide-react";
+import { Button } from "../ui/Button";
 interface ContactDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,7 +18,7 @@ interface ContactDetailModalProps {
 export function ContactDetailModal({
   isOpen,
   onClose,
-  message
+  message,
 }: ContactDetailModalProps) {
   if (!isOpen || !message) return null;
   return (
@@ -27,36 +26,36 @@ export function ContactDetailModal({
       <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
         <motion.div
           initial={{
-            opacity: 0
+            opacity: 0,
           }}
           animate={{
-            opacity: 1
+            opacity: 1,
           }}
           exit={{
-            opacity: 0
+            opacity: 0,
           }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-
+          className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        />
 
         <motion.div
           initial={{
             opacity: 0,
             scale: 0.95,
-            y: 20
+            y: 20,
           }}
           animate={{
             opacity: 1,
             scale: 1,
-            y: 0
+            y: 0,
           }}
           exit={{
             opacity: 0,
             scale: 0.95,
-            y: 20
+            y: 20,
           }}
-          className="relative w-full max-w-2xl bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-
+          className="relative w-full max-w-2xl bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        >
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/5">
             <div className="flex items-center gap-4">
@@ -72,8 +71,8 @@ export function ContactDetailModal({
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors">
-
+              className="p-2 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+            >
               <X size={20} />
             </button>
           </div>
@@ -100,8 +99,8 @@ export function ContactDetailModal({
                 </div>
                 <div
                   className="text-white font-medium truncate"
-                  title={message.email}>
-
+                  title={message.email}
+                >
                   {message.email}
                 </div>
               </div>
@@ -131,20 +130,20 @@ export function ContactDetailModal({
             </Button>
             <Button
               variant="outline"
-              className="flex items-center gap-2 text-green-500 border-green-500/20 hover:bg-green-500/10">
-
+              className="flex items-center gap-2 text-green-500 border-green-500/20 hover:bg-green-500/10"
+            >
               <Check size={16} /> Mark as Read
             </Button>
             <Button
               variant="primary"
               onClick={() => window.open(`mailto:${message.email}`)}
-              className="flex items-center gap-2">
-
+              className="flex items-center gap-2"
+            >
               <Reply size={16} /> Reply via Email
             </Button>
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>);
-
+    </AnimatePresence>
+  );
 }

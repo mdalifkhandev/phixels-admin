@@ -271,6 +271,7 @@ export interface RealtimeAnalytics {
     event: string;
     location: string;
     device: string;
+    duration: string;
     time: string;
     activity: string;
   }>;

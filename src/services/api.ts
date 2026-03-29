@@ -696,9 +696,13 @@ export const aboutContentApi = {
   uploadImage: async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append("image", file);
-    const response = await apiClient.post("/about-content/upload-image", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await apiClient.post(
+      "/about-content/upload-image",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
     const payload = getData<{ image: string }>(response);
     return payload.image;
   },
@@ -708,9 +712,13 @@ export const teamMembersApi = {
   uploadImage: async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append("image", file);
-    const response = await apiClient.post("/team-members/upload-image", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const response = await apiClient.post(
+      "/team-members/upload-image",
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
     const payload = getData<{ image: string }>(response);
     return payload.image;
   },
@@ -769,7 +777,9 @@ export const teamMembersApi = {
     return getData(response);
   },
   reorder: async (orderedIds: string[]) => {
-    const response = await apiClient.patch("/team-members/reorder", { orderedIds });
+    const response = await apiClient.patch("/team-members/reorder", {
+      orderedIds,
+    });
     return getData(response);
   },
 };
@@ -792,12 +802,13 @@ export const legalContentApi = {
     const response = await apiClient.get("/legal-content");
     return response.data;
   },
-  update: async (data: Partial<LegalContent>): Promise<ApiResponse<LegalContentResponse>> => {
+  update: async (
+    data: Partial<LegalContent>,
+  ): Promise<ApiResponse<LegalContentResponse>> => {
     const response = await apiClient.patch("/legal-content", data);
     return response.data;
   },
 };
-
 
 export const activityLogsApi = {
   getAll: async (): Promise<any[]> => {

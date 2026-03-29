@@ -41,7 +41,7 @@ const TAB_CONFIG: Array<{
   key: TabKey;
   label: string;
   description: string;
-  field: keyof PageMetricsContent;
+  field: "homeHeroMetrics" | "servicesPageMetrics" | "productsPageMetrics";
 }> = [
   {
     key: "home",
@@ -103,7 +103,7 @@ export function PageMetricsManagement() {
   };
 
   const updateMetric = (
-    field: keyof PageMetricsContent,
+    field: "homeHeroMetrics" | "servicesPageMetrics" | "productsPageMetrics",
     index: number,
     key: keyof PageMetric,
     value: string | number,
@@ -223,7 +223,9 @@ export function PageMetricsManagement() {
         <section className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold text-white">{currentTab.label}</h2>
+              <h2 className="text-2xl font-bold text-white">
+                {currentTab.label}
+              </h2>
               <p className="text-sm text-gray-400">{currentTab.description}</p>
             </div>
 
@@ -248,37 +250,58 @@ export function PageMetricsManagement() {
                 }`}
               >
                 <div className="space-y-2">
-                  <label className="text-sm text-gray-400 font-medium">Label</label>
+                  <label className="text-sm text-gray-400 font-medium">
+                    Label
+                  </label>
                   <input
                     type="text"
                     value={metric.label}
                     onChange={(e) =>
-                      updateMetric(currentTab.field, index, "label", e.target.value)
+                      updateMetric(
+                        currentTab.field,
+                        index,
+                        "label",
+                        e.target.value,
+                      )
                     }
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm text-gray-400 font-medium">Value</label>
+                  <label className="text-sm text-gray-400 font-medium">
+                    Value
+                  </label>
                   <input
                     type="number"
                     step="0.1"
                     value={metric.value}
                     onChange={(e) =>
-                      updateMetric(currentTab.field, index, "value", e.target.value)
+                      updateMetric(
+                        currentTab.field,
+                        index,
+                        "value",
+                        e.target.value,
+                      )
                     }
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm text-gray-400 font-medium">Suffix</label>
+                  <label className="text-sm text-gray-400 font-medium">
+                    Suffix
+                  </label>
                   <input
                     type="text"
                     value={metric.suffix}
                     onChange={(e) =>
-                      updateMetric(currentTab.field, index, "suffix", e.target.value)
+                      updateMetric(
+                        currentTab.field,
+                        index,
+                        "suffix",
+                        e.target.value,
+                      )
                     }
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                   />
@@ -286,7 +309,9 @@ export function PageMetricsManagement() {
 
                 {activeTab === "products" ? (
                   <div className="space-y-2">
-                    <label className="text-sm text-gray-400 font-medium">Icon</label>
+                    <label className="text-sm text-gray-400 font-medium">
+                      Icon
+                    </label>
                     <select
                       value={metric.iconKey || "users"}
                       onChange={(e) =>
@@ -303,7 +328,10 @@ export function PageMetricsManagement() {
                         <option
                           key={iconKey}
                           value={iconKey}
-                          style={{ color: "#111111", backgroundColor: "#FFFFFF" }}
+                          style={{
+                            color: "#111111",
+                            backgroundColor: "#FFFFFF",
+                          }}
                         >
                           {iconKey}
                         </option>
