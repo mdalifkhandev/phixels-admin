@@ -341,6 +341,18 @@ export function LeadManagement() {
       ),
     },
     {
+      key: "timestamp",
+      label: "Submitted",
+      render: (value: string, row: any) => (
+        <span
+          onClick={() => setSelectedLead(row)}
+          className="cursor-pointer text-xs text-gray-400"
+        >
+          {value}
+        </span>
+      ),
+    },
+    {
       key: "status",
       label: "Status",
       render: (value: string, row: any) => (
@@ -396,7 +408,7 @@ export function LeadManagement() {
             href={value && value !== "#" ? value : undefined}
             target="_blank"
             rel="noreferrer"
-            className={`p-2 rounded-lg transition-colors ${
+            className={`hidden p-2 rounded-lg transition-colors ${
               value && value !== "#"
                 ? "text-blue-400 hover:bg-white/10"
                 : "text-gray-600 cursor-not-allowed"
