@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -14,6 +15,8 @@ import {
   AlertCircle,
   ExternalLink,
 } from "lucide-react";
+import { ComingSoonModal } from "./ComingSoonModal";
+
 interface LeadDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -24,6 +27,8 @@ export function LeadDetailModal({
   onClose,
   lead,
 }: LeadDetailModalProps) {
+  const [showComingSoon, setShowComingSoon] = useState(false);
+
   if (!isOpen || !lead) return null;
   return (
     <AnimatePresence>
@@ -261,7 +266,7 @@ export function LeadDetailModal({
               Close
             </button>
             <button
-              onClick={() => window.open(`mailto:${lead.email}`)}
+              onClick={() => setShowComingSoon(true)}
               className="px-6 py-3 rounded-xl bg-white/5 text-white hover:bg-white/10 transition-all font-bold text-sm flex items-center gap-2"
             >
               <Mail size={16} /> Send Email
@@ -278,6 +283,12 @@ export function LeadDetailModal({
             )}
           </div>
         </motion.div>
+
+        {/* Coming Soon Modal */}
+        <ComingSoonModal 
+          isOpen={showComingSoon} 
+          onClose={() => setShowComingSoon(false)} 
+        />
       </div>
     </AnimatePresence>
   );

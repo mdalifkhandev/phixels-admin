@@ -117,12 +117,12 @@ export function LeadManagement() {
 
         leadEvents.forEach((event) => {
           const metadata = event.metadata || {};
-          const sessionId = event.sessionId || event._id;
-          const existing = groupedLeads.get(sessionId);
+          const submissionId = metadata.requestId || event._id;
+          const existing = groupedLeads.get(submissionId);
 
           if (!existing) {
-            groupedLeads.set(sessionId, {
-              id: `REQ-${sessionId.slice(-6).toUpperCase()}`,
+            groupedLeads.set(submissionId, {
+              id: `REQ-${submissionId.slice(-6).toUpperCase()}`,
               timestamp: formatTimestamp(event.eventAt),
               name: normalizeText(metadata.name) || "Unknown",
               email: normalizeText(metadata.email) || "N/A",

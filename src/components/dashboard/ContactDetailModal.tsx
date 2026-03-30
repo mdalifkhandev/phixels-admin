@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -10,6 +11,7 @@ import {
   Check,
 } from "lucide-react";
 import { Button } from "../ui/Button";
+import { ComingSoonModal } from "./ComingSoonModal";
 interface ContactDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -20,6 +22,8 @@ export function ContactDetailModal({
   onClose,
   message,
 }: ContactDetailModalProps) {
+  const [showComingSoon, setShowComingSoon] = useState(false);
+
   if (!isOpen || !message) return null;
   return (
     <AnimatePresence>
@@ -136,13 +140,19 @@ export function ContactDetailModal({
             </Button>
             <Button
               variant="primary"
-              onClick={() => window.open(`mailto:${message.email}`)}
+              onClick={() => setShowComingSoon(true)}
               className="flex items-center gap-2"
             >
               <Reply size={16} /> Reply via Email
             </Button>
           </div>
         </motion.div>
+
+        {/* Coming Soon Modal */}
+        <ComingSoonModal 
+          isOpen={showComingSoon} 
+          onClose={() => setShowComingSoon(false)} 
+        />
       </div>
     </AnimatePresence>
   );
