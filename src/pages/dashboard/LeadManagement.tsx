@@ -3,8 +3,7 @@ import {
   Users,
   Clock,
   CheckCircle,
-  Percent,
-  Filter,
+  TrendingUp,
   Download,
   Search,
   Mail,
@@ -19,11 +18,18 @@ import { LeadDetailModal } from "../../components/dashboard/LeadDetailModal";
 import { ContactDetailModal } from "../../components/dashboard/ContactDetailModal";
 import { NewsletterDetailModal } from "../../components/dashboard/NewsletterDetailModal";
 import { JobDetailModal } from "../../components/dashboard/JobDetailModal";
-import { analyticsApi, mailApi } from "../../services/api";
-import type { MailLog } from "../../types/types";
+import {
+  teamMembersApi,
+  projectRequestApi,
+  contactRequestApi,
+  newsletterApi,
+  jobApplicationApi,
+} from "../../services/api";
+import type { TeamMember } from "../../types/types";
 
 type LeadRow = {
   id: string;
+  dbId?: string;
   timestamp: string;
   name: string;
   email: string;
@@ -37,6 +43,8 @@ type LeadRow = {
   description: string;
   files?: Array<{ name: string; url: string }>;
   projectProgress: string;
+  assignedTo: string;
+  _rawDate: Date;
 };
 
 type MessageRow = {
@@ -48,6 +56,7 @@ type MessageRow = {
   country: string;
   message: string;
   status: "Unread" | "Read";
+  _rawDate: Date;
 };
 
 type NewsletterRow = {
@@ -75,251 +84,250 @@ const formatTimestamp = (value?: string | Date) => {
   return date.toLocaleString();
 };
 
-const normalizeText = (value: unknown) =>
-  typeof value === "string" ? value : "";
+const getProgressColor = (status: string) => {
+  switch (status) {
+    case "New":
+      return {
+        row: "bg-blue-500/5",
+        select: "text-blue-500 border-blue-500/30",
+      };
+    case "Pending":
+      return {
+        row: "bg-yellow-500/5",
+        select: "text-yellow-500 border-yellow-500/30",
+      };
+    case "In-Progress":
+      return {
+        row: "bg-indigo-500/5",
+        select: "text-indigo-500 border-indigo-500/30",
+      };
+    case "Meeting Scheduled":
+      return {
+        row: "bg-purple-500/5",
+        select: "text-purple-500 border-purple-500/30",
+      };
+    case "Confirm":
+      return {
+        row: "bg-cyan-500/5",
+        select: "text-cyan-500 border-cyan-500/30",
+      };
+    case "Working":
+      return {
+        row: "bg-orange-500/5",
+        select: "text-orange-500 border-orange-500/30",
+      };
+    case "Completed":
+      return {
+        row: "bg-green-500/5",
+        select: "text-green-500 border-green-500/30",
+      };
+    case "Cancelled":
+      return {
+        row: "bg-red-500/5",
+        select: "text-red-500 border-red-500/30",
+      };
+    default:
+      return { row: "", select: "text-white border-white/10" };
+  }
+};
 
 export function LeadManagement() {
   const [activeTab, setActiveTab] = useState<
     "leads" | "messages" | "newsletter" | "jobs"
   >("leads");
   const [searchTerm, setSearchTerm] = useState("");
+  const [progressFilter, setProgressFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [leads, setLeads] = useState<LeadRow[]>([]);
   const [messages, setMessages] = useState<MessageRow[]>([]);
   const [newsletter, setNewsletter] = useState<NewsletterRow[]>([]);
   const [jobs, setJobs] = useState<JobRow[]>([]);
+  const [totalLeads, setTotalLeads] = useState(0);
+  const [workingLeads, setWorkingLeads] = useState(0);
+  const [inProgressLeads, setInProgressLeads] = useState(0);
+  const [completedLeads, setCompletedLeads] = useState(0);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
   const [selectedLead, setSelectedLead] = useState<any>(null);
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
   const [selectedSubscriber, setSelectedSubscriber] = useState<any>(null);
   const [selectedJob, setSelectedJob] = useState<any>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [events, logs] = await Promise.all([
-          analyticsApi.getEvents({
-            range: "all",
-            eventType:
-            "lead_submitted,meeting_booked,contact_submitted,newsletter_subscribed,job_applied,project_progress_updated",
-            limit: 500,
-          }),
-          mailApi.getLogs(),
+  const fetchData = async (filter: string = "All") => {
+    setLoading(true);
+    try {
+      const fetchParams: Record<string, string> =
+        filter !== "All" ? { projectProgress: filter } : {};
+
+      const [members, dbLeadsFiltered, dbLeadsTotal, dbMessagesRaw, dbNewslettersRaw, dbJobsRaw] =
+        await Promise.all([
+          teamMembersApi.getAll().catch(() => []),
+          projectRequestApi.getAll(fetchParams).catch(() => []),
+          projectRequestApi.getAll().catch(() => []), // Always fetch total for stats
+          contactRequestApi.getAll().catch(() => []),
+          newsletterApi.getAll().catch(() => []),
+          jobApplicationApi.getAll().catch(() => []),
         ]);
 
-        const leadEvents = events.filter(
-          (item) =>
-            item.eventType === "lead_submitted" ||
-            item.eventType === "meeting_booked" ||
-            item.eventType === "project_progress_updated",
-        );
-        const groupedLeads = new Map<string, LeadRow>();
+      setTeamMembers(members);
 
-        leadEvents.forEach((event) => {
-          const metadata = event.metadata || {};
-          const submissionId = metadata.requestId || event._id;
-          const existing = groupedLeads.get(submissionId);
+      // Calculate stats from TOTAL leads
+      const working = dbLeadsTotal.filter((l: any) => l.projectProgress === "Working").length;
+      const inProgress = dbLeadsTotal.filter((l: any) => l.projectProgress === "In-Progress").length;
+      const completed = dbLeadsTotal.filter((l: any) => l.projectProgress === "Completed").length;
 
-          if (!existing) {
-            groupedLeads.set(submissionId, {
-              id: `REQ-${submissionId.slice(-6).toUpperCase()}`,
-              timestamp: formatTimestamp(event.eventAt),
-              name: normalizeText(metadata.name) || "Unknown",
-              email: normalizeText(metadata.email) || "N/A",
-              phone: normalizeText(metadata.phone) || "N/A",
-              country:
-                normalizeText(metadata.country) || event.country || "Unknown",
-              budget: normalizeText(metadata.budget) || "N/A",
-              status:
-                event.eventType === "meeting_booked" ? "Confirmed" : "Pending",
-              meetingDate: normalizeText(metadata.meetingDate) || "",
-              meetingTime: normalizeText(metadata.meetingTime) || "",
-              folderUrl: normalizeText(metadata.folderUrl) || "#",
-              description:
-                normalizeText(metadata.description) ||
-                normalizeText(metadata.message) ||
-                "No description provided.",
-              files: Array.isArray(metadata.files) ? metadata.files : [],
-              projectProgress: normalizeText(metadata.projectProgress) || "New",
-              _rawDate: new Date(event.eventAt),
-            } as any);
-          } else {
-            // Processing older events now (since list is descending)
-            if (existing.projectProgress === "New" && metadata.projectProgress) {
-              existing.projectProgress = normalizeText(metadata.projectProgress);
-            }
-            if (existing.name === "Unknown" && metadata.name) {
-              existing.name = normalizeText(metadata.name);
-            }
-            if (existing.email === "N/A" && metadata.email) {
-              existing.email = normalizeText(metadata.email);
-            }
-            if (existing.phone === "N/A" && metadata.phone) {
-              existing.phone = normalizeText(metadata.phone);
-            }
-            if (existing.budget === "N/A" && metadata.budget) {
-              existing.budget = normalizeText(metadata.budget);
-            }
-            if (existing.folderUrl === "#" && metadata.folderUrl) {
-              existing.folderUrl = normalizeText(metadata.folderUrl);
-            }
-            if (
-              existing.description === "No description provided." &&
-              (metadata.description || metadata.message)
-            ) {
-              existing.description =
-                normalizeText(metadata.description) ||
-                normalizeText(metadata.message);
-            }
-            if (
-              (!existing.files || existing.files.length === 0) &&
-              Array.isArray(metadata.files) &&
-              metadata.files.length > 0
-            ) {
-              existing.files = metadata.files;
-            }
+      setTotalLeads(dbLeadsTotal.length);
+      setWorkingLeads(working);
+      setInProgressLeads(inProgress);
+      setCompletedLeads(completed);
 
-            if (
-              event.eventType === "meeting_booked" &&
-              existing.status === "Pending"
-            ) {
-              existing.status = "Confirmed";
-              if (!existing.meetingDate)
-                existing.meetingDate = normalizeText(metadata.meetingDate);
-              if (!existing.meetingTime)
-                existing.meetingTime = normalizeText(metadata.meetingTime);
-            }
-          }
-        });
+      const leadsProcessed: LeadRow[] = dbLeadsFiltered.map((req: any) => ({
+        id: `REQ-${(req.requestId || req._id || "000000").slice(-6).toUpperCase()}`,
+        dbId: req._id,
+        timestamp: formatTimestamp(req.createdAt),
+        name: req.name || "Unknown",
+        email: req.email || "N/A",
+        phone: req.phone || "N/A",
+        country: req.country || "Unknown",
+        budget: req.budget || "N/A",
+        status: req.status || "Pending",
+        meetingDate: req.meetingDate || "",
+        meetingTime: req.meetingTime || "",
+        folderUrl: req.folderUrl || "#",
+        description: req.description || "No description provided.",
+        files: Array.isArray(req.files) ? req.files : [],
+        projectProgress: req.projectProgress || "New",
+        assignedTo: req.assignedTo || "Unassigned",
+        _rawDate: new Date(req.createdAt),
+      }));
 
-        setLeads(
-          Array.from(groupedLeads.values()).sort((a: any, b: any) => {
-            if (a.projectProgress === "Cancelled" && b.projectProgress !== "Cancelled") return 1;
-            if (a.projectProgress !== "Cancelled" && b.projectProgress === "Cancelled") return -1;
-            return b._rawDate.getTime() - a._rawDate.getTime();
-          }),
-        );
-
-        const contactEvents = events.filter(
-          (item) => item.eventType === "contact_submitted",
-        );
-        const messageRows = contactEvents.map((event, index) => {
-          const metadata = event.metadata || {};
-          return {
-            id: event._id || `MSG-${index + 1}`,
-            timestamp: formatTimestamp(event.eventAt),
-            name: normalizeText(metadata.name) || "Unknown",
-            email: normalizeText(metadata.email) || "N/A",
-            phone: normalizeText(metadata.phone) || "N/A",
-            country:
-              normalizeText(metadata.country) || event.country || "Unknown",
-            message: normalizeText(metadata.message) || "No message found.",
-            status: "Unread" as const,
-          };
-        });
-
-        const fallbackFromMailLogs: MessageRow[] = (logs as MailLog[])
-          .filter((log) =>
-            /contact|inquiry|message/i.test((log as any).subject || ""),
+      setLeads(
+        leadsProcessed.sort((a, b) => {
+          if (
+            a.projectProgress === "Cancelled" &&
+            b.projectProgress !== "Cancelled"
           )
-          .map((log, idx) => ({
-            id: (log as any)._id || `MAIL-${idx + 1}`,
-            timestamp: formatTimestamp((log as any).createdAt),
-            name: "Website Visitor",
-            email: (log as any).email || (log as any).to || "N/A",
-            phone: "N/A",
-            country: "Unknown",
-            message: (log as any).text || (log as any).message || "No message",
-            status: "Read" as const,
-          }));
+            return 1;
+          if (
+            a.projectProgress !== "Cancelled" &&
+            b.projectProgress === "Cancelled"
+          )
+            return -1;
+          return b._rawDate.getTime() - a._rawDate.getTime();
+        }),
+      );
 
-        setMessages(
-          messageRows.length > 0 ? messageRows : fallbackFromMailLogs,
-        );
+      const messagesProcessed: MessageRow[] = dbMessagesRaw.map(
+        (req: any) => ({
+          id: req._id,
+          timestamp: formatTimestamp(req.createdAt),
+          name: req.name || "Unknown",
+          email: req.email || "N/A",
+          phone: req.phone || "N/A",
+          country: req.country || "Unknown",
+          message: req.message || "No message found.",
+          status: req.status === "Read" ? "Read" : "Unread",
+          _rawDate: new Date(req.createdAt),
+        }),
+      );
+      setMessages(messagesProcessed);
 
-        const newsletterEvents = events.filter(
-          (item) => item.eventType === "newsletter_subscribed",
-        );
-        const uniqueSubscribers = new Map<string, NewsletterRow>();
-        newsletterEvents.forEach((event, index) => {
-          const metadata = event.metadata || {};
-          const email =
-            normalizeText(metadata.email) ||
-            `subscriber-${index + 1}@unknown.com`;
-          if (!uniqueSubscribers.has(email)) {
-            uniqueSubscribers.set(email, {
-              id: event._id || `SUB-${index + 1}`,
-              email,
-              timestamp: formatTimestamp(event.eventAt),
-              status: "Active",
-            });
-          }
-        });
-        setNewsletter(Array.from(uniqueSubscribers.values()));
+      const newsletterProcessed: NewsletterRow[] = dbNewslettersRaw.map(
+        (req: any) => ({
+          id: req._id,
+          email: req.email,
+          timestamp: formatTimestamp(req.createdAt),
+          status: "Active",
+        }),
+      );
+      setNewsletter(newsletterProcessed);
 
-        const jobEvents = events.filter(
-          (item) => item.eventType === "job_applied",
-        );
-        const jobRows = jobEvents.map((event, index) => {
-          const metadata = event.metadata || {};
-          return {
-            id: event._id || `JOB-${index + 1}`,
-            timestamp: formatTimestamp(event.eventAt),
-            name: normalizeText(metadata.name) || "Unknown Applicant",
-            email: normalizeText(metadata.email) || "N/A",
-            portfolio:
-              normalizeText(metadata.portfolio) ||
-              normalizeText(metadata.portfolioUrl) ||
-              "#",
-            jobTitle:
-              normalizeText(metadata.jobTitle) || "Unspecified Position",
-            resumeUrl: normalizeText(metadata.resumeUrl) || "#",
-            status: "New" as const,
-          };
-        });
-        setJobs(jobRows);
-      } catch (error) {
-        console.error("Failed to fetch lead management data", error);
-        setLeads([]);
-        setMessages([]);
-        setNewsletter([]);
-        setJobs([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const jobsProcessed: JobRow[] = dbJobsRaw.map((req: any) => ({
+        id: req._id,
+        timestamp: formatTimestamp(req.createdAt),
+        name: req.name || "Unknown Applicant",
+        email: req.email || "N/A",
+        portfolio: req.portfolio || "#",
+        jobTitle: req.jobTitle || "Position",
+        resumeUrl: req.resumeUrl || "#",
+        status: req.status || "New",
+      }));
+      setJobs(jobsProcessed);
+    } catch (error) {
+      console.error("Failed to fetch lead management data", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchData();
-  }, []);
+  useEffect(() => {
+    fetchData(progressFilter);
+  }, [activeTab, progressFilter]);
 
-  const handleProgressChange = async (leadId: string, newProgress: string) => {
-    // Optimistic UI update and sort
+  const handleProgressChange = async (
+    leadId: string,
+    newProgress: string,
+    dbId?: string,
+  ) => {
     setLeads((prev) => {
       const updated = prev.map((lead) =>
         lead.id === leadId ? { ...lead, projectProgress: newProgress } : lead,
       );
       return updated.sort((a: any, b: any) => {
-        if (a.projectProgress === "Cancelled" && b.projectProgress !== "Cancelled") return 1;
-        if (a.projectProgress !== "Cancelled" && b.projectProgress === "Cancelled") return -1;
+        if (
+          a.projectProgress === "Cancelled" &&
+          b.projectProgress !== "Cancelled"
+        )
+          return 1;
+        if (
+          a.projectProgress !== "Cancelled" &&
+          b.projectProgress === "Cancelled"
+        )
+          return -1;
         return b._rawDate.getTime() - a._rawDate.getTime();
       });
     });
-
-    // Persist event in backend
     try {
-      await analyticsApi.createEvent({
-        eventType: "project_progress_updated",
-        sessionId: "admin_dashboard",
-        pagePath: "/dashboard",
-        deviceType: "desktop",
-        metadata: {
-          requestId: leadId.replace("REQ-", ""),
-          projectProgress: newProgress,
-        },
-      });
+      if (dbId) {
+        await projectRequestApi.update(dbId, { projectProgress: newProgress });
+      }
     } catch (error) {
       console.error("Failed to update project progress", error);
+    }
+  };
+
+  const handleAssigneeChange = async (
+    leadId: string,
+    newAssignee: string,
+    dbId?: string,
+  ) => {
+    setLeads((prev) =>
+      prev.map((lead) =>
+        lead.id === leadId ? { ...lead, assignedTo: newAssignee } : lead,
+      ),
+    );
+    try {
+      if (dbId) {
+        await projectRequestApi.update(dbId, { assignedTo: newAssignee });
+      }
+    } catch (error) {
+      console.error("Failed to update project assignee", error);
+    }
+  };
+
+  const handleMessageSelect = async (messageRow: any) => {
+    setSelectedMessage(messageRow);
+    if (messageRow.status === "Unread") {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageRow.id ? { ...m, status: "Read" } : m,
+        ),
+      );
+      try {
+        await contactRequestApi.update(messageRow.id, { status: "Read" });
+      } catch (error) {
+        console.error("Failed to mark message as read in DB", error);
+      }
     }
   };
 
@@ -390,18 +398,6 @@ export function LeadManagement() {
       ),
     },
     {
-      key: "status",
-      label: "Status",
-      render: (value: string, row: any) => (
-        <span
-          onClick={() => setSelectedLead(row)}
-          className={`cursor-pointer px-2 py-1 rounded-full text-xs font-bold ${value === "Confirmed" ? "bg-[color:var(--vibrant-green)]/20 text-[color:var(--vibrant-green)]" : "bg-yellow-500/20 text-yellow-500"}`}
-        >
-          {value}
-        </span>
-      ),
-    },
-    {
       key: "budget",
       label: "Budget",
       render: (value: string, row: any) => (
@@ -430,37 +426,61 @@ export function LeadManagement() {
       ),
     },
     {
+      key: "assignedTo",
+      label: "Assignee",
+      render: (value: string, row: any) => (
+        <select
+          value={value}
+          onChange={(e) =>
+            handleAssigneeChange(row.id, e.target.value, row.dbId)
+          }
+          className="bg-[#0A0A0A] border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-[color:var(--bright-red)]"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <option value="Unassigned">Unassigned</option>
+          {teamMembers.map((member) => (
+            <option key={member._id} value={member.name}>
+              {member.name}
+            </option>
+          ))}
+        </select>
+      ),
+    },
+    {
       key: "projectProgress",
       label: "Project Progress",
-      render: (value: string, row: any) => (
-        <div className="flex items-center gap-2">
-          <select
-            value={value}
-            onChange={(e) => handleProgressChange(row.id, e.target.value)}
-            className="bg-[#0A0A0A] border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-[color:var(--bright-red)]"
-            onClick={(e) => e.stopPropagation()} // Prevent double clicks
-          >
-            <option value="New">New</option>
-            <option value="Pending">Pending</option>
-            <option value="In-Progress">In-Progress</option>
-            <option value="Meeting Scheduled">Meeting Scheduled</option>
-            <option value="Confirm">Confirm</option>
-            <option value="Working">Working</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedLead(row);
-            }}
-            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
-            title="View Details"
-          >
-            <Eye size={16} />
-          </button>
-        </div>
-      ),
+      render: (value: string, row: any) => {
+        const colors = getProgressColor(value);
+        return (
+          <div className="flex items-center gap-2">
+            <select
+              value={value}
+              onChange={(e) =>
+                handleProgressChange(row.id, e.target.value, row.dbId)
+              }
+              className={`bg-[#0A0A0A] border rounded-lg px-2 py-1 text-xs font-medium focus:outline-none focus:border-[color:var(--bright-red)] transition-colors ${colors.select}`}
+              onClick={(e) => e.stopPropagation()} // Prevent double clicks
+            >
+              <option value="New">New</option>
+              <option value="Pending">Pending</option>
+              <option value="In-Progress">In-Progress</option>
+              <option value="Working">Working</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedLead(row);
+              }}
+              className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+              title="View Details"
+            >
+              <Eye size={16} />
+            </button>
+          </div>
+        );
+      },
     },
   ];
 
@@ -470,7 +490,7 @@ export function LeadManagement() {
       label: "Sender",
       render: (value: string, row: any) => (
         <div
-          onClick={() => setSelectedMessage(row)}
+          onClick={() => handleMessageSelect(row)}
           className="cursor-pointer group"
         >
           <div className="font-bold text-white group-hover:text-blue-500 transition-colors">
@@ -485,7 +505,7 @@ export function LeadManagement() {
       label: "Message Preview",
       render: (value: string, row: any) => (
         <div
-          onClick={() => setSelectedMessage(row)}
+          onClick={() => handleMessageSelect(row)}
           className="cursor-pointer text-sm text-gray-300 truncate max-w-[300px]"
         >
           {value}
@@ -497,7 +517,7 @@ export function LeadManagement() {
       label: "Status",
       render: (value: string, row: any) => (
         <span
-          onClick={() => setSelectedMessage(row)}
+          onClick={() => handleMessageSelect(row)}
           className={`cursor-pointer px-2 py-1 rounded-full text-xs font-bold ${value === "Unread" ? "bg-blue-500/20 text-blue-500" : "bg-gray-500/20 text-gray-400"}`}
         >
           {value}
@@ -509,7 +529,7 @@ export function LeadManagement() {
       label: "Date",
       render: (value: string, row: any) => (
         <span
-          onClick={() => setSelectedMessage(row)}
+          onClick={() => handleMessageSelect(row)}
           className="cursor-pointer text-xs text-gray-500"
         >
           {value}
@@ -620,14 +640,6 @@ export function LeadManagement() {
     },
   ];
 
-  const totalLeads = leads.length;
-  const pendingLeads = leads.filter((lead) => lead.status === "Pending").length;
-  const confirmedLeads = leads.filter(
-    (lead) => lead.status === "Confirmed",
-  ).length;
-  const conversionRate =
-    totalLeads > 0 ? ((confirmedLeads / totalLeads) * 100).toFixed(1) : "0.0";
-
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -654,24 +666,24 @@ export function LeadManagement() {
         />
 
         <ManagementStatsCard
-          title="Pending (Step 1)"
-          value={pendingLeads}
+          title="In-Progress"
+          value={inProgressLeads}
           icon={Clock}
-          color="from-yellow-500 to-orange-500"
+          color="from-indigo-500 to-purple-500"
+        />
+        
+        <ManagementStatsCard
+          title="Working"
+          value={workingLeads}
+          icon={TrendingUp}
+          color="from-orange-500 to-amber-500"
         />
 
         <ManagementStatsCard
-          title="Confirmed (Step 2)"
-          value={confirmedLeads}
+          title="Completed"
+          value={completedLeads}
           icon={CheckCircle}
           color="from-green-500 to-emerald-500"
-        />
-
-        <ManagementStatsCard
-          title="Conversion Rate"
-          value={`${conversionRate}%`}
-          icon={Percent}
-          color="from-purple-500 to-pink-500"
         />
       </div>
 
@@ -726,10 +738,20 @@ export function LeadManagement() {
             />
           </div>
           <div className="flex gap-2">
-            <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-xs font-bold text-gray-300 hover:text-white">
-              <Filter size={14} />
-              Filter
-            </button>
+            {activeTab === "leads" && (
+              <select
+                value={progressFilter}
+                onChange={(e) => setProgressFilter(e.target.value)}
+                className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs font-bold text-gray-300 focus:outline-none focus:border-[color:var(--bright-red)] cursor-pointer"
+              >
+                <option value="All" className="bg-[#0A0A0A]">All Progress States</option>
+                <option value="New" className="bg-[#0A0A0A]">New</option>
+                <option value="In-Progress" className="bg-[#0A0A0A]">In-Progress</option>
+                <option value="Working" className="bg-[#0A0A0A]">Working</option>
+                <option value="Completed" className="bg-[#0A0A0A]">Completed</option>
+                <option value="Cancelled" className="bg-[#0A0A0A]">Cancelled</option>
+              </select>
+            )}
           </div>
         </div>
 
@@ -742,6 +764,7 @@ export function LeadManagement() {
             columns={leadColumns}
             data={filteredLeads}
             searchable={false}
+            rowClassName={(row) => getProgressColor(row.projectProgress).row}
           />
         )}
 

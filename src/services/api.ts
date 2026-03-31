@@ -864,3 +864,59 @@ export const apiService = {
   getLegalContent: legalContentApi.get,
   updateLegalContent: legalContentApi.update,
 };
+
+export const projectRequestApi = {
+  getAll: async (params?: Record<string, string>): Promise<any[]> => {
+    const response = await apiClient.get("/project-requests", { params });
+    return getData<any[]>(response);
+  },
+  update: async (id: string, data: any) => {
+    const response = await apiClient.patch(`/project-requests/${id}`, data);
+    return getData(response);
+  },
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/project-requests/${id}`);
+    return getData(response);
+  },
+};
+
+export const contactRequestApi = {
+  getAll: async (): Promise<any[]> => {
+    const response = await apiClient.get("/contact-requests");
+    return getData<any[]>(response);
+  },
+  update: async (id: string, data: any) => {
+    const response = await apiClient.patch(`/contact-requests/${id}`, data);
+    return getData(response);
+  },
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/contact-requests/${id}`);
+    return getData(response);
+  },
+};
+
+export const newsletterApi = {
+  getAll: async (): Promise<any[]> => {
+    const response = await apiClient.get("/newsletter-subscriptions");
+    return getData<any[]>(response);
+  },
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/newsletter-subscriptions/${id}`);
+    return getData(response);
+  },
+};
+
+export const jobApplicationApi = {
+  getAll: async (): Promise<any[]> => {
+    const response = await apiClient.get("/job-applications");
+    return getData<any[]>(response);
+  },
+  update: async (id: string, data: any) => {
+    const response = await apiClient.patch(`/job-applications/${id}`, data);
+    return getData(response);
+  },
+  delete: async (id: string) => {
+    const response = await apiClient.delete(`/job-applications/${id}`);
+    return getData(response);
+  },
+};

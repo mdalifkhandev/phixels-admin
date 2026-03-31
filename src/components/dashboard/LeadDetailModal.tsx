@@ -6,13 +6,9 @@ import {
   Mail,
   Phone,
   Globe,
-  Calendar,
-  Clock,
   DollarSign,
   FileText,
   Folder,
-  CheckCircle,
-  AlertCircle,
   ExternalLink,
 } from "lucide-react";
 import { ComingSoonModal } from "./ComingSoonModal";
@@ -68,14 +64,8 @@ export function LeadDetailModal({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-white/10 bg-white/5">
             <div className="flex items-center gap-4">
-              <div
-                className={`p-3 rounded-xl ${lead.status === "Confirmed" ? "bg-[color:var(--vibrant-green)]/10 text-[color:var(--vibrant-green)]" : "bg-yellow-500/10 text-yellow-500"}`}
-              >
-                {lead.status === "Confirmed" ? (
-                  <CheckCircle size={24} />
-                ) : (
-                  <AlertCircle size={24} />
-                )}
+              <div className="p-3 rounded-xl bg-red-600/10 text-red-600">
+                <User size={24} />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white">
@@ -140,13 +130,24 @@ export function LeadDetailModal({
                 <FileText size={14} /> Project Scope
               </h3>
               <div className="space-y-4">
-                <div className="p-4 rounded-xl bg-white/5 border border-white/5">
-                  <div className="text-xs text-gray-400 mb-1">
-                    Estimated Budget
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+                    <div className="text-xs text-gray-400 mb-1">
+                      Estimated Budget
+                    </div>
+                    <div className="text-white font-bold text-lg flex items-center gap-2 text-[color:var(--vibrant-green)]">
+                      <DollarSign size={18} />
+                      {lead.budget}
+                    </div>
                   </div>
-                  <div className="text-white font-bold text-lg flex items-center gap-2 text-[color:var(--vibrant-green)]">
-                    <DollarSign size={18} />
-                    {lead.budget}
+                  <div className="p-4 rounded-xl bg-white/5 border border-white/5">
+                    <div className="text-xs text-gray-400 mb-1">
+                      Assigned To
+                    </div>
+                    <div className="text-white font-bold text-lg flex items-center gap-2 text-[color:var(--bright-red)]">
+                      <User size={18} />
+                      {lead.assignedTo || "Unassigned"}
+                    </div>
                   </div>
                 </div>
                 <div className="p-4 rounded-xl bg-white/5 border border-white/5">
@@ -160,30 +161,6 @@ export function LeadDetailModal({
               </div>
             </section>
 
-            {/* Meeting Info */}
-            {lead.status === "Confirmed" && (
-              <section>
-                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <Calendar size={14} /> Consultation Details
-                </h3>
-                <div className="flex items-center gap-4 p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                  <div className="p-3 rounded-lg bg-blue-500/20 text-blue-500">
-                    <Clock size={24} />
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-400">
-                      Scheduled Meeting
-                    </div>
-                    <div className="text-lg font-bold text-white">
-                      {lead.meetingDate} at {lead.meetingTime}
-                    </div>
-                    <div className="text-xs text-blue-400 mt-1">
-                      Google Meet link sent to client
-                    </div>
-                  </div>
-                </div>
-              </section>
-            )}
             {/* Files */}
             <section>
               <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">

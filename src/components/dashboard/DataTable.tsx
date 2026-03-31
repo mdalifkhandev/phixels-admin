@@ -41,6 +41,7 @@ interface DataTableProps {
   onView?: (item: any) => void;
   searchable?: boolean;
   onReorder?: (newOrder: any[]) => void;
+  rowClassName?: (row: any) => string;
 }
 
 function SortableRow({
@@ -51,6 +52,7 @@ function SortableRow({
   onDelete,
   onView,
   onReorder,
+  rowClassName,
 }: any) {
   const {
     attributes,
@@ -75,7 +77,7 @@ function SortableRow({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className={`hover:bg-white/5 transition-colors ${isDragging ? "opacity-50 bg-white/10" : ""}`}
+      className={`hover:bg-white/5 transition-colors ${isDragging ? "opacity-50 bg-white/10" : ""} ${rowClassName ? rowClassName(item) : ""}`}
     >
       {onReorder && (
         <td className="px-4 py-4 w-10">
@@ -140,6 +142,7 @@ export function DataTable({
   onView,
   searchable = true,
   onReorder,
+  rowClassName,
 }: DataTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -269,6 +272,7 @@ export function DataTable({
                           onDelete={onDelete}
                           onView={onView}
                           onReorder={onReorder}
+                          rowClassName={rowClassName}
                         />
                       ))}
                     </AnimatePresence>
@@ -287,7 +291,7 @@ export function DataTable({
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      className="hover:bg-white/5 transition-colors"
+                      className={`hover:bg-white/5 transition-colors ${rowClassName ? rowClassName(item) : ""}`}
                     >
                       {columns.map((column) => (
                         <td
