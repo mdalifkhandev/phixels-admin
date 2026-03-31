@@ -657,6 +657,10 @@ export const analyticsApi = {
     );
     return getData<AnalyticsEventRecord[]>(response);
   },
+  createEvent: async (data: any) => {
+    const response = await apiClient.post("/analytics/events", data);
+    return getData(response);
+  },
   getCampaignPerformance: async (
     range = "30d",
   ): Promise<CampaignPerformanceData[]> => {

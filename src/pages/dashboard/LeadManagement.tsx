@@ -9,7 +9,6 @@ import {
   Search,
   Mail,
   Calendar,
-  Folder,
   MessageSquare,
   Briefcase,
   Eye,
@@ -37,6 +36,7 @@ type LeadRow = {
   folderUrl: string;
   description: string;
   files?: Array<{ name: string; url: string }>;
+  projectProgress: string;
 };
 
 type MessageRow = {
@@ -102,7 +102,7 @@ export function LeadManagement() {
           analyticsApi.getEvents({
             range: "all",
             eventType:
-              "lead_submitted,meeting_booked,contact_submitted,newsletter_subscribed,job_applied",
+            "lead_submitted,meeting_booked,contact_submitted,newsletter_subscribed,job_applied,project_progress_updated",
             limit: 500,
           }),
           mailApi.getLogs(),
@@ -111,7 +111,8 @@ export function LeadManagement() {
         const leadEvents = events.filter(
           (item) =>
             item.eventType === "lead_submitted" ||
-            item.eventType === "meeting_booked",
+            item.eventType === "meeting_booked" ||
+            item.eventType === "project_progress_updated",
         );
         const groupedLeads = new Map<string, LeadRow>();
 
@@ -140,10 +141,14 @@ export function LeadManagement() {
                 normalizeText(metadata.message) ||
                 "No description provided.",
               files: Array.isArray(metadata.files) ? metadata.files : [],
+              projectProgress: normalizeText(metadata.projectProgress) || "New",
               _rawDate: new Date(event.eventAt),
             } as any);
           } else {
             // Processing older events now (since list is descending)
+            if (existing.projectProgress === "New" && metadata.projectProgress) {
+              existing.projectProgress = normalizeText(metadata.projectProgress);
+            }
             if (existing.name === "Unknown" && metadata.name) {
               existing.name = normalizeText(metadata.name);
             }
@@ -189,9 +194,11 @@ export function LeadManagement() {
         });
 
         setLeads(
-          Array.from(groupedLeads.values()).sort(
-            (a: any, b: any) => b._rawDate.getTime() - a._rawDate.getTime(),
-          ),
+          Array.from(groupedLeads.values()).sort((a: any, b: any) => {
+            if (a.projectProgress === "Cancelled" && b.projectProgress !== "Cancelled") return 1;
+            if (a.projectProgress !== "Cancelled" && b.projectProgress === "Cancelled") return -1;
+            return b._rawDate.getTime() - a._rawDate.getTime();
+          }),
         );
 
         const contactEvents = events.filter(
@@ -285,6 +292,36 @@ export function LeadManagement() {
 
     fetchData();
   }, []);
+
+  const handleProgressChange = async (leadId: string, newProgress: string) => {
+    // Optimistic UI update and sort
+    setLeads((prev) => {
+      const updated = prev.map((lead) =>
+        lead.id === leadId ? { ...lead, projectProgress: newProgress } : lead,
+      );
+      return updated.sort((a: any, b: any) => {
+        if (a.projectProgress === "Cancelled" && b.projectProgress !== "Cancelled") return 1;
+        if (a.projectProgress !== "Cancelled" && b.projectProgress === "Cancelled") return -1;
+        return b._rawDate.getTime() - a._rawDate.getTime();
+      });
+    });
+
+    // Persist event in backend
+    try {
+      await analyticsApi.createEvent({
+        eventType: "project_progress_updated",
+        sessionId: "admin_dashboard",
+        pagePath: "/dashboard",
+        deviceType: "desktop",
+        metadata: {
+          requestId: leadId.replace("REQ-", ""),
+          projectProgress: newProgress,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to update project progress", error);
+    }
+  };
 
   const filteredLeads = useMemo(
     () =>
@@ -393,39 +430,35 @@ export function LeadManagement() {
       ),
     },
     {
-      key: "folderUrl",
-      label: "Actions",
+      key: "projectProgress",
+      label: "Project Progress",
       render: (value: string, row: any) => (
         <div className="flex items-center gap-2">
+          <select
+            value={value}
+            onChange={(e) => handleProgressChange(row.id, e.target.value)}
+            className="bg-[#0A0A0A] border border-white/10 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-[color:var(--bright-red)]"
+            onClick={(e) => e.stopPropagation()} // Prevent double clicks
+          >
+            <option value="New">New</option>
+            <option value="Pending">Pending</option>
+            <option value="In-Progress">In-Progress</option>
+            <option value="Meeting Scheduled">Meeting Scheduled</option>
+            <option value="Confirm">Confirm</option>
+            <option value="Working">Working</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
           <button
-            onClick={() => setSelectedLead(row)}
-            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedLead(row);
+            }}
+            className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
             title="View Details"
           >
             <Eye size={16} />
           </button>
-          <a
-            href={value && value !== "#" ? value : undefined}
-            target="_blank"
-            rel="noreferrer"
-            className={`hidden p-2 rounded-lg transition-colors ${
-              value && value !== "#"
-                ? "text-blue-400 hover:bg-white/10"
-                : "text-gray-600 cursor-not-allowed"
-            }`}
-            onClick={(e) => {
-              if (!value || value === "#") {
-                e.preventDefault();
-              }
-            }}
-            title={
-              value && value !== "#"
-                ? "Open Project Folder"
-                : "No folder available"
-            }
-          >
-            <Folder size={16} />
-          </a>
         </div>
       ),
     },
