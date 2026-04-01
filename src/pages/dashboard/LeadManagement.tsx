@@ -160,22 +160,34 @@ export function LeadManagement() {
       const fetchParams: Record<string, string> =
         filter !== "All" ? { projectProgress: filter } : {};
 
-      const [members, dbLeadsFiltered, dbLeadsTotal, dbMessagesRaw, dbNewslettersRaw, dbJobsRaw] =
-        await Promise.all([
-          teamMembersApi.getAll().catch(() => []),
-          projectRequestApi.getAll(fetchParams).catch(() => []),
-          projectRequestApi.getAll().catch(() => []), // Always fetch total for stats
-          contactRequestApi.getAll().catch(() => []),
-          newsletterApi.getAll().catch(() => []),
-          jobApplicationApi.getAll().catch(() => []),
-        ]);
+      const [
+        members,
+        dbLeadsFiltered,
+        dbLeadsTotal,
+        dbMessagesRaw,
+        dbNewslettersRaw,
+        dbJobsRaw,
+      ] = await Promise.all([
+        teamMembersApi.getAll().catch(() => []),
+        projectRequestApi.getAll(fetchParams).catch(() => []),
+        projectRequestApi.getAll().catch(() => []), // Always fetch total for stats
+        contactRequestApi.getAll().catch(() => []),
+        newsletterApi.getAll().catch(() => []),
+        jobApplicationApi.getAll().catch(() => []),
+      ]);
 
       setTeamMembers(members);
 
       // Calculate stats from TOTAL leads
-      const working = dbLeadsTotal.filter((l: any) => l.projectProgress === "Working").length;
-      const inProgress = dbLeadsTotal.filter((l: any) => l.projectProgress === "In-Progress").length;
-      const completed = dbLeadsTotal.filter((l: any) => l.projectProgress === "Completed").length;
+      const working = dbLeadsTotal.filter(
+        (l: any) => l.projectProgress === "Working",
+      ).length;
+      const inProgress = dbLeadsTotal.filter(
+        (l: any) => l.projectProgress === "In-Progress",
+      ).length;
+      const completed = dbLeadsTotal.filter(
+        (l: any) => l.projectProgress === "Completed",
+      ).length;
 
       setTotalLeads(dbLeadsTotal.length);
       setWorkingLeads(working);
@@ -219,19 +231,17 @@ export function LeadManagement() {
         }),
       );
 
-      const messagesProcessed: MessageRow[] = dbMessagesRaw.map(
-        (req: any) => ({
-          id: req._id,
-          timestamp: formatTimestamp(req.createdAt),
-          name: req.name || "Unknown",
-          email: req.email || "N/A",
-          phone: req.phone || "N/A",
-          country: req.country || "Unknown",
-          message: req.message || "No message found.",
-          status: req.status === "Read" ? "Read" : "Unread",
-          _rawDate: new Date(req.createdAt),
-        }),
-      );
+      const messagesProcessed: MessageRow[] = dbMessagesRaw.map((req: any) => ({
+        id: req._id,
+        timestamp: formatTimestamp(req.createdAt),
+        name: req.name || "Unknown",
+        email: req.email || "N/A",
+        phone: req.phone || "N/A",
+        country: req.country || "Unknown",
+        message: req.message || "No message found.",
+        status: req.status === "Read" ? "Read" : "Unread",
+        _rawDate: new Date(req.createdAt),
+      }));
       setMessages(messagesProcessed);
 
       const newsletterProcessed: NewsletterRow[] = dbNewslettersRaw.map(
@@ -272,16 +282,43 @@ export function LeadManagement() {
     dbId?: string,
   ) => {
     // 1. Validation: Prevent "Working" if unassigned
-    const targetLead = leads.find(l => l.id === leadId);
-    if (newProgress === "Working" && (!targetLead?.assignedTo || targetLead.assignedTo === "Unassigned")) {
+    const targetLead = leads.find((l) => l.id === leadId);
+    if (
+      newProgress === "Working" &&
+      (!targetLead?.assignedTo || targetLead.assignedTo === "Unassigned")
+    ) {
       alert("Please assign a team member before moving to 'Working' status.");
       return;
     }
+
+    const targetLeadArr = leads.filter((l) => l.id === leadId);
+    if (targetLeadArr.length === 0) return;
+    const oldProgress = targetLeadArr[0].projectProgress;
 
     setLeads((prev) => {
       const updated = prev.map((lead) =>
         lead.id === leadId ? { ...lead, projectProgress: newProgress } : lead,
       );
+
+      // Update Global Stats relatively
+      if (oldProgress !== newProgress) {
+        if (oldProgress === "Working") setWorkingLeads((p) => p - 1);
+        if (oldProgress === "In-Progress") setInProgressLeads((p) => p - 1);
+        if (oldProgress === "Completed") setCompletedLeads((p) => p - 1);
+
+        if (newProgress === "Working") setWorkingLeads((p) => p + 1);
+        if (newProgress === "In-Progress") setInProgressLeads((p) => p + 1);
+        if (newProgress === "Completed") setCompletedLeads((p) => p + 1);
+      }
+
+      // Update selected lead if it's the one being modified
+      if (
+        selectedLead &&
+        (selectedLead.id === leadId || selectedLead.dbId === dbId)
+      ) {
+        const target = updated.find((l) => l.id === leadId);
+        if (target) setSelectedLead(target);
+      }
       return updated.sort((a: any, b: any) => {
         if (
           a.projectProgress === "Cancelled" &&
@@ -310,11 +347,20 @@ export function LeadManagement() {
     newPhase: string,
     dbId?: string,
   ) => {
-    setLeads((prev) =>
-      prev.map((lead) =>
+    setLeads((prev) => {
+      const updated = prev.map((lead) =>
         lead.id === leadId ? { ...lead, workingPhase: newPhase } : lead,
-      ),
-    );
+      );
+      // Update selected lead to reflect changes in the modal immediately
+      if (
+        selectedLead &&
+        (selectedLead.id === leadId || selectedLead.dbId === dbId)
+      ) {
+        const target = updated.find((l) => l.id === leadId);
+        if (target) setSelectedLead(target);
+      }
+      return updated;
+    });
     try {
       if (dbId) {
         await projectRequestApi.update(dbId, { workingPhase: newPhase });
@@ -324,44 +370,15 @@ export function LeadManagement() {
     }
   };
 
-  const PhaseTracker = ({
-    currentPhase,
-    onChange,
-  }: {
-    currentPhase?: string;
-    onChange: (phase: string) => void;
-  }) => {
+  const PhaseTracker = ({ currentPhase }: { currentPhase?: string }) => {
     const phases = ["UI/UX", "Frontend", "Backend", "Deploy"];
     const currentIndex = phases.indexOf(currentPhase || "");
 
     return (
       <div className="flex flex-col gap-1 mt-1">
-        <div className="flex items-center gap-1">
-          {phases.map((phase, idx) => {
-            const isCompleted = idx <= currentIndex;
-            const isActive = idx === currentIndex;
-
-            return (
-              <button
-                key={phase}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onChange(phase);
-                }}
-                title={phase}
-                className={`w-2 h-2 rounded-full transition-all ${
-                  isActive
-                    ? "bg-[color:var(--bright-red)] scale-125 shadow-[0_0_8px_var(--bright-red)]"
-                    : isCompleted
-                      ? "bg-[color:var(--bright-red)] opacity-60"
-                      : "bg-white/10 hover:bg-white/30"
-                }`}
-              />
-            );
-          })}
-        </div>
         <div className="text-[10px] text-gray-500 font-medium">
-          Stage {currentIndex + 1}: <span className="text-gray-400">{currentPhase || "UI/UX"}</span>
+          Stage {currentIndex + 1}:{" "}
+          <span className="text-gray-400">{currentPhase || "UI/UX"}</span>
         </div>
       </div>
     );
@@ -552,10 +569,7 @@ export function LeadManagement() {
               </button>
             </div>
             {value === "Working" && (
-              <PhaseTracker
-                currentPhase={row.workingPhase}
-                onChange={(phase) => handlePhaseChange(row.id, phase, row.dbId)}
-              />
+              <PhaseTracker currentPhase={row.workingPhase} />
             )}
           </div>
         );
@@ -750,7 +764,7 @@ export function LeadManagement() {
           icon={Clock}
           color="from-indigo-500 to-purple-500"
         />
-        
+
         <ManagementStatsCard
           title="Working"
           value={workingLeads}
@@ -823,12 +837,24 @@ export function LeadManagement() {
                 onChange={(e) => setProgressFilter(e.target.value)}
                 className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs font-bold text-gray-300 focus:outline-none focus:border-[color:var(--bright-red)] cursor-pointer"
               >
-                <option value="All" className="bg-[#0A0A0A]">All Progress States</option>
-                <option value="New" className="bg-[#0A0A0A]">New</option>
-                <option value="In-Progress" className="bg-[#0A0A0A]">In-Progress</option>
-                <option value="Working" className="bg-[#0A0A0A]">Working</option>
-                <option value="Completed" className="bg-[#0A0A0A]">Completed</option>
-                <option value="Cancelled" className="bg-[#0A0A0A]">Cancelled</option>
+                <option value="All" className="bg-[#0A0A0A]">
+                  All Progress States
+                </option>
+                <option value="New" className="bg-[#0A0A0A]">
+                  New
+                </option>
+                <option value="In-Progress" className="bg-[#0A0A0A]">
+                  In-Progress
+                </option>
+                <option value="Working" className="bg-[#0A0A0A]">
+                  Working
+                </option>
+                <option value="Completed" className="bg-[#0A0A0A]">
+                  Completed
+                </option>
+                <option value="Cancelled" className="bg-[#0A0A0A]">
+                  Cancelled
+                </option>
               </select>
             )}
           </div>
