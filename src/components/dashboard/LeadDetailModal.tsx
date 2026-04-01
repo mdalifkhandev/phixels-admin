@@ -10,17 +10,22 @@ import {
   FileText,
   Folder,
   ExternalLink,
+  CheckCircle2,
+  Clock,
+  ArrowRight,
 } from "lucide-react";
 import { ComingSoonModal } from "./ComingSoonModal";
 
 interface LeadDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onPhaseChange?: (leadId: string, phase: string, dbId?: string) => void;
   lead: any;
 }
 export function LeadDetailModal({
   isOpen,
   onClose,
+  onPhaseChange,
   lead,
 }: LeadDetailModalProps) {
   const [showComingSoon, setShowComingSoon] = useState(false);
@@ -160,6 +165,64 @@ export function LeadDetailModal({
                 </div>
               </div>
             </section>
+
+            {/* Project Timeline (Only if Working) */}
+            {lead.projectProgress === "Working" && (
+              <section className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-6 flex items-center gap-2">
+                  <Clock size={14} /> Project Timeline & Milestones
+                </h3>
+                
+                <div className="relative flex flex-col md:flex-row justify-between gap-4">
+                  {/* Progress Line Background */}
+                  <div className="absolute top-5 left-8 right-8 h-0.5 bg-white/5 hidden md:block" />
+                  
+                  {["UI/UX", "Frontend", "Backend", "Deploy"].map((phase, index) => {
+                    const phases = ["UI/UX", "Frontend", "Backend", "Deploy"];
+                    const currentIndex = phases.indexOf(lead.workingPhase || "");
+                    const isCompleted = index <= currentIndex;
+                    const isActive = index === currentIndex;
+
+                    return (
+                      <button
+                        key={phase}
+                        onClick={() => onPhaseChange?.(lead.id, phase, lead.dbId)}
+                        className="relative z-10 flex flex-col items-center group flex-1"
+                      >
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                          isActive 
+                            ? "bg-[color:var(--bright-red)] text-white shadow-[0_0_15px_rgba(237,31,36,0.5)] scale-110" 
+                            : isCompleted 
+                              ? "bg-green-500/20 text-green-500 border border-green-500/30" 
+                              : "bg-white/5 text-gray-500 border border-white/10 hover:border-white/30"
+                        }`}>
+                          {isCompleted && !isActive ? (
+                            <CheckCircle2 size={20} />
+                          ) : (
+                            <span className="text-xs font-bold">{index + 1}</span>
+                          )}
+                        </div>
+                        
+                        <div className="mt-3 text-center">
+                          <div className={`text-xs font-bold transition-colors ${
+                            isActive ? "text-white" : isCompleted ? "text-green-500/80" : "text-gray-500"
+                          }`}>
+                            Phase {index + 1}: {phase}
+                          </div>
+                          <div className="text-[10px] text-gray-600 mt-0.5 whitespace-nowrap">
+                            {isActive ? "Executing" : isCompleted ? "Done" : "Pending"}
+                          </div>
+                        </div>
+                        
+                        {index < 3 && (
+                          <ArrowRight className="md:hidden text-gray-800 my-2" size={14} />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
 
             {/* Files */}
             <section>

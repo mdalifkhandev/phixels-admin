@@ -43,6 +43,7 @@ type LeadRow = {
   description: string;
   files?: Array<{ name: string; url: string }>;
   projectProgress: string;
+  workingPhase?: string;
   assignedTo: string;
   _rawDate: Date;
 };
@@ -197,6 +198,7 @@ export function LeadManagement() {
         description: req.description || "No description provided.",
         files: Array.isArray(req.files) ? req.files : [],
         projectProgress: req.projectProgress || "New",
+        workingPhase: req.workingPhase || null,
         assignedTo: req.assignedTo || "Unassigned",
         _rawDate: new Date(req.createdAt),
       }));
@@ -269,6 +271,13 @@ export function LeadManagement() {
     newProgress: string,
     dbId?: string,
   ) => {
+    // 1. Validation: Prevent "Working" if unassigned
+    const targetLead = leads.find(l => l.id === leadId);
+    if (newProgress === "Working" && (!targetLead?.assignedTo || targetLead.assignedTo === "Unassigned")) {
+      alert("Please assign a team member before moving to 'Working' status.");
+      return;
+    }
+
     setLeads((prev) => {
       const updated = prev.map((lead) =>
         lead.id === leadId ? { ...lead, projectProgress: newProgress } : lead,
@@ -294,6 +303,68 @@ export function LeadManagement() {
     } catch (error) {
       console.error("Failed to update project progress", error);
     }
+  };
+
+  const handlePhaseChange = async (
+    leadId: string,
+    newPhase: string,
+    dbId?: string,
+  ) => {
+    setLeads((prev) =>
+      prev.map((lead) =>
+        lead.id === leadId ? { ...lead, workingPhase: newPhase } : lead,
+      ),
+    );
+    try {
+      if (dbId) {
+        await projectRequestApi.update(dbId, { workingPhase: newPhase });
+      }
+    } catch (error) {
+      console.error("Failed to update project phase", error);
+    }
+  };
+
+  const PhaseTracker = ({
+    currentPhase,
+    onChange,
+  }: {
+    currentPhase?: string;
+    onChange: (phase: string) => void;
+  }) => {
+    const phases = ["UI/UX", "Frontend", "Backend", "Deploy"];
+    const currentIndex = phases.indexOf(currentPhase || "");
+
+    return (
+      <div className="flex flex-col gap-1 mt-1">
+        <div className="flex items-center gap-1">
+          {phases.map((phase, idx) => {
+            const isCompleted = idx <= currentIndex;
+            const isActive = idx === currentIndex;
+
+            return (
+              <button
+                key={phase}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange(phase);
+                }}
+                title={phase}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  isActive
+                    ? "bg-[color:var(--bright-red)] scale-125 shadow-[0_0_8px_var(--bright-red)]"
+                    : isCompleted
+                      ? "bg-[color:var(--bright-red)] opacity-60"
+                      : "bg-white/10 hover:bg-white/30"
+                }`}
+              />
+            );
+          })}
+        </div>
+        <div className="text-[10px] text-gray-500 font-medium">
+          Stage {currentIndex + 1}: <span className="text-gray-400">{currentPhase || "UI/UX"}</span>
+        </div>
+      </div>
+    );
   };
 
   const handleAssigneeChange = async (
@@ -452,32 +523,40 @@ export function LeadManagement() {
       render: (value: string, row: any) => {
         const colors = getProgressColor(value);
         return (
-          <div className="flex items-center gap-2">
-            <select
-              value={value}
-              onChange={(e) =>
-                handleProgressChange(row.id, e.target.value, row.dbId)
-              }
-              className={`bg-[#0A0A0A] border rounded-lg px-2 py-1 text-xs font-medium focus:outline-none focus:border-[color:var(--bright-red)] transition-colors ${colors.select}`}
-              onClick={(e) => e.stopPropagation()} // Prevent double clicks
-            >
-              <option value="New">New</option>
-              <option value="Pending">Pending</option>
-              <option value="In-Progress">In-Progress</option>
-              <option value="Working">Working</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedLead(row);
-              }}
-              className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
-              title="View Details"
-            >
-              <Eye size={16} />
-            </button>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-2">
+              <select
+                value={value}
+                onChange={(e) =>
+                  handleProgressChange(row.id, e.target.value, row.dbId)
+                }
+                className={`bg-[#0A0A0A] border rounded-lg px-2 py-1 text-xs font-medium focus:outline-none focus:border-[color:var(--bright-red)] transition-colors ${colors.select}`}
+                onClick={(e) => e.stopPropagation()} // Prevent double clicks
+              >
+                <option value="New">New</option>
+                <option value="Pending">Pending</option>
+                <option value="In-Progress">In-Progress</option>
+                <option value="Working">Working</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedLead(row);
+                }}
+                className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                title="View Details"
+              >
+                <Eye size={16} />
+              </button>
+            </div>
+            {value === "Working" && (
+              <PhaseTracker
+                currentPhase={row.workingPhase}
+                onChange={(phase) => handlePhaseChange(row.id, phase, row.dbId)}
+              />
+            )}
           </div>
         );
       },
@@ -796,6 +875,7 @@ export function LeadManagement() {
       <LeadDetailModal
         isOpen={!!selectedLead}
         onClose={() => setSelectedLead(null)}
+        onPhaseChange={handlePhaseChange}
         lead={selectedLead}
       />
 
