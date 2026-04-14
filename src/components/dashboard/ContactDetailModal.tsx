@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/Button";
 import { ComingSoonModal } from "./ComingSoonModal";
+import { FilePreviewModal } from "./FilePreviewModal";
 interface ContactDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -23,6 +24,7 @@ export function ContactDetailModal({
   message,
 }: ContactDetailModalProps) {
   const [showComingSoon, setShowComingSoon] = useState(false);
+  const [previewData, setPreviewData] = useState<{ url: string; name: string; format: string } | null>(null);
 
   if (!isOpen || !message) return null;
   return (
@@ -125,6 +127,47 @@ export function ContactDetailModal({
                 {message.message}
               </p>
             </div>
+
+            {/* Attachments */}
+            {message.files && message.files.length > 0 && (
+              <div className="p-6 rounded-xl bg-white/5 border border-white/10">
+                <div className="text-xs text-gray-400 mb-3 uppercase tracking-wider font-bold">
+                  Attachments
+                </div>
+                <div className="flex flex-wrap gap-4">
+                  {message.files.map((file: any, index: number) => {
+                    const url = file.url || file.secure_url || "#";
+                    const format = file.format?.toLowerCase() || url?.split('.').pop()?.toLowerCase();
+                    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(format);
+                    const name = file.original_filename || file.name || `Attachment ${index + 1}`;
+                    let finalUrl = url;
+                    if (format === 'pdf' && url?.includes('/upload/')) {
+                      finalUrl = url.replace('/upload/', '/upload/fl_attachment/');
+                    }
+                    
+                    return (
+                      <a 
+                        href={finalUrl} 
+                        onClick={(e) => { e.preventDefault(); setPreviewData({ url: finalUrl, name, format: format || 'unknown' }); }}
+                        key={index} 
+                        className="flex flex-col items-center gap-2 group max-w-[150px] cursor-pointer"
+                      >
+                        {isImage ? (
+                          <div className="w-24 h-24 rounded-lg overflow-hidden border border-white/10 group-hover:border-[color:var(--bright-red)] transition-colors">
+                            <img src={url} alt={name} className="w-full h-full object-cover" />
+                          </div>
+                        ) : (
+                          <div className="w-24 h-24 rounded-lg bg-gray-800 flex items-center justify-center border border-white/10 group-hover:border-[color:var(--bright-red)] transition-colors text-white">
+                            <div className="text-xs font-bold uppercase">{format || 'FILE'}</div>
+                          </div>
+                        )}
+                        <span className="text-xs text-gray-400 group-hover:text-[color:var(--bright-red)] truncate w-full text-center" title={name}>{name}</span>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Footer Actions */}
@@ -152,6 +195,15 @@ export function ContactDetailModal({
         <ComingSoonModal 
           isOpen={showComingSoon} 
           onClose={() => setShowComingSoon(false)} 
+        />
+
+        {/* File Preview Modal */}
+        <FilePreviewModal
+          isOpen={!!previewData}
+          onClose={() => setPreviewData(null)}
+          fileUrl={previewData?.url || null}
+          fileName={previewData?.name || null}
+          fileFormat={previewData?.format || null}
         />
       </div>
     </AnimatePresence>

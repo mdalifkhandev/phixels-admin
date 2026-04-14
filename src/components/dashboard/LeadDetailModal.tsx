@@ -15,6 +15,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { ComingSoonModal } from "./ComingSoonModal";
+import { FilePreviewModal } from "./FilePreviewModal";
 
 interface LeadDetailModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ export function LeadDetailModal({
   lead,
 }: LeadDetailModalProps) {
   const [showComingSoon, setShowComingSoon] = useState(false);
+  const [previewData, setPreviewData] = useState<{ url: string; name: string; format: string } | null>(null);
 
   if (!isOpen || !lead) return null;
   return (
@@ -259,13 +261,21 @@ export function LeadDetailModal({
 
                 {/* Individual Attachments */}
                 {lead.files && lead.files.length > 0
-                  ? lead.files.map((file: any, index: number) => (
+                  ? lead.files.map((file: any, index: number) => {
+                      const url = file.url || file.secure_url || "#";
+                      const format = file.format?.toLowerCase() || url?.split('.').pop()?.toLowerCase();
+                      const name = file.original_filename || file.name || `Attachment ${index + 1}`;
+                      let finalUrl = url;
+                      if (format === 'pdf' && url?.includes('/upload/')) {
+                        finalUrl = url.replace('/upload/', '/upload/fl_attachment/');
+                      }
+
+                      return (
                       <a
                         key={index}
-                        href={file.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all group"
+                        href={finalUrl}
+                        onClick={(e) => { e.preventDefault(); setPreviewData({ url: finalUrl, name, format: format || 'unknown' }); }}
+                        className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/20 transition-all group cursor-pointer"
                       >
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-lg bg-white/10 text-white group-hover:bg-red-600 group-hover:text-white transition-colors">
@@ -273,7 +283,7 @@ export function LeadDetailModal({
                           </div>
                           <div className="flex-1 min-w-0">
                             <div className="font-bold text-white truncate">
-                              {file.name}
+                              {name}
                             </div>
                             <div className="text-xs text-gray-400">
                               Uploaded Attachment
@@ -285,7 +295,7 @@ export function LeadDetailModal({
                           className="text-gray-500 group-hover:text-white transition-colors"
                         />
                       </a>
-                    ))
+                    )})
                   : (!lead.folderUrl || lead.folderUrl === "#") && (
                       <div className="text-center py-6 bg-white/5 rounded-xl border border-dashed border-white/10">
                         <p className="text-sm text-gray-500 italic">
@@ -328,6 +338,15 @@ export function LeadDetailModal({
         <ComingSoonModal 
           isOpen={showComingSoon} 
           onClose={() => setShowComingSoon(false)} 
+        />
+
+        {/* File Preview Modal */}
+        <FilePreviewModal
+          isOpen={!!previewData}
+          onClose={() => setPreviewData(null)}
+          fileUrl={previewData?.url || null}
+          fileName={previewData?.name || null}
+          fileFormat={previewData?.format || null}
         />
       </div>
     </AnimatePresence>

@@ -56,6 +56,7 @@ type MessageRow = {
   phone: string;
   country: string;
   message: string;
+  files?: Array<{ format?: string; url?: string; secure_url?: string; original_filename?: string }>;
   status: "Unread" | "Read";
   _rawDate: Date;
 };
@@ -239,6 +240,7 @@ export function LeadManagement() {
         phone: req.phone || "N/A",
         country: req.country || "Unknown",
         message: req.message || "No message found.",
+        files: Array.isArray(req.files) ? req.files : [],
         status: req.status === "Read" ? "Read" : "Unread",
         _rawDate: new Date(req.createdAt),
       }));
