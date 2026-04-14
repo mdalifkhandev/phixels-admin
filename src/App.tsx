@@ -7,6 +7,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { QueryProvider } from "./providers/QueryProvider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 // Dashboard Layout & Auth
 import { LoginPage } from "./pages/dashboard/LoginPage";
@@ -46,7 +47,8 @@ export function App() {
   return (
     // Context Provider
     <AuthProvider>
-      <Router>
+      <QueryProvider>
+        <Router>
         <ScrollToTop />
         <Routes>
           {/* Public Auth Routes */}
@@ -93,7 +95,8 @@ export function App() {
           {/* Catch all redirect to login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
-      </Router>
+        </Router>
+      </QueryProvider>
     </AuthProvider>
   );
 }
