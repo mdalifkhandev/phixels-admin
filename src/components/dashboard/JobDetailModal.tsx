@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/Button";
 import { ComingSoonModal } from "./ComingSoonModal";
+import { FilePreviewModal } from "./FilePreviewModal";
 interface JobDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -22,6 +23,7 @@ export function JobDetailModal({
   application,
 }: JobDetailModalProps) {
   const [showComingSoon, setShowComingSoon] = useState(false);
+  const [previewData, setPreviewData] = useState<{ url: string; name: string; format: string } | null>(null);
 
   if (!isOpen || !application) return null;
   return (
@@ -138,9 +140,13 @@ export function JobDetailModal({
                 <Button
                   variant="outline"
                   className="text-xs"
-                  onClick={() => window.open(application.resumeUrl, "_blank")}
+                  onClick={() => {
+                    const url = application.resumeUrl;
+                    const format = url?.split('.').pop()?.toLowerCase();
+                    setPreviewData({ url, name: "Applicant Resume", format });
+                  }}
                 >
-                  Download
+                  Preview
                 </Button>
               </div>
             </div>
@@ -187,6 +193,15 @@ export function JobDetailModal({
         <ComingSoonModal 
           isOpen={showComingSoon} 
           onClose={() => setShowComingSoon(false)} 
+        />
+        
+        {/* File Preview Modal */}
+        <FilePreviewModal
+          isOpen={!!previewData}
+          onClose={() => setPreviewData(null)}
+          fileUrl={previewData?.url || null}
+          fileName={previewData?.name || null}
+          fileFormat={previewData?.format || null}
         />
       </div>
     </AnimatePresence>
