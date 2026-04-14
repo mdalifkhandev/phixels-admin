@@ -1,5 +1,46 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ExternalLink, Download } from "lucide-react";
+
+const PdfAutoScrollViewer = ({ url }: { url: string }) => {
+  const [pages, setPages] = useState<number[]>([1]);
+  const [hasMore, setHasMore] = useState(true);
+
+  const getPageUrl = (page: number) => {
+    return url
+      .replace('/upload/fl_attachment/', '/upload/')
+      .replace('/upload/', `/upload/pg_${page}/`)
+      .replace(/\.pdf$/i, '.jpg');
+  };
+
+  return (
+    <div className="absolute inset-0 overflow-y-auto custom-scrollbar flex flex-col items-center bg-black/40 p-4 gap-4 md:p-8 md:gap-8">
+      {pages.map((pageNum) => (
+        <img
+          key={pageNum}
+          src={getPageUrl(pageNum)}
+          alt={`Page ${pageNum}`}
+          className="max-w-full h-auto object-contain bg-white shadow-2xl p-2 rounded-lg"
+          style={{ width: 'auto', maxHeight: '1200px' }}
+          onLoad={() => {
+            if (hasMore && pageNum === pages.length && pageNum < 50) {
+              setPages((prev) => [...prev, pageNum + 1]);
+            }
+          }}
+          onError={(e) => {
+            setHasMore(false);
+            e.currentTarget.style.display = 'none';
+          }}
+        />
+      ))}
+      {!hasMore && pages.length > 1 && (
+        <div className="text-gray-500 text-sm font-medium py-8 pb-12">
+          End of document
+        </div>
+      )}
+    </div>
+  );
+};
 
 interface FilePreviewModalProps {
   isOpen: boolean;
@@ -68,33 +109,14 @@ export function FilePreviewModal({
 
           {/* Viewer Area */}
           <div className="flex-1 overflow-hidden relative flex items-center justify-center bg-black/40">
-            {isImage || isPdf ? (
+            {isImage && !isPdf ? (
               <img
-                src={
-                  isPdf
-                    ? fileUrl
-                        .replace(/\.pdf$/i, ".jpg")
-                        .replace("/fl_attachment/", "/")
-                    : fileUrl
-                }
+                src={fileUrl}
                 alt={fileName || "Preview"}
                 className="max-w-full max-h-full object-contain p-4 bg-white/5"
-                onError={(e) => {
-                  // Fallback if Cloudinary hasn't generated the PDF preview yet or it fails
-                  if (isPdf) {
-                    e.currentTarget.style.display = "none";
-                    e.currentTarget.parentElement!.innerHTML = `
-                      <div class="flex flex-col items-center justify-center text-center gap-4 p-8">
-                        <div class="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-[color:var(--bright-red)] font-bold uppercase text-xl">PDF</div>
-                        <div>
-                          <p class="text-white font-medium mb-2">Preview currently unavailable</p>
-                          <a href="${fileUrl}" target="_blank" class="px-6 py-2.5 bg-[color:var(--bright-red)] text-white font-bold rounded-xl hover:bg-red-700 transition-colors inline-block mt-4">Download PDF</a>
-                        </div>
-                      </div>
-                    `;
-                  }
-                }}
               />
+            ) : isPdf ? (
+              <PdfAutoScrollViewer url={fileUrl} />
             ) : (
               <div className="flex flex-col items-center justify-center p-8 text-center gap-4">
                 <div className="w-20 h-20 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-gray-500 font-bold uppercase text-xl">
