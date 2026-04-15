@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { Briefcase, Plus } from "lucide-react";
 import { DataTable } from "../../components/dashboard/DataTable";
 import { ManagementStatsCard } from "../../components/dashboard/ManagementStatsCard";
 import { ContentModal } from "../../components/dashboard/ContentModal";
 import { StatusModal } from "../../components/dashboard/StatusModal";
-import { portfolioApi, servicesApi } from "../../services/api";
+import { portfolioApi } from "../../services/api";
+import { useAdminPortfolio, useDeletePortfolio, useReorderPortfolio } from "../../hooks/queries/usePortfolio";
+import { useQueryClient } from '@tanstack/react-query';
 import type { PortfolioItem } from "../../types/types";
 import { ImageUploadField } from "../../components/dashboard/ImageUploadField";
 
@@ -13,9 +15,17 @@ interface PortfolioDisplay extends PortfolioItem {
 }
 
 export function PortfolioManagement() {
-  const [items, setItems] = useState<PortfolioDisplay[]>([]);
-  const [services, setServices] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+  const { data: portfolioData, isLoading: loading } = useAdminPortfolio();
+  const deletePortfolioMutation = useDeletePortfolio();
+  const reorderPortfolioMutation = useReorderPortfolio();
+
+  const items = useMemo(() => {
+    if (!portfolioData?.items) return [];
+    return portfolioData.items.map((item: any) => ({ ...item, id: item._id }));
+  }, [portfolioData]);
+
+  const services = portfolioData?.services ?? [];
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,38 +60,7 @@ export function PortfolioManagement() {
     message: "",
   });
 
-  useEffect(() => {
-    fetchPortfolio();
-  }, []);
 
-  const fetchPortfolio = async () => {
-    try {
-      setLoading(true);
-      const [data, servicesData] = await Promise.all([
-        portfolioApi.getAll(),
-        servicesApi.getCategories(),
-      ]);
-      // Map _id to id for DataTable compatibility
-      const portfolioWithIds = data.map((item: any) => ({
-        ...item,
-        id: item._id,
-      }));
-      setItems(portfolioWithIds);
-      if (Array.isArray(servicesData)) {
-        setServices(servicesData);
-      }
-    } catch (err: any) {
-      console.error("Error fetching portfolio:", err);
-      setStatusModal({
-        isOpen: true,
-        type: "error",
-        title: "Error",
-        message: err.message || "Failed to load portfolio",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleEdit = (item: PortfolioDisplay) => {
     setEditingItem(item);
@@ -106,8 +85,7 @@ export function PortfolioManagement() {
       message: `Are you sure you want to delete "${item.title}"?`,
       action: async () => {
         try {
-          await portfolioApi.delete(item.id);
-          setItems(items.filter((i) => i.id !== item.id));
+          await deletePortfolioMutation.mutateAsync(item.id);
           setStatusModal({
             isOpen: true,
             type: "success",
@@ -115,7 +93,6 @@ export function PortfolioManagement() {
             message: "Project has been deleted successfully.",
           });
         } catch (err: any) {
-          console.error("Error deleting portfolio item:", err);
           setStatusModal({
             isOpen: true,
             type: "error",
@@ -130,50 +107,21 @@ export function PortfolioManagement() {
 
   const handleSave = async () => {
     try {
-      // Basic validation
-      if (
-        !formData.title ||
-        !formData.client ||
-        !formData.category ||
-        !formData.image
-      ) {
-        setStatusModal({
-          isOpen: true,
-          type: "error",
-          title: "Validation Error",
-          message: "Please fill in all required fields",
-        });
+      if (!formData.title || !formData.client || !formData.category || !formData.image) {
+        setStatusModal({ isOpen: true, type: "error", title: "Validation Error", message: "Please fill in all required fields" });
         return;
       }
-
       if (editingItem) {
         await portfolioApi.update(editingItem.id, formData);
-        setStatusModal({
-          isOpen: true,
-          type: "success",
-          title: "Updated",
-          message: "Project has been updated successfully.",
-        });
+        setStatusModal({ isOpen: true, type: "success", title: "Updated", message: "Project has been updated successfully." });
       } else {
         await portfolioApi.create(formData);
-        setStatusModal({
-          isOpen: true,
-          type: "success",
-          title: "Created",
-          message: "Project has been created successfully.",
-        });
+        setStatusModal({ isOpen: true, type: "success", title: "Created", message: "Project has been created successfully." });
       }
-
-      await fetchPortfolio();
+      qc.invalidateQueries({ queryKey: ['admin-portfolio'] });
       handleCloseModal();
     } catch (err: any) {
-      console.error("Error saving portfolio item:", err);
-      setStatusModal({
-        isOpen: true,
-        type: "error",
-        title: "Save Failed",
-        message: err.message || "Failed to save item",
-      });
+      setStatusModal({ isOpen: true, type: "error", title: "Save Failed", message: err.message || "Failed to save item" });
     }
   };
 
@@ -213,35 +161,18 @@ export function PortfolioManagement() {
   const handleToggleActive = async (item: PortfolioDisplay) => {
     try {
       const newStatus = item.isActive === false ? true : false;
-
-      setItems((prev) =>
-        prev.map((i) => (i.id === item.id ? { ...i, isActive: newStatus } : i)),
-      );
-
       await portfolioApi.update(item.id, { isActive: newStatus });
+      qc.invalidateQueries({ queryKey: ['admin-portfolio'] });
     } catch (err: any) {
-      await fetchPortfolio();
-      setStatusModal({
-        isOpen: true,
-        type: "error",
-        title: "Toggle Failed",
-        message: err.message || "Failed to update status",
-      });
+      setStatusModal({ isOpen: true, type: "error", title: "Toggle Failed", message: err.message || "Failed to update status" });
     }
   };
 
   const handleReorder = async (newData: any[]) => {
     try {
-      setItems(newData);
-      await portfolioApi.reorder(newData.map((item) => item.id));
+      await reorderPortfolioMutation.mutateAsync(newData.map((item) => item.id));
     } catch (err: any) {
-      await fetchPortfolio();
-      setStatusModal({
-        isOpen: true,
-        type: "error",
-        title: "Reorder Failed",
-        message: err.message || "Failed to reorder portfolio items",
-      });
+      setStatusModal({ isOpen: true, type: "error", title: "Reorder Failed", message: err.message || "Failed to reorder" });
     }
   };
 

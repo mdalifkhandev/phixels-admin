@@ -9,6 +9,11 @@ export function useMessages() {
       return data.map((item: any) => ({
         ...item,
         id: item._id,
+        timestamp: new Date(item.createdAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
         _rawDate: new Date(item.createdAt),
       })).sort((a: any, b: any) => b._rawDate.getTime() - a._rawDate.getTime());
     },

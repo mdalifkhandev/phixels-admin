@@ -13,6 +13,11 @@ export function useLeads(progressFilter: string = 'All') {
         ...item,
         id: `REQ-${(item.requestId || item._id || "000000").slice(-6).toUpperCase()}`,
         dbId: item._id,
+        timestamp: new Date(item.createdAt).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        }),
         _rawDate: new Date(item.createdAt),
       })).sort((a: any, b: any) => {
         if (a.projectProgress === 'Cancelled' && b.projectProgress !== 'Cancelled') return 1;

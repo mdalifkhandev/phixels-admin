@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Activity,
@@ -9,32 +9,15 @@ import {
   Eye,
 } from "lucide-react";
 import { DataDetailModal } from "../../components/dashboard/DataDetailModal";
-import { analyticsApi } from "../../services/api";
-import type { RealtimeAnalytics } from "../../types/types";
+import { useRealtimeAnalytics } from "../../hooks/queries/useAnalytics";
 
 export function RealtimeMonitor() {
-  const [data, setData] = useState<RealtimeAnalytics | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // TanStack Query handles caching + auto-refresh every 10s
+  const { data, isLoading } = useRealtimeAnalytics();
+
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState<any>(null);
   const [modalTitle, setModalTitle] = useState("");
-
-  const fetchRealtimeData = async () => {
-    try {
-      const result = await analyticsApi.getRealtime();
-      setData(result);
-    } catch (error) {
-      console.error("Failed to fetch realtime analytics:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRealtimeData();
-    const interval = setInterval(fetchRealtimeData, 10000); // Poll every 10s
-    return () => clearInterval(interval);
-  }, []);
 
   const handleRowClick = (data: any, title: string) => {
     setModalData(data);

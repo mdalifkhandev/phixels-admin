@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Plus,
   BookOpen,
@@ -23,11 +24,11 @@ import { ImageUploadField } from "../../components/dashboard/ImageUploadField";
 import { RichTextEditor } from "../../components/dashboard/RichTextEditor";
 import { StatusModal } from "../../components/dashboard/StatusModal";
 import { AuthorDropdown } from "../../components/dashboard/AuthorDropdown";
-import { blogsApi, servicesApi } from "../../services/api";
+import { blogsApi } from "../../services/api";
+import { useAdminBlogs, useAdminServiceCategories, useDeleteBlog, useReorderBlogs } from "../../hooks/queries/useBlogs";
 import type {
   Blog,
   CreateBlogPayload,
-  ServiceCategory,
 } from "../../types/types";
 import { stripRichText } from "../../utils/richText";
 
@@ -66,13 +67,36 @@ const blogIconMap = {
 } as const;
 
 export function BlogManagement() {
-  const [posts, setPosts] = useState<BlogDisplay[]>([]);
-  const [serviceCategories, setServiceCategories] = useState<ServiceCategory[]>(
-    [],
-  );
+  // Server state via TanStack Query
+  const qc = useQueryClient();
+  const { data: rawBlogs, isLoading: loading } = useAdminBlogs();
+  const { data: rawServiceCategories } = useAdminServiceCategories();
+  const deleteBlogMutation = useDeleteBlog();
+  const reorderBlogsMutation = useReorderBlogs();
+
+  // Derived + memoized data
+  const posts = useMemo<BlogDisplay[]>(() => {
+    if (!rawBlogs) return [];
+    return rawBlogs.map((p) => ({
+      ...p,
+      id: p._id,
+      excerpt: p.details ? stripRichText(p.details).substring(0, 100) + '...' : '',
+      category: p.categoryName || 'Uncategorized',
+      date: p.createdAt || p.createTime || new Date().toISOString(),
+      readTime: p.readingTime || '5 min',
+      slug: p.slug || slugify(p.title),
+      status: (p.status || 'draft') as 'published' | 'draft',
+      tags: p.tags || [],
+    }));
+  }, [rawBlogs]);
+
+  const serviceCategories = useMemo(() => {
+    if (!rawServiceCategories) return [];
+    return rawServiceCategories.filter((c) => c.isActive !== false);
+  }, [rawServiceCategories]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogDisplay | null>(null);
-  const [loading, setLoading] = useState(true);
 
   // Status Modal State
   const [statusModal, setStatusModal] = useState<{
@@ -109,54 +133,6 @@ export function BlogManagement() {
   const [tagInput, setTagInput] = useState("");
   const [isNewCategory, setIsNewCategory] = useState(false);
 
-  useEffect(() => {
-    fetchPosts();
-    fetchServices();
-  }, []);
-
-  const fetchServices = async () => {
-    try {
-      const data = await servicesApi.getCategories();
-      setServiceCategories(
-        data.filter((category) => category.isActive !== false),
-      );
-    } catch (err) {
-      console.error("Error fetching services:", err);
-    }
-  };
-
-  const fetchPosts = async () => {
-    try {
-      setLoading(true);
-      const data = await blogsApi.getAll();
-      const displayData = data.map((p) => ({
-        ...p,
-        id: p._id,
-        excerpt: p.details
-          ? stripRichText(p.details).substring(0, 100) + "..."
-          : "",
-        category: p.categoryName || "Uncategorized",
-        date: p.createdAt || p.createTime || new Date().toISOString(),
-        readTime: p.readingTime || "5 min",
-        slug: p.slug || slugify(p.title),
-        status: (p.status || "draft") as "published" | "draft",
-        tags: p.tags || [],
-      }));
-      // Assuming the backend sends them sorted by position, we can just use the order or we can explicitly sort here if needed.
-      // The backend has `.sort({ position: 1, createdAt: -1 })` so we just use the data array order.
-      setPosts(displayData);
-    } catch (err: any) {
-      console.error(err);
-      setStatusModal({
-        isOpen: true,
-        type: "error",
-        title: "Error",
-        message: err.message || "Failed to fetch blogs",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleEdit = (post: BlogDisplay) => {
     setEditingPost(post);
@@ -187,8 +163,7 @@ export function BlogManagement() {
       message: `Are you sure you want to delete "${post.title}"?`,
       action: async () => {
         try {
-          await blogsApi.delete(post.id);
-          setPosts(posts.filter((p) => p.id !== post.id));
+          await deleteBlogMutation.mutateAsync(post.id);
           setStatusModal({
             isOpen: true,
             type: "success",
@@ -196,13 +171,11 @@ export function BlogManagement() {
             message: `Blog post "${post.title}" has been successfully deleted.`,
           });
         } catch (err: any) {
-          console.error("Error deleting blog:", err);
           setStatusModal({
             isOpen: true,
             type: "error",
             title: "Delete Failed",
-            message:
-              err.message || "Failed to delete blog post. Please try again.",
+            message: err.message || "Failed to delete blog post. Please try again.",
           });
         }
       },
@@ -211,24 +184,19 @@ export function BlogManagement() {
   };
 
   const handleReorder = async (reorderedPosts: BlogDisplay[]) => {
-    // Optimistically update the UI
-    setPosts(reorderedPosts);
-
     try {
       const payload = reorderedPosts.map((post, index) => ({
         id: post.id,
         position: index,
       }));
-      await blogsApi.reorder(payload);
+      await reorderBlogsMutation.mutateAsync(payload);
     } catch (err: any) {
-      console.error("Error saving new order:", err);
       setStatusModal({
         isOpen: true,
         type: "error",
         title: "Reorder Failed",
-        message: "Failed to save the new order. Refreshing the list.",
+        message: "Failed to save the new order.",
       });
-      fetchPosts(); // Refetch to restore order
     }
   };
 
@@ -304,7 +272,8 @@ export function BlogManagement() {
           message: `Blog post "${postForm.title}" has been successfully created.`,
         });
       }
-      await fetchPosts();
+      // Refresh the cached blog list
+      qc.invalidateQueries({ queryKey: ['admin-blogs'] });
       handleCloseModal();
     } catch (err: any) {
       console.error(err);

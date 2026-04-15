@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Plus, Star } from "lucide-react";
 import { DataTable } from "../../components/dashboard/DataTable";
 import { ContentModal } from "../../components/dashboard/ContentModal";
@@ -6,6 +6,8 @@ import { ManagementStatsCard } from "../../components/dashboard/ManagementStatsC
 import { ImageUploadField } from "../../components/dashboard/ImageUploadField";
 import { StatusModal } from "../../components/dashboard/StatusModal";
 import { reviewsApi } from "../../services/api";
+import { useAdminReviews, useDeleteReview, useReorderReviews } from "../../hooks/queries/useReviews";
+import { useQueryClient } from '@tanstack/react-query';
 import type { Review } from "../../types/types";
 
 interface ReviewDisplay extends Review {
@@ -13,12 +15,15 @@ interface ReviewDisplay extends Review {
 }
 
 export function ReviewsManagement() {
-  const [reviews, setReviews] = useState<ReviewDisplay[]>([]);
+  const qc = useQueryClient();
+  const { data: rawReviews, isLoading: loading } = useAdminReviews();
+  const deleteReviewMutation = useDeleteReview();
+  const reorderReviewsMutation = useReorderReviews();
+
+  const reviews = (rawReviews ?? []).map((r) => ({ ...r, id: r._id })) as ReviewDisplay[];
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingReview, setEditingReview] = useState<ReviewDisplay | null>(
-    null,
-  );
-  const [loading, setLoading] = useState(true);
+  const [editingReview, setEditingReview] = useState<ReviewDisplay | null>(null);
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -50,35 +55,6 @@ export function ReviewsManagement() {
     message: "",
   });
 
-  useEffect(() => {
-    fetchReviews();
-  }, []);
-
-  const fetchReviews = async () => {
-    try {
-      setLoading(true);
-      const data = await reviewsApi.getAll();
-      const displayData = data.map((r) => ({
-        ...r,
-        id: r._id,
-      }));
-      setReviews(displayData);
-    } catch (err: any) {
-      console.error("Error fetching reviews:", err);
-      // Fallback for demo purposes if API fails (since it might not truly exist on backend yet)
-      setStatusModal({
-        isOpen: true,
-        type: "error",
-        title: "Error",
-        message:
-          err.message ||
-          "Failed to load reviews. Backend might be missing this endpoint.",
-      });
-      setReviews([]);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleEdit = (review: ReviewDisplay) => {
     setEditingReview(review);
@@ -105,22 +81,10 @@ export function ReviewsManagement() {
       message: `Are you sure you want to delete the review from "${review.name}"?`,
       action: async () => {
         try {
-          await reviewsApi.delete(review.id);
-          setReviews(reviews.filter((r) => r.id !== review.id));
-          setStatusModal({
-            isOpen: true,
-            type: "success",
-            title: "Review Deleted",
-            message: "The review has been successfully deleted.",
-          });
+          await deleteReviewMutation.mutateAsync(review.id);
+          setStatusModal({ isOpen: true, type: "success", title: "Review Deleted", message: "The review has been successfully deleted." });
         } catch (err: any) {
-          console.error("Error deleting review:", err);
-          setStatusModal({
-            isOpen: true,
-            type: "error",
-            title: "Delete Failed",
-            message: err.message || "Failed to delete review",
-          });
+          setStatusModal({ isOpen: true, type: "error", title: "Delete Failed", message: err.message || "Failed to delete review" });
         }
       },
       secondaryActionLabel: "Cancel",
@@ -129,64 +93,26 @@ export function ReviewsManagement() {
 
   const handleReorder = async (newOrder: ReviewDisplay[]) => {
     try {
-      // Optimistically update UI
-      setReviews(newOrder);
-
-      const orderedIds = newOrder.map((review) => review.id);
-      await reviewsApi.reorder(orderedIds);
-
-      // Fetch fresh data from backend
-      await fetchReviews();
+      await reorderReviewsMutation.mutateAsync(newOrder.map((r) => r.id));
     } catch (err: any) {
-      console.error("Error reordering reviews:", err);
-      // Revert to original order if failed
-      await fetchReviews();
-      setStatusModal({
-        isOpen: true,
-        type: "error",
-        title: "Reorder Failed",
-        message:
-          err.message ||
-          "Failed to gracefully reorder reviews. Please try again.",
-      });
+      setStatusModal({ isOpen: true, type: "error", title: "Reorder Failed", message: err.message || "Failed to reorder" });
     }
   };
 
   const handleSave = async () => {
     try {
       const payload = { ...formData };
-
       if (editingReview) {
-        await reviewsApi.update(
-          editingReview.id,
-          payload,
-          selectedImageFile || undefined,
-        );
-        setStatusModal({
-          isOpen: true,
-          type: "success",
-          title: "Review Updated",
-          message: "The review has been successfully updated.",
-        });
+        await reviewsApi.update(editingReview.id, payload, selectedImageFile || undefined);
+        setStatusModal({ isOpen: true, type: "success", title: "Review Updated", message: "The review has been successfully updated." });
       } else {
         await reviewsApi.create(payload, selectedImageFile || undefined);
-        setStatusModal({
-          isOpen: true,
-          type: "success",
-          title: "Review Created",
-          message: "The new review has been successfully created.",
-        });
+        setStatusModal({ isOpen: true, type: "success", title: "Review Created", message: "The new review has been successfully created." });
       }
-      fetchReviews();
+      qc.invalidateQueries({ queryKey: ['admin-reviews'] });
       handleCloseModal();
     } catch (err: any) {
-      console.error("Error saving review:", err);
-      setStatusModal({
-        isOpen: true,
-        type: "error",
-        title: "Save Failed",
-        message: err.message || "Failed to save review",
-      });
+      setStatusModal({ isOpen: true, type: "error", title: "Save Failed", message: err.message || "Failed to save review" });
     }
   };
 
@@ -210,16 +136,9 @@ export function ReviewsManagement() {
   const handleToggleActive = async (review: ReviewDisplay) => {
     try {
       const newStatus = review.isActive === false ? true : false;
-
-      setReviews((prev) =>
-        prev.map((r) =>
-          r.id === review.id ? { ...r, isActive: newStatus } : r,
-        ),
-      );
-
       await reviewsApi.update(review.id, { isActive: newStatus });
+      qc.invalidateQueries({ queryKey: ['admin-reviews'] });
     } catch (err: any) {
-      await fetchReviews();
       setStatusModal({
         isOpen: true,
         type: "error",

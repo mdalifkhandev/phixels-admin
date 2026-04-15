@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Monitor,
@@ -21,17 +21,7 @@ import { CityTable } from "../../components/dashboard/CityTable";
 import { CompactMetricCard } from "../../components/dashboard/CompactMetricCard";
 import { InteractiveMap } from "../../components/dashboard/InteractiveMap";
 import { DataDetailModal } from "../../components/dashboard/DataDetailModal";
-import { analyticsApi } from "../../services/api";
-import {
-  AnalyticsOverview,
-  RealtimeAnalytics,
-  FunnelStage,
-  TopPageData,
-  DeviceData,
-  TrafficDataPoint,
-  CountryDataPoint,
-  CityDataPoint,
-} from "../../types/types";
+import { useAnalyticsDashboard, useRealtimeAnalytics } from "../../hooks/queries/useAnalytics";
 
 // --- Mock Data ---
 // Keep mock data for charts that are not yet integrated or for fallback
@@ -41,19 +31,23 @@ export function AnalyticsDashboard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState<any>(null);
   const [modalTitle, setModalTitle] = useState("");
-  const [analyticsData, setAnalyticsData] = useState<AnalyticsOverview | null>(
-    null,
-  );
-  const [realtimeData, setRealtimeData] = useState<RealtimeAnalytics | null>(
-    null,
-  );
-  const [funnelData, setFunnelData] = useState<FunnelStage[]>([]);
-  const [topPagesData, setTopPagesData] = useState<TopPageData[]>([]);
-  const [deviceData, setDeviceData] = useState<DeviceData | null>(null);
-  const [trafficData, setTrafficData] = useState<TrafficDataPoint[]>([]);
-  const [countryData, setCountryData] = useState<CountryDataPoint[]>([]);
-  const [cityData, setCityData] = useState<CityDataPoint[]>([]);
-  const [loading, setLoading] = useState(true);
+
+  // Static analytics data — 5min cache, 60s background refresh
+  const { data: dashData, isLoading: loadingDash } = useAnalyticsDashboard();
+
+  // Realtime — 10s auto-refresh, cached in TanStack Query
+  const { data: realtimeData } = useRealtimeAnalytics();
+
+  // Destructure with safe fallbacks
+  const analyticsData  = dashData?.overview  ?? null;
+  const funnelData     = dashData?.funnel    ?? [];
+  const topPagesData   = dashData?.pages     ?? [];
+  const deviceData     = dashData?.devices   ?? null;
+  const trafficData    = dashData?.traffic   ?? [];
+  const countryData    = dashData?.countries ?? [];
+  const cityData       = dashData?.cities    ?? [];
+
+  const loading = loadingDash;
 
   const deviceList = [
     {
@@ -90,59 +84,6 @@ export function AnalyticsDashboard() {
         ? Math.round(((d.count || 0) / totalDeviceCount) * 100)
         : 0,
   }));
-
-  useEffect(() => {
-    const fetchAnalytics = async () => {
-      setLoading(true);
-      try {
-        const [
-          overview,
-          realtime,
-          funnel,
-          pages,
-          devices,
-          traffic,
-          countries,
-          cities,
-        ] = await Promise.all([
-          analyticsApi.getOverview(),
-          analyticsApi.getRealtime(),
-          analyticsApi.getFunnel(),
-          analyticsApi.getTopPages(),
-          analyticsApi.getDevices(),
-          analyticsApi.getTrafficSeries(),
-          analyticsApi.getTopCountries(),
-          analyticsApi.getTopCities(),
-        ]);
-
-        setAnalyticsData(overview);
-        setRealtimeData(realtime);
-        setFunnelData(funnel);
-        setTopPagesData(pages);
-        setDeviceData(devices);
-        setTrafficData(traffic);
-        setCountryData(countries);
-        setCityData(cities);
-      } catch (error) {
-        console.error("Failed to fetch analytics:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAnalytics();
-
-    // Refresh realtime data every 30 seconds
-    const interval = setInterval(async () => {
-      try {
-        const realtime = await analyticsApi.getRealtime();
-        setRealtimeData(realtime);
-      } catch (e) {
-        console.error("Failed to refresh realtime data", e);
-      }
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const handleRowClick = (data: any, title: string) => {
     setModalData(data);
