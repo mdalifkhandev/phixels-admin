@@ -36,7 +36,7 @@ import type {
 } from "../types/types";
 
 // Base URL from environment (fallback to production API)
-const BASE_URL = import.meta.env.VITE_API_BASE_URL; //|| 'https://api.phixels.agency/api/v1';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://api.phixels.agency/api/v1";
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
